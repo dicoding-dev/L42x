@@ -27,78 +27,56 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 
 	/**
 	 * The connection name for the model.
-	 *
-	 * @var string
 	 */
 	protected string $connection;
 
 	/**
 	 * The table associated with the model.
-	 *
-	 * @var string
 	 */
 	protected string $table;
 
 	/**
 	 * The primary key for the model.
-	 *
-	 * @var string
 	 */
 	protected string $primaryKey = 'id';
 
 	/**
 	 * The number of models to return for pagination.
-	 *
-	 * @var int
 	 */
 	protected int $perPage = 15;
 
 	/**
 	 * Indicates if the IDs are auto-incrementing.
-	 *
-	 * @var bool
 	 */
 	public bool $incrementing = true;
 
 	/**
 	 * Indicates if the model should be timestamped.
-	 *
-	 * @var bool
 	 */
 	public bool $timestamps = true;
 
 	/**
 	 * The model's attributes.
-	 *
-	 * @var array
 	 */
 	protected array $attributes = array();
 
 	/**
 	 * The model attribute's original state.
-	 *
-	 * @var array
 	 */
 	protected array $original = array();
 
 	/**
 	 * The loaded relationships for the model.
-	 *
-	 * @var array
 	 */
 	protected array $relations = array();
 
 	/**
 	 * The attributes that should be hidden for arrays.
-	 *
-	 * @var array
 	 */
 	protected array $hidden = array();
 
 	/**
 	 * The attributes that should be visible in arrays.
-	 *
-	 * @var array
 	 */
 	protected array $visible = array();
 
@@ -111,127 +89,91 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 
 	/**
 	 * The attributes that are mass assignable.
-	 *
-	 * @var array
 	 */
 	protected array $fillable = array();
 
 	/**
 	 * The attributes that aren't mass assignable.
-	 *
-	 * @var array
 	 */
 	protected array $guarded = array('*');
 
 	/**
 	 * The attributes that should be mutated to dates.
-	 *
-	 * @var array
 	 */
 	protected array $dates = array();
 
 	/**
 	 * The relationships that should be touched on save.
-	 *
-	 * @var array
 	 */
 	protected array $touches = array();
 
 	/**
 	 * User exposed observable events
-	 *
-	 * @var array
 	 */
 	protected array $observables = array();
 
 	/**
 	 * The relations to eager load on every query.
-	 *
-	 * @var array
 	 */
 	protected array $with = array();
 
 	/**
 	 * The class name to be used in polymorphic relations.
-	 *
-	 * @var string
 	 */
 	protected string $morphClass;
 
 	/**
 	 * Indicates if the model exists.
-	 *
-	 * @var bool
 	 */
 	public bool $exists = false;
 
 	/**
 	 * Indicates whether attributes are snake cased on arrays.
-	 *
-	 * @var bool
 	 */
 	public static bool $snakeAttributes = true;
 
 	/**
 	 * The connection resolver instance.
-	 *
-	 * @var \Illuminate\Database\ConnectionResolverInterface
 	 */
-	protected static Resolver $resolver;
+	protected static Resolver|null $resolver;
 
 	/**
 	 * The event dispatcher instance.
-	 *
-	 * @var \Illuminate\Events\Dispatcher
 	 */
-	protected static Dispatcher $dispatcher;
+	protected static Dispatcher|null $dispatcher;
 
 	/**
 	 * The array of booted models.
-	 *
-	 * @var array
 	 */
 	protected static array $booted = array();
 
 	/**
 	 * The array of global scopes on the model.
-	 *
-	 * @var array
 	 */
 	protected static array $globalScopes = array();
 
 	/**
 	 * Indicates if all mass assignment is enabled.
-	 *
-	 * @var bool
 	 */
 	protected static bool $unguarded = false;
 
 	/**
 	 * The cache of the mutated attributes for each class.
-	 *
-	 * @var array
 	 */
 	protected static array $mutatorCache = array();
 
 	/**
 	 * The many to many relationship methods.
-	 *
-	 * @var array
 	 */
 	public static array $manyMethods = array('belongsToMany', 'morphToMany', 'morphedByMany');
 
 	/**
 	 * The name of the "created at" column.
-	 *
-	 * @var string
 	 */
 	const CREATED_AT = 'created_at';
 
 	/**
 	 * The name of the "updated at" column.
-	 *
-	 * @var string
 	 */
 	const UPDATED_AT = 'updated_at';
 
