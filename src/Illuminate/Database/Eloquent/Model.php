@@ -1131,9 +1131,9 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	 *
 	 * @return void
 	 */
-	public function forceDelete()
-	{
-		return $this->delete();
+	public function forceDelete(): void
+    {
+		$this->delete();
 	}
 
 	/**
@@ -1378,7 +1378,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	 */
 	protected function incrementOrDecrementAttributeValue($column, $amount, $method):void
 	{
-		$this->{$column} = $this->{$column} + ($method == 'increment' ? $amount : $amount * -1);
+		$this->{$column} = $this->{$column} + ($method === 'increment' ? $amount : $amount * -1);
 
 		$this->syncOriginalAttribute($column);
 	}
