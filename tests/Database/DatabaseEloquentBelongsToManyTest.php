@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -178,12 +179,13 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 		$relation->withTimestamps();
 		$query = m::mock('stdClass');
 		$query->shouldReceive('from')->once()->with('user_role')->andReturn($query);
+        $carbon = new Carbon;
 		$query->shouldReceive('insert')->once()->with(
-            [['user_id' => 1, 'role_id' => 2, 'foo' => 'bar', 'created_at' => 'time', 'updated_at' => 'time']]
+            [['user_id' => 1, 'role_id' => 2, 'foo' => 'bar', 'created_at' => $carbon, 'updated_at' => $carbon]]
         )->andReturn(true);
 		$relation->getQuery()->shouldReceive('getQuery')->andReturn($mockQueryBuilder = m::mock('StdClass'));
 		$mockQueryBuilder->shouldReceive('newQuery')->once()->andReturn($query);
-		$relation->getParent()->shouldReceive('freshTimestamp')->once()->andReturn('time');
+		$relation->getParent()->shouldReceive('freshTimestamp')->once()->andReturn($carbon);
 		$relation->expects($this->once())->method('touchIfTouching');
 
 		$relation->attach(2, ['foo' => 'bar']);
@@ -196,12 +198,13 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 		$relation->withPivot('created_at');
 		$query = m::mock('stdClass');
 		$query->shouldReceive('from')->once()->with('user_role')->andReturn($query);
+        $carbon = new Carbon;
 		$query->shouldReceive('insert')->once()->with(
-            [['user_id' => 1, 'role_id' => 2, 'foo' => 'bar', 'created_at' => 'time']]
+            [['user_id' => 1, 'role_id' => 2, 'foo' => 'bar', 'created_at' => $carbon]]
         )->andReturn(true);
 		$relation->getQuery()->shouldReceive('getQuery')->andReturn($mockQueryBuilder = m::mock('StdClass'));
 		$mockQueryBuilder->shouldReceive('newQuery')->once()->andReturn($query);
-		$relation->getParent()->shouldReceive('freshTimestamp')->once()->andReturn('time');
+		$relation->getParent()->shouldReceive('freshTimestamp')->once()->andReturn($carbon);
 		$relation->expects($this->once())->method('touchIfTouching');
 
 		$relation->attach(2, ['foo' => 'bar']);
@@ -214,12 +217,13 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 		$relation->withPivot('updated_at');
 		$query = m::mock('stdClass');
 		$query->shouldReceive('from')->once()->with('user_role')->andReturn($query);
+        $carbon = new Carbon;
 		$query->shouldReceive('insert')->once()->with(
-            [['user_id' => 1, 'role_id' => 2, 'foo' => 'bar', 'updated_at' => 'time']]
+            [['user_id' => 1, 'role_id' => 2, 'foo' => 'bar', 'updated_at' => $carbon]]
         )->andReturn(true);
 		$relation->getQuery()->shouldReceive('getQuery')->andReturn($mockQueryBuilder = m::mock('StdClass'));
 		$mockQueryBuilder->shouldReceive('newQuery')->once()->andReturn($query);
-		$relation->getParent()->shouldReceive('freshTimestamp')->once()->andReturn('time');
+		$relation->getParent()->shouldReceive('freshTimestamp')->once()->andReturn($carbon);
 		$relation->expects($this->once())->method('touchIfTouching');
 
 		$relation->attach(2, ['foo' => 'bar']);
@@ -277,7 +281,7 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 	public function testCreateMethodCreatesNewModelAndInsertsAttachmentRecord()
 	{
 		$relation = $this->getMock(BelongsToMany::class, ['attach'], $this->getRelationArguments());
-		$relation->getRelated()->shouldReceive('newInstance')->once()->andReturn($model = m::mock('StdClass'))->with(
+		$relation->getRelated()->shouldReceive('newInstance')->once()->andReturn($model = m::mock(Model::class))->with(
             ['attributes']
         );
 		$model->shouldReceive('save')->once();
@@ -372,13 +376,14 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 	{
 		$relation = $this->getRelation();
 		$relation->getRelated()->shouldReceive('getUpdatedAtColumn')->andReturn('updated_at');
-		$relation->getRelated()->shouldReceive('freshTimestamp')->andReturn(100);
+        $carbon = new Carbon;
+		$relation->getRelated()->shouldReceive('freshTimestamp')->andReturn($carbon);
 		$relation->getRelated()->shouldReceive('getQualifiedKeyName')->andReturn('table.id');
 		$relation->getQuery()->shouldReceive('select')->once()->with('table.id')->andReturn($relation->getQuery());
 		$relation->getQuery()->shouldReceive('lists')->once()->with('id')->andReturn([1, 2, 3]);
-		$relation->getRelated()->shouldReceive('newQuery')->once()->andReturn($query = m::mock('StdClass'));
+		$relation->getRelated()->shouldReceive('newQuery')->once()->andReturn($query = m::mock(Builder::class));
 		$query->shouldReceive('whereIn')->once()->with('id', [1, 2, 3])->andReturn($query);
-		$query->shouldReceive('update')->once()->with(['updated_at' => 100]);
+		$query->shouldReceive('update')->once()->with(['updated_at' => $carbon]);
 
 		$relation->touch();
 	}
@@ -451,7 +456,7 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 
 	public function getRelation()
 	{
-		list($builder, $parent) = $this->getRelationArguments();
+		[$builder, $parent] = $this->getRelationArguments();
 
 		return new BelongsToMany($builder, $parent, 'user_role', 'user_id', 'role_id', 'relation_name');
 	}
@@ -485,7 +490,7 @@ class DatabaseEloquentBelongsToManyTest extends BackwardCompatibleTestCase
 }
 
 class EloquentBelongsToManyModelStub extends Illuminate\Database\Eloquent\Model {
-	protected $guarded = [];
+	protected array $guarded = [];
 }
 
 class EloquentBelongsToManyModelPivotStub extends Illuminate\Database\Eloquent\Model {
