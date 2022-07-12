@@ -113,14 +113,14 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 	{
 		$pdo = $this->getMock(DatabaseConnectionTestMockPDO::class, ['prepare']);
 		$statement = $this->getMock('PDOStatement', ['execute']);
-		$statement->expects($this->once())->method('execute')->with($this->equalTo(['bar']))->willReturn('foo');
+		$statement->expects($this->once())->method('execute')->with($this->equalTo(['bar']))->willReturn(true);
 		$pdo->expects($this->once())->method('prepare')->with($this->equalTo('foo'))->willReturn($statement);
 		$mock = $this->getMockConnection(['prepareBindings'], $pdo);
 		$mock->expects($this->once())->method('prepareBindings')->with($this->equalTo(['bar']))->willReturn(
             ['bar']
         );
 		$results = $mock->statement('foo', ['bar']);
-		$this->assertEquals('foo', $results);
+		$this->assertEquals(true, $results);
 		$log = $mock->getQueryLog();
 		$this->assertEquals('foo', $log[0]['query']);
 		$this->assertEquals(['bar'], $log[0]['bindings']);
@@ -133,14 +133,14 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 		$pdo = $this->getMock(DatabaseConnectionTestMockPDO::class, ['prepare']);
 		$statement = $this->getMock('PDOStatement', ['execute', 'rowCount']);
 		$statement->expects($this->once())->method('execute')->with($this->equalTo(['foo' => 'bar']));
-		$statement->expects($this->once())->method('rowCount')->willReturn(['boom']);
+		$statement->expects($this->once())->method('rowCount')->willReturn(100);
 		$pdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
 		$mock = $this->getMockConnection(['prepareBindings'], $pdo);
 		$mock->expects($this->once())->method('prepareBindings')->with($this->equalTo(['foo' => 'bar']))->willReturn(
             ['foo' => 'bar']
         );
 		$results = $mock->update('foo', ['foo' => 'bar']);
-		$this->assertEquals(['boom'], $results);
+		$this->assertEquals(100, $results);
 		$log = $mock->getQueryLog();
 		$this->assertEquals('foo', $log[0]['query']);
 		$this->assertEquals(['foo' => 'bar'], $log[0]['bindings']);
@@ -201,7 +201,7 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 		$pdo->expects($this->never())->method('commit');
 		try
 		{
-			$mock->transaction(function() { throw new Exception('foo'); });
+			$mock->transaction(function(): never { throw new Exception('foo'); });
 		}
 		catch (Exception $e)
 		{
