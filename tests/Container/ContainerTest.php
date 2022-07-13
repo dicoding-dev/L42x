@@ -3,8 +3,14 @@
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Container\Container;
 use L4\Tests\BackwardCompatibleTestCase;
+use Mockery as m;
 
 class ContainerTest extends BackwardCompatibleTestCase {
+
+    public function tearDown(): void
+    {
+        m::close();
+    }
 
 	public function testClosureResolution(): void
     {
@@ -51,7 +57,7 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testParametersCanOverrideDependencies(): void
     {
 		$container = new Container;
-		$stub = new ContainerDependentStub($mock = $this->getMock('IContainerContractStub'));
+		$stub = new ContainerDependentStub($mock = m::mock('IContainerContractStub'));
 		$resolved = $container->make('ContainerNestedDependentStub', [$stub]);
 		$this->assertInstanceOf('ContainerNestedDependentStub', $resolved);
 		$this->assertEquals($mock, $resolved->inner->impl);
