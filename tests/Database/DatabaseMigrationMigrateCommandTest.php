@@ -114,9 +114,10 @@ class ApplicationDatabaseMigrationStub implements ArrayAccess {
 	public $content = [];
 	public $env = 'development';
 	public function __construct(array $data = []) { $this->content = $data; }
-	public function offsetExists($offset) { return isset($this->content[$offset]); }
-	public function offsetGet($offset) { return $this->content[$offset]; }
-	public function offsetSet($offset, $value) { $this->content[$offset] = $value; }
-	public function offsetUnset($offset) { unset($this->content[$offset]); }
+	public function offsetExists($offset): bool
+    { return isset($this->content[$offset]); }
+	public function offsetGet($offset): mixed { return $this->content[$offset]; }
+	public function offsetSet($offset, $value): void { $this->content[$offset] = $value; }
+	public function offsetUnset($offset): void { unset($this->content[$offset]); }
 	public function environment() { return $this->env; }
 }
