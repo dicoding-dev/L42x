@@ -67,10 +67,8 @@ class Fluent implements ArrayAccess, ArrayableInterface, JsonableInterface, Json
 
 	/**
 	 * Convert the object into something JSON serializable.
-	 *
-	 * @return array
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return $this->toArray();
 	}
