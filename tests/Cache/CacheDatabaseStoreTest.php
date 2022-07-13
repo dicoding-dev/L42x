@@ -15,7 +15,7 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testNullIsReturnedWhenItemNotFound()
+    public function testNullIsReturnedWhenItemNotFound(): void
     {
         $store = $this->getStore();
         $table = m::mock('StdClass');
@@ -27,8 +27,8 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testNullIsReturnedAndItemDeletedWhenItemIsExpired()
-	{
+	public function testNullIsReturnedAndItemDeletedWhenItemIsExpired(): void
+    {
 		$store = $this->getMock(DatabaseStore::class, ['forget'], $this->getMocks());
 		$table = m::mock('StdClass');
 		$store->getConnection()->shouldReceive('table')->once()->with('table')->andReturn($table);
@@ -40,8 +40,8 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testDecryptedValueIsReturnedWhenItemIsValid()
-	{
+	public function testDecryptedValueIsReturnedWhenItemIsValid(): void
+    {
 		$store = $this->getStore();
 		$table = m::mock('StdClass');
 		$store->getConnection()->shouldReceive('table')->once()->with('table')->andReturn($table);
@@ -53,8 +53,8 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testEncryptedValueIsInsertedWhenNoExceptionsAreThrown()
-	{
+	public function testEncryptedValueIsInsertedWhenNoExceptionsAreThrown(): void
+    {
 		$store = $this->getMock(DatabaseStore::class, ['getTime'], $this->getMocks());
 		$table = m::mock('StdClass');
 		$store->getConnection()->shouldReceive('table')->once()->with('table')->andReturn($table);
@@ -66,14 +66,14 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testEncryptedValueIsUpdatedWhenInsertThrowsException()
-	{
+	public function testEncryptedValueIsUpdatedWhenInsertThrowsException(): void
+    {
 		$store = $this->getMock(DatabaseStore::class, ['getTime'], $this->getMocks());
 		$table = m::mock('StdClass');
 		$store->getConnection()->shouldReceive('table')->with('table')->andReturn($table);
 		$store->getEncrypter()->shouldReceive('encrypt')->once()->with('bar')->andReturn('bar');
 		$store->expects($this->once())->method('getTime')->willReturn(1);
-		$table->shouldReceive('insert')->once()->with(['key' => 'prefixfoo', 'value' => 'bar', 'expiration' => 61])->andReturnUsing(function()
+		$table->shouldReceive('insert')->once()->with(['key' => 'prefixfoo', 'value' => 'bar', 'expiration' => 61])->andReturnUsing(function(): never
 		{
 			throw new Exception;
 		});
@@ -84,16 +84,16 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testForeverCallsStoreItemWithReallyLongTime()
-	{
+	public function testForeverCallsStoreItemWithReallyLongTime(): void
+    {
 		$store = $this->getMock(DatabaseStore::class, ['put'], $this->getMocks());
 		$store->expects($this->once())->method('put')->with($this->equalTo('foo'), $this->equalTo('bar'), $this->equalTo(5256000));
 		$store->forever('foo', 'bar');
 	}
 
 
-	public function testItemsMayBeRemovedFromCache()
-	{
+	public function testItemsMayBeRemovedFromCache(): void
+    {
 		$store = $this->getStore();
 		$table = m::mock('StdClass');
 		$store->getConnection()->shouldReceive('table')->once()->with('table')->andReturn($table);
@@ -104,8 +104,8 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testItemsMayBeFlushedFromCache()
-	{
+	public function testItemsMayBeFlushedFromCache(): void
+    {
 		$store = $this->getStore();
 		$table = m::mock('StdClass');
 		$store->getConnection()->shouldReceive('table')->once()->with('table')->andReturn($table);
@@ -115,16 +115,16 @@ class CacheDatabaseStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	protected function getStore()
-	{
+	protected function getStore(): DatabaseStore
+    {
 		return new DatabaseStore(m::mock(Connection::class), m::mock(
             Encrypter::class
         ), 'table', 'prefix');
 	}
 
 
-	protected function getMocks()
-	{
+	protected function getMocks(): array
+    {
 		return [m::mock(Connection::class), m::mock(Encrypter::class), 'table', 'prefix'];
 	}
 
