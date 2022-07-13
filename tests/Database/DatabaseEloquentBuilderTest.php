@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -386,8 +387,8 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
             ['orders' => null, 'ordersGroups' => null, 'ordersGroups.lines' => null, 'ordersGroups.lines.details' => null]
         );
 
-		$relation = $builder->getRelation('orders');
-		$relation = $builder->getRelation('ordersGroups');
+		$builder->getRelation('orders');
+		$builder->getRelation('ordersGroups');
 	}
 
 
@@ -545,7 +546,7 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
 		$processorClass = 'Illuminate\Database\Query\Processors\\'.$database.'Processor';
 		$grammar = new $grammarClass;
 		$processor = new $processorClass;
-		$connection = m::mock(ConnectionInterface::class, ['getQueryGrammar' => $grammar, 'getPostProcessor' => $processor]
+		$connection = m::mock(Connection::class, ['getQueryGrammar' => $grammar, 'getPostProcessor' => $processor]
         );
 		$resolver = m::mock(ConnectionResolverInterface::class, ['connection' => $connection]);
 		$class = get_class($model);
@@ -589,12 +590,12 @@ class EloquentBuilderTestScopeStub extends Illuminate\Database\Eloquent\Model {
 
 class EloquentBuilderTestWithTrashedStub extends Illuminate\Database\Eloquent\Model {
 	use Illuminate\Database\Eloquent\SoftDeletingTrait;
-	protected $table = 'table';
-	public function getKeyName() { return 'foo'; }
+	protected string $table = 'table';
+	public function getKeyName(): string { return 'foo'; }
 }
 
 class EloquentBuilderTestNestedStub extends Illuminate\Database\Eloquent\Model {
-	protected $table = 'table';
+	protected string $table = 'table';
 	use Illuminate\Database\Eloquent\SoftDeletingTrait;
 }
 
