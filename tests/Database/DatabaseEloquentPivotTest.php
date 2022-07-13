@@ -13,7 +13,7 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testPropertiesAreSetCorrectly()
+    public function testPropertiesAreSetCorrectly(): void
     {
         $parent = m::mock('Illuminate\Database\Eloquent\Model[getConnectionName]');
         $parent->shouldReceive('getConnectionName')->once()->andReturn('connection');
@@ -26,8 +26,8 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testPropertiesUnchangedAreNotDirty()
-	{
+	public function testPropertiesUnchangedAreNotDirty(): void
+    {
 		$parent = m::mock('Illuminate\Database\Eloquent\Model[getConnectionName]');
 		$parent->shouldReceive('getConnectionName')->once()->andReturn('connection');
 		$pivot = new Pivot($parent, ['foo' => 'bar', 'shimy' => 'shake'], 'table', true);
@@ -36,8 +36,8 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testPropertiesChangedAreDirty()
-	{
+	public function testPropertiesChangedAreDirty(): void
+    {
 		$parent = m::mock('Illuminate\Database\Eloquent\Model[getConnectionName]');
 		$parent->shouldReceive('getConnectionName')->once()->andReturn('connection');
 		$pivot = new Pivot($parent, ['foo' => 'bar', 'shimy' => 'shake'], 'table', true);
@@ -47,8 +47,8 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testTimestampPropertyIsSetIfCreatedAtInAttributes()
-	{
+	public function testTimestampPropertyIsSetIfCreatedAtInAttributes(): void
+    {
 		$parent = m::mock('Illuminate\Database\Eloquent\Model[getConnectionName,getDates]');
 		$parent->shouldReceive('getConnectionName')->andReturn('connection');
 		$parent->shouldReceive('getDates')->andReturn([]);
@@ -60,8 +60,8 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testKeysCanBeSetProperly()
-	{
+	public function testKeysCanBeSetProperly(): void
+    {
 		$parent = m::mock('Illuminate\Database\Eloquent\Model[getConnectionName]');
 		$parent->shouldReceive('getConnectionName')->once()->andReturn('connection');
 		$pivot = new Pivot($parent, ['foo' => 'bar'], 'table');
@@ -72,8 +72,8 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testDeleteMethodDeletesModelByKeys()
-	{
+	public function testDeleteMethodDeletesModelByKeys(): void
+    {
 		$parent = m::mock('Illuminate\Database\Eloquent\Model[getConnectionName]');
 		$parent->guard([]);
 		$parent->shouldReceive('getConnectionName')->once()->andReturn('connection');
@@ -96,7 +96,7 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 class DatabaseEloquentPivotTestModelStub extends Illuminate\Database\Eloquent\Model {}
 
 class DatabaseEloquentPivotTestDateStub extends Illuminate\Database\Eloquent\Relations\Pivot {
-	public function getDates()
+	public function getDates(): array
 	{
 		return [];
 	}
