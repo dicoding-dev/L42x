@@ -9,15 +9,14 @@ use JsonSerializable;
 use IteratorAggregate;
 use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
+use Traversable;
 
 class Collection implements ArrayAccess, ArrayableInterface, Countable, IteratorAggregate, JsonableInterface, JsonSerializable {
 
 	/**
 	 * The items contained in the collection.
-	 *
-	 * @var array
 	 */
-	protected $items = array();
+	protected array $items = array();
 
 	/**
 	 * Create a new collection.
@@ -716,10 +715,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 
 	/**
 	 * Convert the object into something JSON serializable.
-	 *
-	 * @return array
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return $this->toArray();
 	}
@@ -737,10 +734,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 
 	/**
 	 * Get an iterator for the items.
-	 *
-	 * @return \ArrayIterator
 	 */
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		return new ArrayIterator($this->items);
 	}
@@ -761,8 +756,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 *
 	 * @return int
 	 */
-	public function count()
-	{
+	public function count(): int
+    {
 		return count($this->items);
 	}
 
@@ -772,8 +767,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  mixed  $key
 	 * @return bool
 	 */
-	public function offsetExists($key)
-	{
+	public function offsetExists($key): bool
+    {
 		return array_key_exists($key, $this->items);
 	}
 
@@ -783,8 +778,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  mixed  $key
 	 * @return mixed
 	 */
-	public function offsetGet($key)
-	{
+	public function offsetGet($key): mixed
+    {
 		return $this->items[$key];
 	}
 
@@ -795,8 +790,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  mixed  $value
 	 * @return void
 	 */
-	public function offsetSet($key, $value)
-	{
+	public function offsetSet($key, $value): void
+    {
 		if (is_null($key))
 		{
 			$this->items[] = $value;
@@ -813,8 +808,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  string  $key
 	 * @return void
 	 */
-	public function offsetUnset($key)
-	{
+	public function offsetUnset($key): void
+    {
 		unset($this->items[$key]);
 	}
 
