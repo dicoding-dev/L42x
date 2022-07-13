@@ -92,8 +92,8 @@ class Fluent implements ArrayAccess, ArrayableInterface, JsonableInterface, Json
 	 * @param  string  $offset
 	 * @return bool
 	 */
-	public function offsetExists($offset)
-	{
+	public function offsetExists($offset): bool
+    {
 		return isset($this->{$offset});
 	}
 
@@ -103,8 +103,8 @@ class Fluent implements ArrayAccess, ArrayableInterface, JsonableInterface, Json
 	 * @param  string  $offset
 	 * @return mixed
 	 */
-	public function offsetGet($offset)
-	{
+	public function offsetGet($offset): mixed
+    {
 		return $this->{$offset};
 	}
 
@@ -115,8 +115,8 @@ class Fluent implements ArrayAccess, ArrayableInterface, JsonableInterface, Json
 	 * @param  mixed   $value
 	 * @return void
 	 */
-	public function offsetSet($offset, $value)
-	{
+	public function offsetSet($offset, $value): void
+    {
 		$this->{$offset} = $value;
 	}
 
@@ -126,8 +126,8 @@ class Fluent implements ArrayAccess, ArrayableInterface, JsonableInterface, Json
 	 * @param  string  $offset
 	 * @return void
 	 */
-	public function offsetUnset($offset)
-	{
+	public function offsetUnset($offset): void
+    {
 		unset($this->{$offset});
 	}
 
