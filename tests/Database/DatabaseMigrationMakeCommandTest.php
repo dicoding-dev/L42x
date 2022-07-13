@@ -21,7 +21,10 @@ class DatabaseMigrationMakeCommandTest extends BackwardCompatibleTestCase
         );
         $app = ['path' => __DIR__];
         $command->setLaravel($app);
-		$creator->shouldReceive('create')->once()->with('create_foo', __DIR__.'/database/migrations', null, false);
+		$creator->allows()->create()
+            ->once()
+            ->with('create_foo', __DIR__.'/database/migrations', null, false)
+            ->andReturn($app['path']);
 
 		$this->runCommand($command, ['name' => 'create_foo']);
 	}
@@ -34,7 +37,10 @@ class DatabaseMigrationMakeCommandTest extends BackwardCompatibleTestCase
         ), __DIR__.'/vendor');
 		$app = ['path' => __DIR__];
 		$command->setLaravel($app);
-		$creator->shouldReceive('create')->once()->with('create_foo', __DIR__.'/database/migrations', 'users', true);
+		$creator->allows()->create()
+            ->once()
+            ->with('create_foo', __DIR__.'/database/migrations', 'users', true)
+            ->andReturn($app['path']);
 
 		$this->runCommand($command, ['name' => 'create_foo', '--create' => 'users']);
 	}
@@ -47,7 +53,10 @@ class DatabaseMigrationMakeCommandTest extends BackwardCompatibleTestCase
         ), __DIR__.'/vendor');
 		$app = ['path' => __DIR__];
 		$command->setLaravel($app);
-		$creator->shouldReceive('create')->once()->with('create_foo', __DIR__.'/vendor/bar/src/migrations', null, false);
+		$creator->allows()->create()
+            ->once()
+            ->with('create_foo', __DIR__.'/vendor/bar/src/migrations', null, false)
+            ->andReturn($app['path']);
 
 		$this->runCommand($command, ['name' => 'create_foo', '--package' => 'bar']);
 	}
@@ -58,7 +67,10 @@ class DatabaseMigrationMakeCommandTest extends BackwardCompatibleTestCase
 		$command = new DatabaseMigrationMakeCommandTestStub($creator = m::mock(
             MigrationCreator::class
         ), __DIR__.'/vendor');
-		$creator->shouldReceive('create')->once()->with('create_foo', __DIR__.'/vendor/foo/bar/src/migrations', null, false);
+		$creator->allows()->create()
+            ->once()
+            ->with('create_foo', __DIR__.'/vendor/foo/bar/src/migrations', null, false)
+            ->andReturn(__DIR__);
 
 		$this->runCommand($command, ['name' => 'create_foo', '--package' => 'foo/bar']);
 	}
@@ -66,7 +78,10 @@ class DatabaseMigrationMakeCommandTest extends BackwardCompatibleTestCase
 
 	protected function runCommand($command, $input = [])
 	{
-		return $command->run(new Symfony\Component\Console\Input\ArrayInput($input), new Symfony\Component\Console\Output\NullOutput);
+		return $command->run(
+            new Symfony\Component\Console\Input\ArrayInput($input),
+            new Symfony\Component\Console\Output\NullOutput
+        );
 	}
 
 }
