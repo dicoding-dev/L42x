@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -32,9 +33,9 @@ class DatabaseEloquentHasManyTest extends BackwardCompatibleTestCase
 	{
 		$relation = $this->getRelation();
 		$relation->getRelated()->shouldReceive('usesTimestamps')->once()->andReturn(true);
-		$relation->getRelated()->shouldReceive('freshTimestamp')->once()->andReturn(100);
+		$relation->getRelated()->shouldReceive('freshTimestamp')->once()->andReturn($carbon = new Carbon());
 		$relation->getRelated()->shouldReceive('getUpdatedAtColumn')->andReturn('updated_at');
-		$relation->getQuery()->shouldReceive('update')->once()->with(['foo' => 'bar', 'updated_at' => 100])->andReturn('results');
+		$relation->getQuery()->shouldReceive('update')->once()->with(['foo' => 'bar', 'updated_at' => $carbon])->andReturn('results');
 
 		$this->assertEquals('results', $relation->update(['foo' => 'bar']));
 	}
