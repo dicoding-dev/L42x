@@ -15,7 +15,7 @@ class DatabaseEloquentMorphToManyTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testEagerConstraintsAreProperlyAdded()
+    public function testEagerConstraintsAreProperlyAdded(): void
     {
         $relation = $this->getRelation();
         $relation->getQuery()->shouldReceive('whereIn')->once()->with('taggables.taggable_id', [1, 2]);
@@ -31,8 +31,8 @@ class DatabaseEloquentMorphToManyTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testAttachInsertsPivotTableRecord()
-	{
+	public function testAttachInsertsPivotTableRecord(): void
+    {
 		$relation = $this->getMock(MorphToMany::class, ['touchIfTouching'], $this->getRelationArguments());
 		$query = m::mock('stdClass');
 		$query->shouldReceive('from')->once()->with('taggables')->andReturn($query);
@@ -47,8 +47,8 @@ class DatabaseEloquentMorphToManyTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testDetachRemovesPivotTableRecord()
-	{
+	public function testDetachRemovesPivotTableRecord(): void
+    {
 		$relation = $this->getMock(MorphToMany::class, ['touchIfTouching'], $this->getRelationArguments());
 		$query = m::mock('stdClass');
 		$query->shouldReceive('from')->once()->with('taggables')->andReturn($query);
@@ -64,8 +64,8 @@ class DatabaseEloquentMorphToManyTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testDetachMethodClearsAllPivotRecordsWhenNoIDsAreGiven()
-	{
+	public function testDetachMethodClearsAllPivotRecordsWhenNoIDsAreGiven(): void
+    {
 		$relation = $this->getMock(MorphToMany::class, ['touchIfTouching'], $this->getRelationArguments());
 		$query = m::mock('stdClass');
 		$query->shouldReceive('from')->once()->with('taggables')->andReturn($query);
@@ -81,17 +81,17 @@ class DatabaseEloquentMorphToManyTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function getRelation()
-	{
-		list($builder, $parent) = $this->getRelationArguments();
+	public function getRelation(): MorphToMany
+    {
+		[$builder, $parent] = $this->getRelationArguments();
 
 		return new MorphToMany($builder, $parent, 'taggable', 'taggables', 'taggable_id', 'tag_id');
 	}
 
 
-	public function getRelationArguments()
-	{
-		$parent = m::mock(Model::class);
+	public function getRelationArguments():array
+    {
+        $parent = m::mock(Model::class);
 		$parent->shouldReceive('getMorphClass')->andReturn(get_class($parent));
 		$parent->shouldReceive('getKey')->andReturn(1);
 		$parent->shouldReceive('getCreatedAtColumn')->andReturn('created_at');
@@ -116,5 +116,5 @@ class DatabaseEloquentMorphToManyTest extends BackwardCompatibleTestCase
 }
 
 class EloquentMorphToManyModelStub extends Illuminate\Database\Eloquent\Model {
-	protected $guarded = [];
+	protected array $guarded = [];
 }
