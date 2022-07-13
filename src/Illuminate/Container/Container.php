@@ -2,6 +2,7 @@
 
 use Closure;
 use ArrayAccess;
+use Illuminate\Support\Reflector;
 use ReflectionClass;
 use ReflectionParameter;
 
@@ -115,7 +116,7 @@ class Container implements ArrayAccess {
 		// alias with the container so that it can be used as a shortcut for it.
 		if (is_array($abstract))
 		{
-			list($abstract, $alias) = $this->extractAlias($abstract);
+			[$abstract, $alias] = $this->extractAlias($abstract);
 
 			$this->alias($abstract, $alias);
 		}
@@ -294,7 +295,7 @@ class Container implements ArrayAccess {
 		// will be registered with the container so we can resolve it out later.
 		if (is_array($abstract))
 		{
-			list($abstract, $alias) = $this->extractAlias($abstract);
+			[$abstract, $alias] = $this->extractAlias($abstract);
 
 			$this->alias($abstract, $alias);
 		}
@@ -552,7 +553,7 @@ class Container implements ArrayAccess {
 
 		foreach ($parameters as $parameter)
 		{
-			$dependency = $parameter->getClass();
+            $dependency = Reflector::getParameterClassName($parameter);
 
 			// If the class is null, it means the dependency is a string or some other
 			// primitive type which we can not resolve since it is not a class and
@@ -571,7 +572,7 @@ class Container implements ArrayAccess {
 			}
 		}
 
-		return (array) $dependencies;
+		return $dependencies;
 	}
 
 	/**
@@ -606,7 +607,7 @@ class Container implements ArrayAccess {
 	{
 		try
 		{
-			return $this->make($parameter->getClass()->name);
+			return $this->make(Reflector::getParameterClassName($parameter));
 		}
 
 		// If we can not resolve the class instance, we will check to see if the value
@@ -790,8 +791,8 @@ class Container implements ArrayAccess {
 	 * @param  string  $key
 	 * @return bool
 	 */
-	public function offsetExists($key)
-	{
+	public function offsetExists($key): bool
+    {
 		return isset($this->bindings[$key]);
 	}
 
@@ -801,8 +802,8 @@ class Container implements ArrayAccess {
 	 * @param  string  $key
 	 * @return mixed
 	 */
-	public function offsetGet($key)
-	{
+	public function offsetGet($key): mixed
+    {
 		return $this->make($key);
 	}
 
@@ -813,8 +814,8 @@ class Container implements ArrayAccess {
 	 * @param  mixed   $value
 	 * @return void
 	 */
-	public function offsetSet($key, $value)
-	{
+	public function offsetSet($key, $value): void
+    {
 		// If the value is not a Closure, we will make it one. This simply gives
 		// more "drop-in" replacement functionality for the Pimple which this
 		// container's simplest functions are base modeled and built after.
@@ -835,8 +836,8 @@ class Container implements ArrayAccess {
 	 * @param  string  $key
 	 * @return void
 	 */
-	public function offsetUnset($key)
-	{
+	public function offsetUnset($key): void
+    {
 		unset($this->bindings[$key], $this->instances[$key], $this->resolved[$key]);
 	}
 
