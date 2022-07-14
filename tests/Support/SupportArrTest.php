@@ -3,6 +3,7 @@
 namespace Support;
 
 use ArrayObject;
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestCase;
@@ -524,5 +525,84 @@ class SupportArrTest extends TestCase
         $array = Arr::pluck($array, 'developer.name');
 
         $this->assertEquals(['Taylor', 'Abigail'], $array);
+    }
+
+    public function testPluckWithArrayValue(): void
+    {
+        $array = [
+            ['developer' => ['name' => 'Taylor']],
+            ['developer' => ['name' => 'Abigail']],
+        ];
+        $array = Arr::pluck($array, ['developer', 'name']);
+        $this->assertEquals(['Taylor', 'Abigail'], $array);
+    }
+
+    public function testPluckWithKeys(): void
+    {
+        $array = [
+            ['name' => 'Taylor', 'role' => 'developer'],
+            ['name' => 'Abigail', 'role' => 'developer'],
+        ];
+
+        $test1 = Arr::pluck($array, 'role', 'name');
+        $test2 = Arr::pluck($array, null, 'name');
+
+        $this->assertEquals([
+            'Taylor' => 'developer',
+            'Abigail' => 'developer',
+        ], $test1);
+
+        $this->assertEquals([
+            'Taylor' => ['name' => 'Taylor', 'role' => 'developer'],
+            'Abigail' => ['name' => 'Abigail', 'role' => 'developer'],
+        ], $test2);
+    }
+
+    public function testPluckWithCarbonKeys(): void
+    {
+        $array = [
+            ['start' => new Carbon('2017-07-25 00:00:00'), 'end' => new Carbon('2017-07-30 00:00:00')],
+        ];
+        $array = Arr::pluck($array, 'end', 'start');
+        $this->assertEquals(['2017-07-25 00:00:00' => '2017-07-30 00:00:00'], $array);
+    }
+
+    public function testArrayPluckWithArrayAndObjectValues(): void
+    {
+        $array = [(object) ['name' => 'taylor', 'email' => 'foo'], ['name' => 'dayle', 'email' => 'bar']];
+        $this->assertEquals(['taylor', 'dayle'], Arr::pluck($array, 'name'));
+        $this->assertEquals(['taylor' => 'foo', 'dayle' => 'bar'], Arr::pluck($array, 'email', 'name'));
+    }
+
+    public function testArrayPluckWithNestedKeys(): void
+    {
+        $array = [['user' => ['taylor', 'otwell']], ['user' => ['dayle', 'rees']]];
+        $this->assertEquals(['taylor', 'dayle'], Arr::pluck($array, 'user.0'));
+        $this->assertEquals(['taylor', 'dayle'], Arr::pluck($array, ['user', 0]));
+        $this->assertEquals(['taylor' => 'otwell', 'dayle' => 'rees'], Arr::pluck($array, 'user.1', 'user.0'));
+        $this->assertEquals(['taylor' => 'otwell', 'dayle' => 'rees'], Arr::pluck($array, ['user', 1], ['user', 0]));
+    }
+
+    public function testArrayPluckWithNestedArrays(): void
+    {
+        $array = [
+            [
+                'account' => 'a',
+                'users' => [
+                    ['first' => 'taylor', 'last' => 'otwell', 'email' => 'taylorotwell@gmail.com'],
+                ],
+            ],
+            [
+                'account' => 'b',
+                'users' => [
+                    ['first' => 'abigail', 'last' => 'otwell'],
+                    ['first' => 'dayle', 'last' => 'rees'],
+                ],
+            ],
+        ];
+
+        $this->assertEquals([['taylor'], ['abigail', 'dayle']], Arr::pluck($array, 'users.*.first'));
+        $this->assertEquals(['a' => ['taylor'], 'b' => ['abigail', 'dayle']], Arr::pluck($array, 'users.*.first', 'account'));
+        $this->assertEquals([['taylorotwell@gmail.com'], [null, null]], Arr::pluck($array, 'users.*.email'));
     }
 }

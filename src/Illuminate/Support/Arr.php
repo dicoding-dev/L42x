@@ -487,12 +487,12 @@ class Arr {
 	 * Pluck an array of values from an array.
 	 *
 	 * @param array       $array
-	 * @param string      $value
+	 * @param array|string|null      $value
 	 * @param string|null $key
 	 *
 	 * @return array
 	 */
-	public static function pluck(array $array, string $value, string $key = null): array
+	public static function pluck(array $array, $value = null, $key = null): array
     {
         $results = [];
 
