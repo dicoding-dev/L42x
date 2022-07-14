@@ -179,6 +179,28 @@ class Arr {
         return $array;
 	}
 
+    /**
+     * Determine if the given key exists in the provided array.
+     *
+     * @param \ArrayAccess|array $array
+     * @param int|string         $key
+     *
+     * @return bool
+     */
+    public static function exists(ArrayAccess|array $array, int|string $key): bool
+    {
+        if ($array instanceof ArrayAccess) {
+            return $array->offsetExists($key);
+        }
+
+        if (is_float($key)) {
+            $key = (string) $key;
+        }
+
+        return array_key_exists($key, $array);
+    }
+
+
 	/**
 	 * Fetch a flattened array of a nested array element.
 	 *
