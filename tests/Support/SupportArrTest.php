@@ -93,4 +93,16 @@ class SupportArrTest extends TestCase
         $this->assertEquals(['name'], $keys);
         $this->assertEquals(['Desk'], $values);
     }
+
+    public function testDot(): void
+    {
+        $this->assertEquals(['foo.bar' => 'baz'], Arr::dot(['foo' => ['bar' => 'baz']]));
+        $this->assertEquals([], Arr::dot([]));
+        $this->assertEquals(['foo' => []], Arr::dot(['foo' => []]));
+        $this->assertEquals(['foo.bar' => []], Arr::dot(['foo' => ['bar' => []]]));
+        $this->assertEquals(
+            ['name' => 'taylor', 'languages.php' => true],
+            Arr::dot(['name' => 'taylor', 'languages' => ['php' => true]])
+        );
+    }
 }
