@@ -806,4 +806,10 @@ class SupportArrTest extends TestCase
 
         $this->assertEquals(['10' => 1, 20 => 2], $array);
     }
+
+    public function testWhereNotNull(): void
+    {
+        $array = array_values(Arr::whereNotNull([null, 0, false, '', null, []]));
+        $this->assertEquals([0, false, '', []], $array);
+    }
 }

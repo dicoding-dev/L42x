@@ -694,8 +694,8 @@ class Arr {
 	 * @param  \Closure  $callback
 	 * @return array
 	 */
-	public static function where($array, Closure $callback)
-	{
+	public static function where($array, Closure $callback): array
+    {
 		$filtered = array();
 
 		foreach ($array as $key => $value)
@@ -705,6 +705,19 @@ class Arr {
 
 		return $filtered;
 	}
+
+    /**
+     * Filter items where the value is not null.
+     *
+     * @param  array  $array
+     * @return array
+     */
+    public static function whereNotNull($array)
+    {
+        return static::where($array, function ($key, $value) {
+            return ! is_null($value);
+        });
+    }
 
     /**
      * If the given value is not an array and not null, wrap it in one.
