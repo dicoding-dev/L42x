@@ -342,28 +342,39 @@ class Arr {
 	/**
 	 * Get an item from an array using "dot" notation.
 	 *
-	 * @param  array   $array
-	 * @param  string  $key
-	 * @param  mixed   $default
+	 * @param \ArrayAccess|array|null $array
+	 * @param string|null             $key
+	 * @param  mixed             $default
+	 *
 	 * @return mixed
 	 */
-	public static function get($array, $key, $default = null)
+	public static function get($array, $key = null, $default = null)
 	{
-		if (is_null($key)) return $array;
+        if (! static::accessible($array)) {
+            return value($default);
+        }
 
-		if (isset($array[$key])) return $array[$key];
+        if (is_null($key)) {
+            return $array;
+        }
 
-		foreach (explode('.', $key) as $segment)
-		{
-			if ( ! is_array($array) || ! array_key_exists($segment, $array))
-			{
-				return value($default);
-			}
+        if (static::exists($array, $key)) {
+            return $array[$key];
+        }
 
-			$array = $array[$segment];
-		}
+        if (! str_contains($key, '.')) {
+            return $array[$key] ?? value($default);
+        }
 
-		return $array;
+        foreach (explode('.', $key) as $segment) {
+            if (static::accessible($array) && static::exists($array, $segment)) {
+                $array = $array[$segment];
+            } else {
+                return value($default);
+            }
+        }
+
+        return $array;
 	}
 
 	/**
