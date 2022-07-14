@@ -722,6 +722,48 @@ class SupportArrTest extends TestCase
         $this->assertSame('foo=bar&bar=', Arr::query(['foo' => 'bar', 'bar' => '']));
     }
 
+    public function testRandom()
+    {
+        $random = Arr::random(['foo', 'bar', 'baz']);
+        $this->assertContains($random, ['foo', 'bar', 'baz']);
+
+        $random = Arr::random(['foo', 'bar', 'baz'], 0);
+        $this->assertIsArray($random);
+        $this->assertCount(0, $random);
+
+        $random = Arr::random(['foo', 'bar', 'baz'], 1);
+        $this->assertIsArray($random);
+        $this->assertCount(1, $random);
+        $this->assertContains($random[0], ['foo', 'bar', 'baz']);
+
+        $random = Arr::random(['foo', 'bar', 'baz'], 2);
+        $this->assertIsArray($random);
+        $this->assertCount(2, $random);
+        $this->assertContains($random[0], ['foo', 'bar', 'baz']);
+        $this->assertContains($random[1], ['foo', 'bar', 'baz']);
+
+        $random = Arr::random(['foo', 'bar', 'baz'], '0');
+        $this->assertIsArray($random);
+        $this->assertCount(0, $random);
+
+        $random = Arr::random(['foo', 'bar', 'baz'], '1');
+        $this->assertIsArray($random);
+        $this->assertCount(1, $random);
+        $this->assertContains($random[0], ['foo', 'bar', 'baz']);
+
+        $random = Arr::random(['foo', 'bar', 'baz'], '2');
+        $this->assertIsArray($random);
+        $this->assertCount(2, $random);
+        $this->assertContains($random[0], ['foo', 'bar', 'baz']);
+        $this->assertContains($random[1], ['foo', 'bar', 'baz']);
+
+        // preserve keys
+        $random = Arr::random(['one' => 'foo', 'two' => 'bar', 'three' => 'baz'], 2, true);
+        $this->assertIsArray($random);
+        $this->assertCount(2, $random);
+        $this->assertCount(2, array_intersect_assoc(['one' => 'foo', 'two' => 'bar', 'three' => 'baz'], $random));
+    }
+
     public function testSet(): void
     {
         $array = ['products' => ['desk' => ['price' => 100]]];
