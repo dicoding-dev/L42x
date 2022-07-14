@@ -4,6 +4,7 @@ use ArgumentCountError;
 use ArrayAccess;
 use Closure;
 use Illuminate\Support\Traits\MacroableTrait;
+use InvalidArgumentException;
 
 class Arr {
 

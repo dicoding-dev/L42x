@@ -6,6 +6,7 @@ use ArrayObject;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -762,6 +763,42 @@ class SupportArrTest extends TestCase
         $this->assertIsArray($random);
         $this->assertCount(2, $random);
         $this->assertCount(2, array_intersect_assoc(['one' => 'foo', 'two' => 'bar', 'three' => 'baz'], $random));
+    }
+
+    public function testRandomOnEmptyArray(): void
+    {
+        $random = Arr::random([], 0);
+        $this->assertIsArray($random);
+        $this->assertCount(0, $random);
+
+        $random = Arr::random([], '0');
+        $this->assertIsArray($random);
+        $this->assertCount(0, $random);
+    }
+
+    public function testRandomThrowsAnErrorWhenRequestingMoreItemsThanAreAvailable(): void
+    {
+        $exceptions = 0;
+
+        try {
+            Arr::random([]);
+        } catch (InvalidArgumentException $e) {
+            $exceptions++;
+        }
+
+        try {
+            Arr::random([], 1);
+        } catch (InvalidArgumentException $e) {
+            $exceptions++;
+        }
+
+        try {
+            Arr::random([], 2);
+        } catch (InvalidArgumentException $e) {
+            $exceptions++;
+        }
+
+        $this->assertSame(3, $exceptions);
     }
 
     public function testSet(): void
