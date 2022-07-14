@@ -443,6 +443,19 @@ class Arr {
         return false;
     }
 
+    /**
+     * Determines if an array is associative.
+     *
+     * An array is "associative" if it doesn't have sequential numerical keys beginning with zero.
+     *
+     * @param  array  $array
+     * @return bool
+     */
+    public static function isAssoc(array $array): bool
+    {
+        return ! array_is_list($array);
+    }
+
 	/**
 	 * Get a subset of the items from the given array.
 	 *
