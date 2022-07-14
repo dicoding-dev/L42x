@@ -418,7 +418,7 @@ class Arr {
      * @param  string|array  $keys
      * @return bool
      */
-    public static function hasAny($array, $keys)
+    public static function hasAny($array, $keys): bool
     {
         if (is_null($keys)) {
             return false;
