@@ -660,6 +660,17 @@ class Arr {
         return $value;
 	}
 
+    /**
+     * Convert the array into a query string.
+     *
+     * @param  array  $array
+     * @return string
+     */
+    public static function query($array): string
+    {
+        return http_build_query($array, '', '&', PHP_QUERY_RFC3986);
+    }
+
 	/**
 	 * Set an array item to a given value using "dot" notation.
 	 *
