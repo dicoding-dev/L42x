@@ -146,6 +146,24 @@ class Arr {
         return $results;
 	}
 
+    /**
+     * Convert a flatten "dot" notation array into an expanded array.
+     *
+     * @param iterable $array
+     *
+     * @return array
+     */
+    public static function undot(iterable $array): array
+    {
+        $results = [];
+
+        foreach ($array as $key => $value) {
+            static::set($results, $key, $value);
+        }
+
+        return $results;
+    }
+
 	/**
 	 * Get all of the given array except for a specified array of items.
 	 *
