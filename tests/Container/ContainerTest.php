@@ -75,6 +75,33 @@ class ContainerTest extends BackwardCompatibleTestCase {
 		$this->assertSame($var1, $var2);
 	}
 
+    public function testSingletonIfDoesntRegisterIfBindingAlreadyRegistered(): void
+    {
+        $container = new Container;
+        $container->singleton('class', function () {
+            return new stdClass;
+        });
+        $firstInstantiation = $container->make('class');
+        $container->singletonIf('class', function () {
+            return new ContainerConcreteStub;
+        });
+        $secondInstantiation = $container->make('class');
+        $this->assertSame($firstInstantiation, $secondInstantiation);
+    }
+
+    public function testSingletonIfDoesRegisterIfBindingNotRegisteredYet(): void
+    {
+        $container = new Container;
+        $container->singleton('class', function () {
+            return new stdClass;
+        });
+        $container->singletonIf('otherClass', function () {
+            return new ContainerConcreteStub;
+        });
+        $firstInstantiation = $container->make('otherClass');
+        $secondInstantiation = $container->make('otherClass');
+        $this->assertSame($firstInstantiation, $secondInstantiation);
+    }
 
 	public function testAbstractToConcreteResolution(): void
     {
