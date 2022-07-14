@@ -196,4 +196,21 @@ class SupportArrTest extends TestCase
         $this->assertSame('bar', $value3);
         $this->assertSame('baz', $value4);
     }
+
+    public function testLast(): void
+    {
+        $array = [100, 200, 300];
+
+        $last = Arr::last($array, function ($value) {
+            return $value < 250;
+        });
+        $this->assertEquals(200, $last);
+
+        $last = Arr::last($array, function ($value, $key) {
+            return $key < 2;
+        });
+        $this->assertEquals(200, $last);
+
+        $this->assertEquals(300, Arr::last($array));
+    }
 }

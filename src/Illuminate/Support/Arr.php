@@ -261,14 +261,19 @@ class Arr {
 	/**
 	 * Return the last element in an array passing a given truth test.
 	 *
-	 * @param  array     $array
-	 * @param  \Closure  $callback
-	 * @param  mixed     $default
+	 * @param array         $array
+	 * @param \Closure|null $callback
+	 * @param  mixed        $default
+	 *
 	 * @return mixed
 	 */
-	public static function last($array, $callback, $default = null)
-	{
-		return static::first(array_reverse($array), $callback, $default);
+	public static function last(array $array, ?Closure $callback = null, $default = null): mixed
+    {
+        if (is_null($callback)) {
+            return empty($array) ? value($default) : end($array);
+        }
+
+        return static::first(array_reverse($array, true), $callback, $default);
 	}
 
 	/**
