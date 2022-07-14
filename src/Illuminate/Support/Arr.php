@@ -725,7 +725,7 @@ class Arr {
      * @param  mixed  $value
      * @return array
      */
-    public static function wrap($value)
+    public static function wrap($value): array
     {
         if (is_null($value)) {
             return [];
