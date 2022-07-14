@@ -384,7 +384,7 @@ class Arr {
 	 * @param  string|array  $keys
 	 * @return bool
 	 */
-	public static function has($array, $keys)
+	public static function has($array, $keys): bool
 	{
         $keys = (array) $keys;
 
