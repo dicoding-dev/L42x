@@ -86,4 +86,11 @@ class SupportArrTest extends TestCase
         // Not really a proper usage, still, test for preserving BC
         $this->assertSame([[]], Arr::crossJoin());
     }
+
+    public function testDivide(): void
+    {
+        [$keys, $values] = Arr::divide(['name' => 'Desk']);
+        $this->assertEquals(['name'], $keys);
+        $this->assertEquals(['Desk'], $values);
+    }
 }

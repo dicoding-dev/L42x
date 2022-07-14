@@ -114,11 +114,12 @@ class Arr {
 	/**
 	 * Divide an array into two arrays. One with keys and the other with values.
 	 *
-	 * @param  array  $array
+	 * @param array $array
+	 *
 	 * @return array
 	 */
-	public static function divide($array)
-	{
+	public static function divide(array $array): array
+    {
 		return array(array_keys($array), array_values($array));
 	}
 
