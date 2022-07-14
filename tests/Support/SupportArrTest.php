@@ -252,4 +252,18 @@ class SupportArrTest extends TestCase
         $array = [['#foo', new Collection(['#bar', ['#zap']])], ['#baz']];
         $this->assertEquals(['#foo', '#bar', '#zap', '#baz'], Arr::flatten($array));
     }
+
+    public function testFlattenWithDepth(): void
+    {
+        // No depth flattens recursively
+        $array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+        $this->assertEquals(['#foo', '#bar', '#baz', '#zap'], Arr::flatten($array));
+
+        // Specifying a depth only flattens to that depth
+        $array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+        $this->assertEquals(['#foo', ['#bar', ['#baz']], '#zap'], Arr::flatten($array, 1));
+
+        $array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+        $this->assertEquals(['#foo', '#bar', ['#baz'], '#zap'], Arr::flatten($array, 2));
+    }
 }
