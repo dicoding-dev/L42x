@@ -560,6 +560,20 @@ class Arr {
         return [$value, $key];
     }
 
+    /**
+     * Prepend the key names of an associative array.
+     *
+     * @param  array  $array
+     * @param  string  $prependWith
+     * @return array
+     */
+    public static function prependKeysWith($array, $prependWith): array
+    {
+        return Collection::make($array)->mapWithKeys(function ($item, $key) use ($prependWith) {
+            return [$prependWith.$key => $item];
+        })->all();
+    }
+
 	/**
 	 * Get a value from the array, and remove it.
 	 *
