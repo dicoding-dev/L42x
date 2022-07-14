@@ -258,6 +258,18 @@ class Arr {
         return value($default);
 	}
 
+    /**
+     * Key an associative array by a field or using a callback.
+     *
+     * @param  array  $array
+     * @param  callable|array|string  $keyBy
+     * @return array
+     */
+    public static function keyBy($array, $keyBy): array
+    {
+        return Collection::make($array)->keyBy($keyBy)->all();
+    }
+
 	/**
 	 * Return the last element in an array passing a given truth test.
 	 *

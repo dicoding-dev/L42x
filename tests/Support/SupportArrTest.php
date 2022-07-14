@@ -199,6 +199,21 @@ class SupportArrTest extends TestCase
         $this->assertSame('baz', $value4);
     }
 
+    public function testKeyBy(): void
+    {
+        $array = [
+            ['id' => '123', 'data' => 'abc'],
+            ['id' => '345', 'data' => 'def'],
+            ['id' => '498', 'data' => 'hgi'],
+        ];
+
+        $this->assertEquals([
+            '123' => ['id' => '123', 'data' => 'abc'],
+            '345' => ['id' => '345', 'data' => 'def'],
+            '498' => ['id' => '498', 'data' => 'hgi'],
+        ], Arr::keyBy($array, 'id'));
+    }
+
     public function testLast(): void
     {
         $array = [100, 200, 300];
