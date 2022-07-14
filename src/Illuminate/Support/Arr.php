@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Support;
 
+use ArgumentCountError;
 use ArrayAccess;
 use Closure;
 use Illuminate\Support\Traits\MacroableTrait;
@@ -520,6 +521,26 @@ class Arr {
     public static function isList(array $array): bool
     {
         return array_is_list($array);
+    }
+
+    /**
+     * Run a map over each of the items in the array.
+     *
+     * @param  array  $array
+     * @param  callable  $callback
+     * @return array
+     */
+    public static function map(array $array, callable $callback): array
+    {
+        $keys = array_keys($array);
+
+        try {
+            $items = array_map($callback, $array, $keys);
+        } catch (ArgumentCountError) {
+            $items = array_map($callback, $array);
+        }
+
+        return array_combine($keys, $items);
     }
 
 	/**

@@ -501,6 +501,25 @@ class SupportArrTest extends TestCase
         $this->assertFalse(Arr::isList(['foo' => 'bar', 'baz' => 'qux']));
     }
 
+    public function testMap(): void
+    {
+        $data = ['first' => 'taylor', 'last' => 'otwell'];
+        $mapped = Arr::map($data, function ($value, $key) {
+            return $key.'-'.strrev($value);
+        });
+        $this->assertEquals(['first' => 'first-rolyat', 'last' => 'last-llewto'], $mapped);
+        $this->assertEquals(['first' => 'taylor', 'last' => 'otwell'], $data);
+    }
+
+    public function testMapByReference(): void
+    {
+        $data = ['first' => 'taylor', 'last' => 'otwell'];
+        $mapped = Arr::map($data, 'strrev');
+
+        $this->assertEquals(['first' => 'rolyat', 'last' => 'llewto'], $mapped);
+        $this->assertEquals(['first' => 'taylor', 'last' => 'otwell'], $data);
+    }
+
     public function testOnly(): void
     {
         $array = ['name' => 'Desk', 'price' => 100, 'orders' => 10];
