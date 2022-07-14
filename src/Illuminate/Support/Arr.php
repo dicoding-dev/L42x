@@ -601,6 +601,26 @@ class Arr {
 		return $array;
 	}
 
+    /**
+     * Shuffle the given array and return the result.
+     *
+     * @param  array  $array
+     * @param  int|null  $seed
+     * @return array
+     */
+    public static function shuffle($array, $seed = null): array
+    {
+        if (is_null($seed)) {
+            shuffle($array);
+        } else {
+            mt_srand($seed);
+            shuffle($array);
+            mt_srand();
+        }
+
+        return $array;
+    }
+
 	/**
 	 * Sort the array using the given Closure.
 	 *

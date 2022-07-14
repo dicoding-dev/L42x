@@ -673,4 +673,12 @@ class SupportArrTest extends TestCase
         $array = [1 => 'test'];
         $this->assertEquals([1 => 'hAz'], Arr::set($array, 1, 'hAz'));
     }
+
+    public function testShuffleWithSeed(): void
+    {
+        $this->assertEquals(
+            Arr::shuffle(range(0, 100, 10), 1234),
+            Arr::shuffle(range(0, 100, 10), 1234)
+        );
+    }
 }
