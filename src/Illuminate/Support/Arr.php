@@ -624,12 +624,13 @@ class Arr {
 	/**
 	 * Sort the array using the given Closure.
 	 *
-	 * @param  array     $array
-	 * @param  \Closure  $callback
+	 * @param array     $array
+	 * @param  callable|array|string|null $callback
+	 *
 	 * @return array
 	 */
-	public static function sort($array, Closure $callback)
-	{
+	public static function sort(array $array, $callback = null): array
+    {
 		return Collection::make($array)->sortBy($callback)->all();
 	}
 

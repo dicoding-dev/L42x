@@ -681,4 +681,30 @@ class SupportArrTest extends TestCase
             Arr::shuffle(range(0, 100, 10), 1234)
         );
     }
+
+    public function testSort(): void
+    {
+        $unsorted = [
+            ['name' => 'Desk'],
+            ['name' => 'Chair'],
+        ];
+
+        $expected = [
+            ['name' => 'Chair'],
+            ['name' => 'Desk'],
+        ];
+
+        $sorted = array_values(Arr::sort($unsorted));
+        $this->assertEquals($expected, $sorted);
+
+        // sort with closure
+        $sortedWithClosure = array_values(Arr::sort($unsorted, function ($value) {
+            return $value['name'];
+        }));
+        $this->assertEquals($expected, $sortedWithClosure);
+
+        // sort with dot notation
+        $sortedWithDotNotation = array_values(Arr::sort($unsorted, 'name'));
+        $this->assertEquals($expected, $sortedWithDotNotation);
+    }
 }
