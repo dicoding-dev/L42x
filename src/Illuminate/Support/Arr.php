@@ -276,19 +276,35 @@ class Arr {
         return static::first(array_reverse($array, true), $callback, $default);
 	}
 
-	/**
-	 * Flatten a multi-dimensional array into a single level.
-	 *
-	 * @param  array  $array
-	 * @return array
-	 */
-	public static function flatten($array)
-	{
-		$return = array();
+    /**
+     * Flatten a multi-dimensional array into a single level.
+     *
+     * @param array $array
+     * @param int   $depth
+     *
+     * @return array
+     */
+	public static function flatten(array $array, $depth = INF): array
+    {
+        $result = [];
 
-		array_walk_recursive($array, function($x) use (&$return) { $return[] = $x; });
+        foreach ($array as $item) {
+            $item = $item instanceof Collection ? $item->all() : $item;
 
-		return $return;
+            if (! is_array($item)) {
+                $result[] = $item;
+            } else {
+                $values = $depth === 1
+                    ? array_values($item)
+                    : static::flatten($item, $depth - 1);
+
+                foreach ($values as $value) {
+                    $result[] = $value;
+                }
+            }
+        }
+
+        return $result;
 	}
 
 	/**

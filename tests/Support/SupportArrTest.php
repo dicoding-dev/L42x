@@ -213,4 +213,43 @@ class SupportArrTest extends TestCase
 
         $this->assertEquals(300, Arr::last($array));
     }
+
+    public function testFlatten(): void
+    {
+        // Flat arrays are unaffected
+        $array = ['#foo', '#bar', '#baz'];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Nested arrays are flattened with existing flat items
+        $array = [['#foo', '#bar'], '#baz'];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Flattened array includes "null" items
+        $array = [['#foo', null], '#baz', null];
+        $this->assertEquals(['#foo', null, '#baz', null], Arr::flatten($array));
+
+        // Sets of nested arrays are flattened
+        $array = [['#foo', '#bar'], ['#baz']];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Deeply nested arrays are flattened
+        $array = [['#foo', ['#bar']], ['#baz']];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Nested arrays are flattened alongside arrays
+        $array = [new Collection(['#foo', '#bar']), ['#baz']];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Nested arrays containing plain arrays are flattened
+        $array = [new Collection(['#foo', ['#bar']]), ['#baz']];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Nested arrays containing arrays are flattened
+        $array = [['#foo', new Collection(['#bar'])], ['#baz']];
+        $this->assertEquals(['#foo', '#bar', '#baz'], Arr::flatten($array));
+
+        // Nested arrays containing arrays containing arrays are flattened
+        $array = [['#foo', new Collection(['#bar', ['#zap']])], ['#baz']];
+        $this->assertEquals(['#foo', '#bar', '#zap', '#baz'], Arr::flatten($array));
+    }
 }
