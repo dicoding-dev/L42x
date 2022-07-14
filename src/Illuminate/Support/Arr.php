@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Support;
 
+use ArrayAccess;
 use Closure;
 use Illuminate\Support\Traits\MacroableTrait;
 
@@ -7,16 +8,28 @@ class Arr {
 
 	use MacroableTrait;
 
+    /**
+     * Determine whether the given value is array accessible.
+     *
+     * @param  mixed  $value
+     * @return bool
+     */
+    public static function accessible($value): bool
+    {
+        return is_array($value) || $value instanceof ArrayAccess;
+    }
+
 	/**
 	 * Add an element to an array using "dot" notation if it doesn't exist.
 	 *
-	 * @param  array   $array
-	 * @param  string  $key
-	 * @param  mixed   $value
+	 * @param array  $array
+	 * @param string $key
+	 * @param  mixed $value
+	 *
 	 * @return array
 	 */
-	public static function add($array, $key, $value)
-	{
+	public static function add(array $array, string $key, mixed $value): array
+    {
 		if (is_null(static::get($array, $key)))
 		{
 			static::set($array, $key, $value);
@@ -38,7 +51,7 @@ class Arr {
 
 		foreach ($array as $key => $value)
 		{
-			list($innerKey, $innerValue) = call_user_func($callback, $key, $value);
+			[$innerKey, $innerValue] = call_user_func($callback, $key, $value);
 
 			$results[$innerKey] = $innerValue;
 		}
@@ -181,7 +194,7 @@ class Arr {
 
 		foreach ((array) $keys as $key)
 		{
-			$parts = explode('.', $key);
+			$parts = explode('.', (string) $key);
 
 			while (count($parts) > 1)
 			{
@@ -383,4 +396,18 @@ class Arr {
 		return $filtered;
 	}
 
+    /**
+     * If the given value is not an array and not null, wrap it in one.
+     *
+     * @param  mixed  $value
+     * @return array
+     */
+    public static function wrap($value)
+    {
+        if (is_null($value)) {
+            return [];
+        }
+
+        return is_array($value) ? $value : [$value];
+    }
 }
