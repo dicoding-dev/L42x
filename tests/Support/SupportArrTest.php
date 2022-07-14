@@ -784,4 +784,26 @@ class SupportArrTest extends TestCase
 
         $this->assertSame('font-bold mt-4 ml-2', $classes);
     }
+
+    public function testWhere(): void
+    {
+        $array = [100, '200', 300, '400', 500];
+
+        $array = Arr::where($array, function ($key, $value) {
+            return is_string($value);
+        });
+
+        $this->assertEquals([1 => '200', 3 => '400'], $array);
+    }
+
+    public function testWhereKey(): void
+    {
+        $array = ['10' => 1, 'foo' => 3, 20 => 2];
+
+        $array = Arr::where($array, function ($key, $value) {
+            return is_numeric($key);
+        });
+
+        $this->assertEquals(['10' => 1, 20 => 2], $array);
+    }
 }
