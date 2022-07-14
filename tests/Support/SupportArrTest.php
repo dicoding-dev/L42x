@@ -32,4 +32,13 @@ class SupportArrTest extends TestCase
         $this->assertEquals([1 => 'hAz'], Arr::add([], 1, 'hAz'));
         $this->assertEquals([1 => [1 => 'hAz']], Arr::add([], 1.1, 'hAz'));
     }
+
+    public function testCollapse(): void
+    {
+        $data = [['foo', 'bar'], ['baz']];
+        $this->assertEquals(['foo', 'bar', 'baz'], Arr::collapse($data));
+
+        $array = [[1], [2], [3], ['foo', 'bar'], new Collection(['baz', 'boom'])];
+        $this->assertEquals([1, 2, 3, 'foo', 'bar', 'baz', 'boom'], Arr::collapse($array));
+    }
 }

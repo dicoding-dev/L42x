@@ -41,12 +41,13 @@ class Arr {
 	/**
 	 * Build a new array using a callback.
 	 *
-	 * @param  array     $array
-	 * @param  \Closure  $callback
+	 * @param array     $array
+	 * @param  \Closure $callback
+	 *
 	 * @return array
 	 */
-	public static function build($array, Closure $callback)
-	{
+	public static function build(array $array, Closure $callback): array
+    {
 		$results = array();
 
 		foreach ($array as $key => $value)
@@ -58,6 +59,30 @@ class Arr {
 
 		return $results;
 	}
+
+    /**
+     * Collapse an array of arrays into a single array.
+     *
+     * @param iterable $array
+     *
+     * @return array
+     */
+    public static function collapse(iterable $array): array
+    {
+        $results = [];
+
+        foreach ($array as $values) {
+            if ($values instanceof Collection) {
+                $values = $values->all();
+            } elseif (! is_array($values)) {
+                continue;
+            }
+
+            $results[] = $values;
+        }
+
+        return array_merge([], ...$results);
+    }
 
 	/**
 	 * Divide an array into two arrays. One with keys and the other with values.
