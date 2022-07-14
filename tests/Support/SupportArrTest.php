@@ -479,4 +479,50 @@ class SupportArrTest extends TestCase
         $this->assertEquals(['name' => 'Desk', 'price' => 100], $array);
         $this->assertEmpty(Arr::only($array, ['nonExistingKey']));
     }
+
+    public function testPluck(): void
+    {
+        $data = [
+            'post-1' => [
+                'comments' => [
+                    'tags' => [
+                        '#foo', '#bar',
+                    ],
+                ],
+            ],
+            'post-2' => [
+                'comments' => [
+                    'tags' => [
+                        '#baz',
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertEquals([
+            0 => [
+                'tags' => [
+                    '#foo', '#bar',
+                ],
+            ],
+            1 => [
+                'tags' => [
+                    '#baz',
+                ],
+            ],
+        ], Arr::pluck($data, 'comments'));
+
+        $this->assertEquals([['#foo', '#bar'], ['#baz']], Arr::pluck($data, 'comments.tags'));
+        $this->assertEquals([null, null], Arr::pluck($data, 'foo'));
+        $this->assertEquals([null, null], Arr::pluck($data, 'foo.bar'));
+
+        $array = [
+            ['developer' => ['name' => 'Taylor']],
+            ['developer' => ['name' => 'Abigail']],
+        ];
+
+        $array = Arr::pluck($array, 'developer.name');
+
+        $this->assertEquals(['Taylor', 'Abigail'], $array);
+    }
 }

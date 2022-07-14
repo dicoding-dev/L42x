@@ -493,29 +493,47 @@ class Arr {
 	 */
 	public static function pluck($array, $value, $key = null)
 	{
-		$results = array();
+        $results = [];
 
-		foreach ($array as $item)
-		{
-			$itemValue = is_object($item) ? $item->{$value} : $item[$value];
+        [$value, $key] = static::explodePluckParameters($value, $key);
 
-			// If the key is "null", we will just append the value to the array and keep
-			// looping. Otherwise we will key the array using the value of the key we
-			// received from the developer. Then we'll return the final array form.
-			if (is_null($key))
-			{
-				$results[] = $itemValue;
-			}
-			else
-			{
-				$itemKey = is_object($item) ? $item->{$key} : $item[$key];
+        foreach ($array as $item) {
+            $itemValue = data_get($item, $value);
 
-				$results[$itemKey] = $itemValue;
-			}
-		}
+            // If the key is "null", we will just append the value to the array and keep
+            // looping. Otherwise we will key the array using the value of the key we
+            // received from the developer. Then we'll return the final array form.
+            if (is_null($key)) {
+                $results[] = $itemValue;
+            } else {
+                $itemKey = data_get($item, $key);
 
-		return $results;
+                if (is_object($itemKey) && method_exists($itemKey, '__toString')) {
+                    $itemKey = (string) $itemKey;
+                }
+
+                $results[$itemKey] = $itemValue;
+            }
+        }
+
+        return $results;
 	}
+
+    /**
+     * Explode the "value" and "key" arguments passed to "pluck".
+     *
+     * @param  string|array  $value
+     * @param  string|array|null  $key
+     * @return array
+     */
+    protected static function explodePluckParameters($value, $key): array
+    {
+        $value = is_string($value) ? explode('.', $value) : $value;
+
+        $key = is_null($key) || is_array($key) ? $key : explode('.', $key);
+
+        return [$value, $key];
+    }
 
 	/**
 	 * Get a value from the array, and remove it.
