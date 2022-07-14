@@ -185,11 +185,11 @@ class Arr {
      * Determine if the given key exists in the provided array.
      *
      * @param \ArrayAccess|array $array
-     * @param int|string         $key
+     * @param int|float|string         $key
      *
      * @return bool
      */
-    public static function exists(ArrayAccess|array $array, int|string $key): bool
+    public static function exists(ArrayAccess|array $array, $key): bool
     {
         if ($array instanceof ArrayAccess) {
             return $array->offsetExists($key);
