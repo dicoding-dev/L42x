@@ -380,27 +380,35 @@ class Arr {
 	/**
 	 * Check if an item exists in an array using "dot" notation.
 	 *
-	 * @param  array   $array
-	 * @param  string  $key
+	 * @param  \ArrayAccess|array   $array
+	 * @param  string|array  $keys
 	 * @return bool
 	 */
-	public static function has($array, $key)
+	public static function has($array, $keys)
 	{
-		if (empty($array) || is_null($key)) return false;
+        $keys = (array) $keys;
 
-		if (array_key_exists($key, $array)) return true;
+        if (! $array || $keys === []) {
+            return false;
+        }
 
-		foreach (explode('.', $key) as $segment)
-		{
-			if ( ! is_array($array) || ! array_key_exists($segment, $array))
-			{
-				return false;
-			}
+        foreach ($keys as $key) {
+            $subKeyArray = $array;
 
-			$array = $array[$segment];
-		}
+            if (static::exists($array, $key)) {
+                continue;
+            }
 
-		return true;
+            foreach (explode('.', $key) as $segment) {
+                if (static::accessible($subKeyArray) && static::exists($subKeyArray, $segment)) {
+                    $subKeyArray = $subKeyArray[$segment];
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
 	}
 
 	/**
