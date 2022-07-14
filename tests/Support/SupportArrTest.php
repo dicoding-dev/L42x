@@ -199,6 +199,19 @@ class SupportArrTest extends TestCase
         $this->assertSame('baz', $value4);
     }
 
+    public function testJoin(): void
+    {
+        $this->assertSame('a, b, c', Arr::join(['a', 'b', 'c'], ', '));
+
+        $this->assertSame('a, b and c', Arr::join(['a', 'b', 'c'], ', ', ' and '));
+
+        $this->assertSame('a and b', Arr::join(['a', 'b'], ', ', ' and '));
+
+        $this->assertSame('a', Arr::join(['a'], ', ', ' and '));
+
+        $this->assertSame('', Arr::join([], ', ', ' and '));
+    }
+
     public function testKeyBy(): void
     {
         $array = [
