@@ -231,19 +231,31 @@ class Arr {
 	/**
 	 * Return the first element in an array passing a given truth test.
 	 *
-	 * @param  array     $array
-	 * @param  \Closure  $callback
-	 * @param  mixed     $default
+	 * @param array      $array
+	 * @param \Closure|null   $callback
+	 * @param mixed|null $default
+	 *
 	 * @return mixed
 	 */
-	public static function first($array, $callback, $default = null)
-	{
-		foreach ($array as $key => $value)
-		{
-			if (call_user_func($callback, $key, $value)) return $value;
-		}
+	public static function first(array $array, ?Closure $callback = null, mixed $default = null): mixed
+    {
+        if (is_null($callback)) {
+            if (empty($array)) {
+                return value($default);
+            }
 
-		return value($default);
+            foreach ($array as $item) {
+                return $item;
+            }
+        }
+
+        foreach ($array as $key => $value) {
+            if ($callback($value, $key)) {
+                return $value;
+            }
+        }
+
+        return value($default);
 	}
 
 	/**
