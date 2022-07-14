@@ -610,6 +610,26 @@ class Arr {
     }
 
     /**
+     * Push an item onto the beginning of an array.
+     *
+     * @param array  $array
+     * @param  mixed $value
+     * @param  mixed $key
+     *
+     * @return array
+     */
+    public static function prepend(array $array, $value, $key = null): array
+    {
+        if (func_num_args() == 2) {
+            array_unshift($array, $value);
+        } else {
+            $array = [$key => $value] + $array;
+        }
+
+        return $array;
+    }
+
+    /**
      * Prepend the key names of an associative array.
      *
      * @param  array  $array

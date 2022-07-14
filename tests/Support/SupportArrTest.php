@@ -653,6 +653,18 @@ class SupportArrTest extends TestCase
         $this->assertEquals([['taylorotwell@gmail.com'], [null, null]], Arr::pluck($array, 'users.*.email'));
     }
 
+    public function testPrepend(): void
+    {
+        $array = Arr::prepend(['one', 'two', 'three', 'four'], 'zero');
+        $this->assertEquals(['zero', 'one', 'two', 'three', 'four'], $array);
+
+        $array = Arr::prepend(['one' => 1, 'two' => 2], 0, 'zero');
+        $this->assertEquals(['zero' => 0, 'one' => 1, 'two' => 2], $array);
+
+        $array = Arr::prepend(['one' => 1, 'two' => 2], 0, null);
+        $this->assertEquals([null => 0, 'one' => 1, 'two' => 2], $array);
+    }
+
     public function testPrependKeysWith(): void
     {
         $array = [
