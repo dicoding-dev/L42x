@@ -316,27 +316,39 @@ class Arr {
 	 */
 	public static function forget(&$array, $keys)
 	{
-		$original =& $array;
+        $original = &$array;
 
-		foreach ((array) $keys as $key)
-		{
-			$parts = explode('.', (string) $key);
+        $keys = (array) $keys;
 
-			while (count($parts) > 1)
-			{
-				$part = array_shift($parts);
+        if (count($keys) === 0) {
+            return;
+        }
 
-				if (isset($array[$part]) && is_array($array[$part]))
-				{
-					$array =& $array[$part];
-				}
-			}
+        foreach ($keys as $key) {
+            // if the exact key exists in the top-level, remove it
+            if (static::exists($array, $key)) {
+                unset($array[$key]);
 
-			unset($array[array_shift($parts)]);
+                continue;
+            }
 
-			// clean up after each pass
-			$array =& $original;
-		}
+            $parts = explode('.', $key);
+
+            // clean up before each pass
+            $array = &$original;
+
+            while (count($parts) > 1) {
+                $part = array_shift($parts);
+
+                if (isset($array[$part]) && static::accessible($array[$part])) {
+                    $array = &$array[$part];
+                } else {
+                    continue 2;
+                }
+            }
+
+            unset($array[array_shift($parts)]);
+        }
 	}
 
 	/**
@@ -546,11 +558,11 @@ class Arr {
 	 */
 	public static function pull(&$array, $key, $default = null)
 	{
-		$value = static::get($array, $key, $default);
+        $value = static::get($array, $key, $default);
 
-		static::forget($array, $key);
+        static::forget($array, $key);
 
-		return $value;
+        return $value;
 	}
 
 	/**
