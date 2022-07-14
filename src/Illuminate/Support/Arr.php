@@ -167,13 +167,16 @@ class Arr {
 	/**
 	 * Get all of the given array except for a specified array of items.
 	 *
-	 * @param  array  $array
-	 * @param  array|string  $keys
+	 * @param array        $array
+	 * @param array|string $keys
+	 *
 	 * @return array
 	 */
-	public static function except($array, $keys)
-	{
-		return array_diff_key($array, array_flip((array) $keys));
+	public static function except(array $array, array|string $keys): array
+    {
+        static::forget($array, $keys);
+
+        return $array;
 	}
 
 	/**
