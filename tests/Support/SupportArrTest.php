@@ -765,4 +765,23 @@ class SupportArrTest extends TestCase
 
         $this->assertEquals($expect, Arr::sortRecursive($array));
     }
+
+    public function testToCssClasses(): void
+    {
+        $classes = Arr::toCssClasses([
+            'font-bold',
+            'mt-4',
+        ]);
+
+        $this->assertSame('font-bold mt-4', $classes);
+
+        $classes = Arr::toCssClasses([
+            'font-bold',
+            'mt-4',
+            'ml-2' => true,
+            'mr-2' => false,
+        ]);
+
+        $this->assertSame('font-bold mt-4 ml-2', $classes);
+    }
 }

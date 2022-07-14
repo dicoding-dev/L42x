@@ -663,6 +663,30 @@ class Arr {
         return $array;
     }
 
+    /**
+     * Conditionally compile classes from an array into a CSS class list.
+     *
+     * @param array $array
+     *
+     * @return string
+     */
+    public static function toCssClasses(array $array): string
+    {
+        $classList = static::wrap($array);
+
+        $classes = [];
+
+        foreach ($classList as $class => $constraint) {
+            if (is_numeric($class)) {
+                $classes[] = $constraint;
+            } elseif ($constraint) {
+                $classes[] = $class;
+            }
+        }
+
+        return implode(' ', $classes);
+    }
+
 	/**
 	 * Filter the array using the given Closure.
 	 *
