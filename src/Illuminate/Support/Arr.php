@@ -473,12 +473,13 @@ class Arr {
 	/**
 	 * Get a subset of the items from the given array.
 	 *
-	 * @param  array  $array
-	 * @param  array|string  $keys
+	 * @param array        $array
+	 * @param array|string $keys
+	 *
 	 * @return array
 	 */
-	public static function only($array, $keys)
-	{
+	public static function only(array $array, array|string $keys): array
+    {
 		return array_intersect_key($array, array_flip((array) $keys));
 	}
 

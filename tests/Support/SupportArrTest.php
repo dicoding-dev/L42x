@@ -471,4 +471,12 @@ class SupportArrTest extends TestCase
         $this->assertFalse(Arr::isList([0 => 'foo', 2 => 'bar']));
         $this->assertFalse(Arr::isList(['foo' => 'bar', 'baz' => 'qux']));
     }
+
+    public function testOnly(): void
+    {
+        $array = ['name' => 'Desk', 'price' => 100, 'orders' => 10];
+        $array = Arr::only($array, ['name', 'price']);
+        $this->assertEquals(['name' => 'Desk', 'price' => 100], $array);
+        $this->assertEmpty(Arr::only($array, ['nonExistingKey']));
+    }
 }
