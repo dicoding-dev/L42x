@@ -486,13 +486,14 @@ class Arr {
 	/**
 	 * Pluck an array of values from an array.
 	 *
-	 * @param  array   $array
-	 * @param  string  $value
-	 * @param  string  $key
+	 * @param array       $array
+	 * @param string      $value
+	 * @param string|null $key
+	 *
 	 * @return array
 	 */
-	public static function pluck($array, $value, $key = null)
-	{
+	public static function pluck(array $array, string $value, string $key = null): array
+    {
         $results = [];
 
         [$value, $key] = static::explodePluckParameters($value, $key);
