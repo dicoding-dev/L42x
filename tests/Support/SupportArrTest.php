@@ -708,6 +708,59 @@ class SupportArrTest extends TestCase
         $this->assertEquals($expected, $sortedWithDotNotation);
     }
 
+    public function testSortByMany(): void
+    {
+        $unsorted = [
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 3]],
+            ['name' => 'John', 'age' => 10, 'meta' => ['key' => 5]],
+            ['name' => 'Dave', 'age' => 10, 'meta' => ['key' => 3]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 2]],
+        ];
+
+        // sort using keys
+        $sorted = array_values(Arr::sort($unsorted, [
+            'name',
+            'age',
+            'meta.key',
+        ]));
+        $this->assertEquals([
+            ['name' => 'Dave', 'age' => 10, 'meta' => ['key' => 3]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 2]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 3]],
+            ['name' => 'John', 'age' => 10, 'meta' => ['key' => 5]],
+        ], $sorted);
+
+        // sort with order
+        $sortedWithOrder = array_values(Arr::sort($unsorted, [
+            'name',
+            ['age', false],
+            ['meta.key', true],
+        ]));
+        $this->assertEquals([
+            ['name' => 'Dave', 'age' => 10, 'meta' => ['key' => 3]],
+            ['name' => 'John', 'age' => 10, 'meta' => ['key' => 5]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 2]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 3]],
+        ], $sortedWithOrder);
+
+        // sort using callable
+        $sortedWithCallable = array_values(Arr::sort($unsorted, [
+            function ($a, $b) {
+                return $a['name'] <=> $b['name'];
+            },
+            function ($a, $b) {
+                return $b['age'] <=> $a['age'];
+            },
+            ['meta.key', true],
+        ]));
+        $this->assertEquals([
+            ['name' => 'Dave', 'age' => 10, 'meta' => ['key' => 3]],
+            ['name' => 'John', 'age' => 10, 'meta' => ['key' => 5]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 2]],
+            ['name' => 'John', 'age' => 8,  'meta' => ['key' => 3]],
+        ], $sortedWithCallable);
+    }
+
     public function testSortRecursive(): void
     {
         $array = [
