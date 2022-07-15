@@ -4,12 +4,12 @@ namespace Illuminate\Tests\Container;
 
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Container\Container;
-use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class ContainerTest extends BackwardCompatibleTestCase {
-
+class ContainerTest extends TestCase
+{
     public function tearDown(): void
     {
         m::close();
