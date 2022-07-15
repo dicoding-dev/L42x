@@ -1,9 +1,12 @@
 <?php
 
+namespace Illuminate\Tests\Container;
+
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Container\Container;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use stdClass;
 
 class ContainerTest extends BackwardCompatibleTestCase {
 
@@ -42,7 +45,10 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testAutoConcreteResolution(): void
     {
 		$container = new Container;
-		$this->assertInstanceOf('ContainerConcreteStub', $container->make('ContainerConcreteStub'));
+		$this->assertInstanceOf(
+            ContainerConcreteStub::class,
+            $container->make(ContainerConcreteStub::class)
+        );
 	}
 
 
@@ -57,9 +63,9 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testParametersCanOverrideDependencies(): void
     {
 		$container = new Container;
-		$stub = new ContainerDependentStub($mock = m::mock('IContainerContractStub'));
-		$resolved = $container->make('ContainerNestedDependentStub', [$stub]);
-		$this->assertInstanceOf('ContainerNestedDependentStub', $resolved);
+		$stub = new ContainerDependentStub($mock = m::mock(IContainerContractStub::class));
+		$resolved = $container->make(ContainerNestedDependentStub::class, [$stub]);
+		$this->assertInstanceOf(ContainerNestedDependentStub::class, $resolved);
 		$this->assertEquals($mock, $resolved->inner->impl);
 	}
 
@@ -67,11 +73,11 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testSharedConcreteResolution(): void
     {
 		$container = new Container;
-		$container->singleton('ContainerConcreteStub');
+		$container->singleton(ContainerConcreteStub::class);
 		$bindings = $container->getBindings();
 
-		$var1 = $container->make('ContainerConcreteStub');
-		$var2 = $container->make('ContainerConcreteStub');
+		$var1 = $container->make(ContainerConcreteStub::class);
+		$var2 = $container->make(ContainerConcreteStub::class);
 		$this->assertSame($var1, $var2);
 	}
 
@@ -106,19 +112,19 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testAbstractToConcreteResolution(): void
     {
 		$container = new Container;
-		$container->bind('IContainerContractStub', 'ContainerImplementationStub');
-		$class = $container->make('ContainerDependentStub');
-		$this->assertInstanceOf('ContainerImplementationStub', $class->impl);
+		$container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
+		$class = $container->make(ContainerDependentStub::class);
+		$this->assertInstanceOf(ContainerImplementationStub::class, $class->impl);
 	}
 
 
 	public function testNestedDependencyResolution(): void
     {
 		$container = new Container;
-		$container->bind('IContainerContractStub', 'ContainerImplementationStub');
-		$class = $container->make('ContainerNestedDependentStub');
-		$this->assertInstanceOf('ContainerDependentStub', $class->inner);
-		$this->assertInstanceOf('ContainerImplementationStub', $class->inner->impl);
+		$container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
+		$class = $container->make(ContainerNestedDependentStub::class);
+		$this->assertInstanceOf(ContainerDependentStub::class, $class->inner);
+		$this->assertInstanceOf(ContainerImplementationStub::class, $class->inner->impl);
 	}
 
 
@@ -190,8 +196,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testResolutionOfDefaultParameters(): void
     {
 		$container = new Container;
-		$instance = $container->make('ContainerDefaultValueStub');
-		$this->assertInstanceOf('ContainerConcreteStub', $instance->stub);
+		$instance = $container->make(ContainerDefaultValueStub::class);
+		$this->assertInstanceOf(ContainerConcreteStub::class, $instance->stub);
 		$this->assertEquals('taylor', $instance->default);
 	}
 
@@ -257,25 +263,25 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testPassingSomePrimitiveParameters(): void
     {
 		$container = new Container;
-		$value = $container->make('ContainerMixedPrimitiveStub', ['first' => 'taylor', 'last' => 'otwell']);
-		$this->assertInstanceOf('ContainerMixedPrimitiveStub', $value);
+		$value = $container->make(ContainerMixedPrimitiveStub::class, ['first' => 'taylor', 'last' => 'otwell']);
+		$this->assertInstanceOf(ContainerMixedPrimitiveStub::class, $value);
 		$this->assertEquals('taylor', $value->first);
 		$this->assertEquals('otwell', $value->last);
-		$this->assertInstanceOf('ContainerConcreteStub', $value->stub);
+		$this->assertInstanceOf(ContainerConcreteStub::class, $value->stub);
 
 		$container = new Container;
-		$value = $container->make('ContainerMixedPrimitiveStub', [0 => 'taylor', 2 => 'otwell']);
-		$this->assertInstanceOf('ContainerMixedPrimitiveStub', $value);
+		$value = $container->make(ContainerMixedPrimitiveStub::class, [0 => 'taylor', 2 => 'otwell']);
+		$this->assertInstanceOf(ContainerMixedPrimitiveStub::class, $value);
 		$this->assertEquals('taylor', $value->first);
 		$this->assertEquals('otwell', $value->last);
-		$this->assertInstanceOf('ContainerConcreteStub', $value->stub);
+		$this->assertInstanceOf(ContainerConcreteStub::class, $value->stub);
 	}
 
 
 	public function testCreatingBoundConcreteClassPassesParameters(): void
     {
 		$container = new Container;
-		$container->bind('TestAbstractClass', 'ContainerConstructorParameterLoggingStub');
+		$container->bind('TestAbstractClass', ContainerConstructorParameterLoggingStub::class);
 		$parameters = ['First', 'Second'];
 		$instance = $container->make('TestAbstractClass', $parameters);
 		$this->assertEquals($parameters, $instance->receivedParameters);
@@ -294,10 +300,10 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	public function testUnsetAffectsResolved(): void
     {
 		$container = new Container;
-		$container->make('ContainerConcreteStub');
+		$container->make(ContainerConcreteStub::class);
 
-		unset($container['ContainerConcreteStub']);
-		$this->assertFalse($container->resolved('ContainerConcreteStub'));
+		unset($container[ContainerConcreteStub::class]);
+		$this->assertFalse($container->resolved(ContainerConcreteStub::class));
 	}
 
 }
