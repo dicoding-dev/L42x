@@ -167,7 +167,6 @@ class ContainerTest extends BackwardCompatibleTestCase {
 		$this->assertSame($class1, $class2);
 	}
 
-
 	public function testBindingsCanBeOverridden(): void
     {
 		$container = new Container;
@@ -187,7 +186,6 @@ class ContainerTest extends BackwardCompatibleTestCase {
 
 		$this->assertEquals([1, 2, 3], $container->make('foo', [1, 2, 3]));
 	}
-
 
 	public function testResolutionOfDefaultParameters(): void
     {
@@ -336,13 +334,8 @@ class ContainerDefaultValueStub {
 }
 
 class ContainerMixedPrimitiveStub {
-	public $first; public $last; public $stub;
-	public function __construct($first, ContainerConcreteStub $stub, $last)
-	{
-		$this->stub = $stub;
-		$this->last = $last;
-		$this->first = $first;
-	}
+	public function __construct(public $first, public ContainerConcreteStub $stub, public $last)
+	{}
 }
 
 class ContainerConstructorParameterLoggingStub {
