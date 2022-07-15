@@ -87,6 +87,6 @@ class ContextualBindingBuilder
      */
     public function giveConfig($key, $default = null): void
     {
-        $this->give(fn ($container) => $container->get('config')->get($key, $default));
+        $this->give(fn ($container) => $container['config']->get($key, $default));
     }
 }
