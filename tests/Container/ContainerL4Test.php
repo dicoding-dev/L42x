@@ -8,7 +8,13 @@ use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class ContainerTest extends TestCase
+/**
+ * These tests check backward compatibility with the
+ * container in L4 edition.
+ *
+ * Please don't delete these tests.
+ */
+class ContainerL4Test extends TestCase
 {
     public function tearDown(): void
     {
