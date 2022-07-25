@@ -76,6 +76,15 @@ class BoundMethod
             throw new InvalidArgumentException('Method not provided.');
         }
 
+        // Diqo:
+        // So whats being called here are:
+        // 1. The container
+        // 2. Array which contains the resolved instance of the class being called
+        //      and the method to call on that instance
+        // 3. Parameters that are given to the method
+        //
+        // The above parameters will be used by static::callBoundMethod
+        // to resolve the dependencies of the call
         return static::call(
             $container, [$container->make($segments[0]), $method], $parameters
         );
