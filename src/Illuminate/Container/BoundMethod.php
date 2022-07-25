@@ -115,6 +115,16 @@ class BoundMethod
             return $container->callMethodBinding($method, $callback[0]);
         }
 
+        // Diqo:
+        // This is where the array callback is executed. Note that the
+        // value that is used for execution is only $default, which is
+        // the closure that should haved "closure" in the callback and the
+        // required parameters.
+        //
+        // To further understand the mechanisme, see `call` on how it contrstruct
+        // the closure before calling this `callBoundMethod`.
+        //
+        // So, unwrapIfClosure just executed the $default closure.
         return Util::unwrapIfClosure($default);
     }
 
