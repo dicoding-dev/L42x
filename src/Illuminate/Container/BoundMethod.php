@@ -83,8 +83,9 @@ class BoundMethod
         //      and the method to call on that instance
         // 3. Parameters that are given to the method
         //
-        // The above parameters will be used by static::callBoundMethod
-        // to resolve the dependencies of the call
+        // The above parameters will be used by static::call to resolve the
+        // dependencies of the call before passing them
+        // to static::callBoundedMethod.
         return static::call(
             $container, [$container->make($segments[0]), $method], $parameters
         );
