@@ -162,7 +162,7 @@ class AuthPasswordBrokerTest extends BackwardCompatibleTestCase
 	{
 		$creds = ['password' => 'abcdef', 'password_confirmation' => 'abcdef'];
 		$broker = $this->getBroker($mocks = $this->getMocks());
-		$broker->validator(function($credentials) { return strlen($credentials['password']) >= 7; });
+		$broker->validator(function($credentials) { return strlen((string) $credentials['password']) >= 7; });
 		$mocks['users']->shouldReceive('retrieveByCredentials')->once()->with($creds)->andReturn($user = m::mock(
             RemindableInterface::class
         ));
