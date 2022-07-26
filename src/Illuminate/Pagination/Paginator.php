@@ -227,7 +227,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 
 		$fragment = $this->buildFragment();
 
-		return $this->factory->getCurrentUrl().'?'.http_build_query($parameters, null, '&').$fragment;
+		return $this->factory->getCurrentUrl().'?'.http_build_query($parameters, '', '&').$fragment;
 	}
 
 	/**
