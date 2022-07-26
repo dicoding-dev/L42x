@@ -482,9 +482,9 @@ class ContainerContextualBindingTest extends TestCase
 
 class ContainerContextualConcreteStub {}
 
-interface IContainerContractStub {}
+interface IContainerContextualContractStub {}
 
-class ContainerImplementationStub implements IContainerContractStub {}
+class ContainerContextualImplementationStub implements IContainerContextualContractStub {}
 
 class ContainerInjectVariableStub
 {

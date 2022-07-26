@@ -67,18 +67,18 @@ class ContainerExtendTest extends TestCase
 
     public function testExtendIsLazyInitialized(): void
     {
-        ContainerLazyExtendStub::$initialized = false;
+        ContainerExtLazyExtendStub::$initialized = false;
 
         $container = new Container;
-        $container->bind(ContainerLazyExtendStub::class);
-        $container->extend(ContainerLazyExtendStub::class, function ($obj, $container) {
+        $container->bind(ContainerExtLazyExtendStub::class);
+        $container->extend(ContainerExtLazyExtendStub::class, function ($obj, $container) {
             $obj->init();
 
             return $obj;
         });
-        $this->assertFalse(ContainerLazyExtendStub::$initialized);
-        $container->make(ContainerLazyExtendStub::class);
-        $this->assertTrue(ContainerLazyExtendStub::$initialized);
+        $this->assertFalse(ContainerExtLazyExtendStub::$initialized);
+        $container->make(ContainerExtLazyExtendStub::class);
+        $this->assertTrue(ContainerExtLazyExtendStub::$initialized);
     }
 
     public function testExtendCanBeCalledBeforeBind(): void
@@ -189,7 +189,7 @@ class ContainerExtendTest extends TestCase
     }
 }
 
-class ContainerLazyExtendStub
+class ContainerExtLazyExtendStub
 {
     public static $initialized = false;
 

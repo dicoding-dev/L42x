@@ -139,18 +139,18 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testAbstractToConcreteResolution(): void
     {
         $container = new Container;
-        $container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
-        $class = $container->make(ContainerDependentStub::class);
-        $this->assertInstanceOf(ContainerImplementationStub::class, $class->impl);
+        $container->bind(IContainerNewContractStub::class, ContainerNewImplementationStub::class);
+        $class = $container->make(ContainerNewDependentStub::class);
+        $this->assertInstanceOf(ContainerNewImplementationStub::class, $class->impl);
     }
 
     public function testNestedDependencyResolution(): void
     {
         $container = new Container;
-        $container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
-        $class = $container->make(ContainerNestedDependentStub::class);
-        $this->assertInstanceOf(ContainerDependentStub::class, $class->inner);
-        $this->assertInstanceOf(ContainerImplementationStub::class, $class->inner->impl);
+        $container->bind(IContainerNewContractStub::class, ContainerNewImplementationStub::class);
+        $class = $container->make(ContainerNewNestedDependentStub::class);
+        $this->assertInstanceOf(ContainerNewDependentStub::class, $class->inner);
+        $this->assertInstanceOf(ContainerNewImplementationStub::class, $class->inner->impl);
     }
 
     public function testContainerIsPassedToResolvers(): void
@@ -226,7 +226,7 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testResolutionOfDefaultParameters(): void
     {
         $container = new Container;
-        $instance = $container->make(ContainerDefaultValueStub::class);
+        $instance = $container->make(ContainerNewDefaultValueStub::class);
         $this->assertInstanceOf(ContainerNewConcreteStub::class, $instance->stub);
         $this->assertSame('taylor', $instance->default);
     }
@@ -304,28 +304,28 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testInternalClassWithDefaultParameters(): void
     {
         $this->expectException(BindingResolutionException::class);
-        $this->expectExceptionMessage('Unresolvable dependency resolving [Parameter #0 [ <required> $first ]] in class Illuminate\Tests\Container\ContainerMixedPrimitiveStub');
+        $this->expectExceptionMessage('Unresolvable dependency resolving [Parameter #0 [ <required> $first ]] in class Illuminate\Tests\Container\ContainerNewMixedPrimitiveStub');
 
         $container = new Container;
-        $container->make(ContainerMixedPrimitiveStub::class, []);
+        $container->make(ContainerNewMixedPrimitiveStub::class, []);
     }
 
     public function testBindingResolutionExceptionMessage(): void
     {
         $this->expectException(BindingResolutionException::class);
-        $this->expectExceptionMessage('Target [Illuminate\Tests\Container\IContainerContractStub] is not instantiable.');
+        $this->expectExceptionMessage('Target [Illuminate\Tests\Container\IContainerNewContractStub] is not instantiable.');
 
         $container = new Container;
-        $container->make(IContainerContractStub::class, []);
+        $container->make(IContainerNewContractStub::class, []);
     }
 
     public function testBindingResolutionExceptionMessageIncludesBuildStack(): void
     {
         $this->expectException(BindingResolutionException::class);
-        $this->expectExceptionMessage('Target [Illuminate\Tests\Container\IContainerContractStub] is not instantiable while building [Illuminate\Tests\Container\ContainerDependentStub].');
+        $this->expectExceptionMessage('Target [Illuminate\Tests\Container\IContainerNewContractStub] is not instantiable while building [Illuminate\Tests\Container\ContainerNewDependentStub].');
 
         $container = new Container;
-        $container->make(ContainerDependentStub::class, []);
+        $container->make(ContainerNewDependentStub::class, []);
     }
 
     public function testBindingResolutionExceptionMessageWhenClassDoesNotExist(): void
@@ -436,10 +436,10 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
 
         $mock->expects($this->once())
             ->method('make')
-            ->with(ContainerDefaultValueStub::class, ['default' => 'laurence'])
+            ->with(ContainerNewDefaultValueStub::class, ['default' => 'laurence'])
             ->willReturn(new stdClass);
 
-        $result = $mock->makeWith(ContainerDefaultValueStub::class, ['default' => 'laurence']);
+        $result = $mock->makeWith(ContainerNewDefaultValueStub::class, ['default' => 'laurence']);
 
         $this->assertInstanceOf(stdClass::class, $result);
     }
@@ -447,10 +447,10 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testResolvingWithArrayOfParameters(): void
     {
         $container = new Container;
-        $instance = $container->make(ContainerDefaultValueStub::class, ['default' => 'adam']);
+        $instance = $container->make(ContainerNewDefaultValueStub::class, ['default' => 'adam']);
         $this->assertSame('adam', $instance->default);
 
-        $instance = $container->make(ContainerDefaultValueStub::class);
+        $instance = $container->make(ContainerNewDefaultValueStub::class);
         $this->assertSame('taylor', $instance->default);
 
         $container->bind('foo', function ($app, $config) {
@@ -463,8 +463,8 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testResolvingWithUsingAnInterface(): void
     {
         $container = new Container;
-        $container->bind(IContainerContractStub::class, ContainerInjectVariableStubWithInterfaceImplementation::class);
-        $instance = $container->make(IContainerContractStub::class, ['something' => 'laurence']);
+        $container->bind(IContainerNewContractStub::class, ContainerNewInjectVariableStubWithInterfaceImplementation::class);
+        $instance = $container->make(IContainerNewContractStub::class, ['something' => 'laurence']);
         $this->assertSame('laurence', $instance->something);
     }
 
@@ -517,15 +517,15 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testCanBuildWithoutParameterStackWithConstructors(): void
     {
         $container = new Container;
-        $container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
-        $this->assertInstanceOf(ContainerDependentStub::class, $container->build(ContainerDependentStub::class));
+        $container->bind(IContainerNewContractStub::class, ContainerNewImplementationStub::class);
+        $this->assertInstanceOf(ContainerNewDependentStub::class, $container->build(ContainerNewDependentStub::class));
     }
 
     public function testContainerKnowsEntry(): void
     {
         $container = new Container;
-        $container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
-        $this->assertTrue($container->has(IContainerContractStub::class));
+        $container->bind(IContainerNewContractStub::class, ContainerNewImplementationStub::class);
+        $this->assertTrue($container->has(IContainerNewContractStub::class));
     }
 
     public function testContainerCanBindAnyWord(): void
@@ -557,7 +557,7 @@ class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
         $this->expectException(BindingResolutionException::class);
 
         $container = new Container;
-        $container->bind('Taylor', IContainerContractStub::class);
+        $container->bind('Taylor', IContainerNewContractStub::class);
 
         $container->get('Taylor');
     }
@@ -608,42 +608,42 @@ class ContainerNewConcreteStub
     //
 }
 
-interface IContainerContractStub
+interface IContainerNewContractStub
 {
     //
 }
 
-class ContainerImplementationStub implements IContainerContractStub
+class ContainerNewImplementationStub implements IContainerNewContractStub
 {
     //
 }
 
-class ContainerImplementationStubTwo implements IContainerContractStub
+class ContainerNewImplementationStubTwo implements IContainerNewContractStub
 {
     //
 }
 
-class ContainerDependentStub
+class ContainerNewDependentStub
 {
     public $impl;
 
-    public function __construct(IContainerContractStub $impl)
+    public function __construct(IContainerNewContractStub $impl)
     {
         $this->impl = $impl;
     }
 }
 
-class ContainerNestedDependentStub
+class ContainerNewNestedDependentStub
 {
     public $inner;
 
-    public function __construct(ContainerDependentStub $inner)
+    public function __construct(ContainerNewDependentStub $inner)
     {
         $this->inner = $inner;
     }
 }
 
-class ContainerDefaultValueStub
+class ContainerNewDefaultValueStub
 {
     public $stub;
     public $default;
@@ -655,7 +655,7 @@ class ContainerDefaultValueStub
     }
 }
 
-class ContainerMixedPrimitiveStub
+class ContainerNewMixedPrimitiveStub
 {
     public $first;
     public $last;
@@ -669,7 +669,7 @@ class ContainerMixedPrimitiveStub
     }
 }
 
-class ContainerInjectVariableStub
+class ContainerNewInjectVariableStub
 {
     public $something;
 
@@ -679,7 +679,7 @@ class ContainerInjectVariableStub
     }
 }
 
-class ContainerInjectVariableStubWithInterfaceImplementation implements IContainerContractStub
+class ContainerNewInjectVariableStubWithInterfaceImplementation implements IContainerNewContractStub
 {
     public $something;
 
