@@ -13,7 +13,7 @@ class FoundationEnvironmentDetectorTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testEnvironmentDetection()
+    public function testEnvironmentDetection(): void
     {
         $env = m::mock(EnvironmentDetector::class)->makePartial();
         $env->shouldReceive('isMachine')->once()->with('localhost')->andReturn(false);
@@ -34,8 +34,8 @@ class FoundationEnvironmentDetectorTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testClosureCanBeUsedForCustomEnvironmentDetection()
-	{
+	public function testClosureCanBeUsedForCustomEnvironmentDetection(): void
+    {
 		$env = new Illuminate\Foundation\EnvironmentDetector;
 
 		$result = $env->detect(function() { return 'foobar'; });
@@ -43,8 +43,8 @@ class FoundationEnvironmentDetectorTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testConsoleEnvironmentDetection()
-	{
+	public function testConsoleEnvironmentDetection(): void
+    {
 		$env = new Illuminate\Foundation\EnvironmentDetector;
 
 		$result = $env->detect([
