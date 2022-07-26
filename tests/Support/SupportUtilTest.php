@@ -10,7 +10,7 @@ class SupportUtilTest extends TestCase
     public function testUnwrapIfClosure(): void
     {
         $this->assertSame('foo', Util::unwrapIfClosure('foo'));
-        $this->assertSame('foo', Util::unwrapIfClosure(function () {
+        $this->assertSame('foo', Util::unwrapIfClosure(static function () {
             return 'foo';
         }));
     }
