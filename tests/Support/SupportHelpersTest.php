@@ -104,13 +104,13 @@ class SupportHelpersTest extends BackwardCompatibleTestCase {
 	public function testArrayFirst()
 	{
 		$array = ['name' => 'taylor', 'otherDeveloper' => 'dayle'];
-		$this->assertEquals('dayle', array_first($array, function($key, $value) { return $value == 'dayle'; }));
+		$this->assertEquals('dayle', array_first($array, function($value, $key) { return $value == 'dayle'; }));
 	}
 
 	public function testArrayLast()
 	{
 		$array = [100, 250, 290, 320, 500, 560, 670];
-		$this->assertEquals(670, array_last($array, function($key, $value) { return $value > 320; }));
+		$this->assertEquals(670, array_last($array, function($value, $key) { return $value > 320; }));
 	}
 
 
