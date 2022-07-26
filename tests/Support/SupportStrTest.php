@@ -11,7 +11,7 @@ class SupportStrTest extends BackwardCompatibleTestCase
      *
      * @group laravel
      */
-    public function testStringCanBeLimitedByWords()
+    public function testStringCanBeLimitedByWords(): void
     {
         $this->assertEquals('Taylor...', Str::words('Taylor Otwell', 1));
         $this->assertEquals('Taylor___', Str::words('Taylor Otwell', 1, '___'));
@@ -19,30 +19,30 @@ class SupportStrTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testStringTrimmedOnlyWhereNecessary()
-	{
+	public function testStringTrimmedOnlyWhereNecessary(): void
+    {
 		$this->assertEquals(' Taylor Otwell ', Str::words(' Taylor Otwell ', 3));
 		$this->assertEquals(' Taylor...', Str::words(' Taylor Otwell ', 1));
 	}
 
 
-	public function testStringTitle()
-	{
+	public function testStringTitle(): void
+    {
 		$this->assertEquals('Jefferson Costella', Str::title('jefferson costella'));
 		$this->assertEquals('Jefferson Costella', Str::title('jefFErson coSTella'));
 	}
 
 
-	public function testStringWithoutWordsDoesntProduceError()
-	{
+	public function testStringWithoutWordsDoesntProduceError(): void
+    {
 		$nbsp = chr(0xC2).chr(0xA0);
 		$this->assertEquals(' ', Str::words(' '));
 		$this->assertEquals($nbsp, Str::words($nbsp));
 	}
 
 
-	public function testStartsWith()
-	{
+	public function testStartsWith(): void
+    {
 		$this->assertTrue(Str::startsWith('jason', 'jas'));
 		$this->assertTrue(Str::startsWith('jason', 'jason'));
 		$this->assertTrue(Str::startsWith('jason', ['jas']));
@@ -52,8 +52,8 @@ class SupportStrTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testEndsWith()
-	{
+	public function testEndsWith(): void
+    {
 		$this->assertTrue(Str::endsWith('jason', 'on'));
 		$this->assertTrue(Str::endsWith('jason', 'jason'));
 		$this->assertTrue(Str::endsWith('jason', ['on']));
@@ -64,8 +64,8 @@ class SupportStrTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testStrContains()
-	{
+	public function testStrContains(): void
+    {
 		$this->assertTrue(Str::contains('taylor', 'ylo'));
 		$this->assertTrue(Str::contains('taylor', ['ylo']));
 		$this->assertFalse(Str::contains('taylor', 'xxx'));
@@ -74,15 +74,15 @@ class SupportStrTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testParseCallback()
-	{
+	public function testParseCallback(): void
+    {
 		$this->assertEquals(['Class', 'method'], Str::parseCallback('Class@method', 'foo'));
 		$this->assertEquals(['Class', 'foo'], Str::parseCallback('Class', 'foo'));
 	}
 
 
-	public function testSlug()
-	{
+	public function testSlug(): void
+    {
 		$this->assertEquals('hello-world', Str::slug('hello world'));
 		$this->assertEquals('hello-world', Str::slug('hello-world'));
 		$this->assertEquals('hello-world', Str::slug('hello_world'));
@@ -90,16 +90,16 @@ class SupportStrTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testFinish()
-	{
+	public function testFinish(): void
+    {
 		$this->assertEquals('abbc', Str::finish('ab', 'bc'));
 		$this->assertEquals('abbc', Str::finish('abbcbc', 'bc'));
 		$this->assertEquals('abcbbc', Str::finish('abcbbcbc', 'bc'));
 	}
 
 
-	public function testIs()
-	{
+	public function testIs(): void
+    {
 		$this->assertTrue(Str::is('/', '/'));
 		$this->assertFalse(Str::is('/', ' /'));
 		$this->assertFalse(Str::is('/', '/a'));
@@ -108,33 +108,33 @@ class SupportStrTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testLower()
-	{
+	public function testLower(): void
+    {
 		$this->assertEquals('foo bar baz', Str::lower('FOO BAR BAZ'));
 		$this->assertEquals('foo bar baz', Str::lower('fOo Bar bAz'));
 	}
 
 
-	public function testUpper()
-	{
+	public function testUpper(): void
+    {
 		$this->assertEquals('FOO BAR BAZ', Str::upper('foo bar baz'));
 		$this->assertEquals('FOO BAR BAZ', Str::upper('foO bAr BaZ'));
 	}
 
 
-	public function testLimit()
-	{
+	public function testLimit(): void
+    {
 		$this->assertEquals('Laravel is...', Str::limit('Laravel is a free, open source PHP web application framework.', 10));
 	}
 
 
-	public function testLength()
-	{
+	public function testLength(): void
+    {
 		$this->assertEquals(11, Str::length('foo bar baz'));
 	}
 
 
-	public function testQuickRandom()
+	public function testQuickRandom(): void
     {
         $randomInteger = mt_rand(1, 100);
         $this->assertEquals($randomInteger, strlen(Str::quickRandom($randomInteger)));
@@ -143,7 +143,7 @@ class SupportStrTest extends BackwardCompatibleTestCase
     }
 
 
-	public function testRandom()
+	public function testRandom(): void
     {
         $this->assertEquals(16, strlen(Str::random()));
         $randomInteger = mt_rand(1, 100);
