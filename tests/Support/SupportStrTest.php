@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Str;
-use L4\Tests\BackwardCompatibleTestCase;
+use PHPUnit\Framework\TestCase;
 
-class SupportStrTest extends BackwardCompatibleTestCase
+class SupportStrTest extends TestCase
 {
 
     /**
