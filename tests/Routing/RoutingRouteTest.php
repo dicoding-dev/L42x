@@ -956,12 +956,12 @@ class RouteTestControllerRemoveFilterStub extends Controller
 }
 
 class RouteBindingStub {
-	public function bind($value, $route) { return strtoupper($value); }
-	public function find($value, $route) { return strtolower($value); }
+	public function bind($value, $route) { return strtoupper((string) $value); }
+	public function find($value, $route) { return strtolower((string) $value); }
 }
 
 class RouteModelBindingStub {
-	public function find($value) { return strtoupper($value); }
+	public function find($value) { return strtoupper((string) $value); }
 }
 
 class RouteModelBindingNullStub {
