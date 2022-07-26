@@ -189,10 +189,10 @@ class ContainerContextualBindingTest extends TestCase
 
         $container = new Container;
         $container->when(ContainerInjectVariableStub::class)->needs('$something')->give(function ($container) {
-            return $container->make(ContainerConcreteStub::class);
+            return $container->make(ContainerContextualConcreteStub::class);
         });
         $instance = $container->make(ContainerInjectVariableStub::class);
-        $this->assertInstanceOf(ContainerConcreteStub::class, $instance->something);
+        $this->assertInstanceOf(ContainerContextualConcreteStub::class, $instance->something);
     }
 
     public function testContextualBindingWorksWithAliasedTargets(): void
@@ -480,7 +480,7 @@ class ContainerContextualBindingTest extends TestCase
     }
 }
 
-class ContainerConcreteStub {}
+class ContainerContextualConcreteStub {}
 
 interface IContainerContractStub {}
 
@@ -490,7 +490,7 @@ class ContainerInjectVariableStub
 {
     public $something;
 
-    public function __construct(ContainerConcreteStub $concrete, $something)
+    public function __construct(ContainerContextualConcreteStub $concrete, $something)
     {
         $this->something = $something;
     }
