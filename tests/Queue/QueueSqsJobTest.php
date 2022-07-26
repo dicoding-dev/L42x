@@ -47,7 +47,7 @@ class QueueSqsJobTest extends BackwardCompatibleTestCase
 
         $this->mockedJobData = [
             'Body' => $this->mockedPayload,
-            'MD5OfBody' => md5($this->mockedPayload),
+            'MD5OfBody' => md5((string) $this->mockedPayload),
             'ReceiptHandle' => $this->mockedReceiptHandle,
             'MessageId' => $this->mockedMessageId,
             'Attributes' => ['ApproximateReceiveCount' => 1]

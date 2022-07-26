@@ -39,7 +39,7 @@ class QueueSqsQueueTest extends BackwardCompatibleTestCase
 
 		$this->mockedSendMessageResponseModel = new Model([
             'Body' => $this->mockedPayload,
-						      			'MD5OfBody' => md5($this->mockedPayload),
+						      			'MD5OfBody' => md5((string) $this->mockedPayload),
 						      			'ReceiptHandle' => $this->mockedReceiptHandle,
 						      			'MessageId' => $this->mockedMessageId,
 						      			'Attributes' => ['ApproximateReceiveCount' => 1]
@@ -49,7 +49,7 @@ class QueueSqsQueueTest extends BackwardCompatibleTestCase
             'Messages' => [
                 0 => [
 												'Body' => $this->mockedPayload,
-						     						'MD5OfBody' => md5($this->mockedPayload),
+						     						'MD5OfBody' => md5((string) $this->mockedPayload),
 						      						'ReceiptHandle' => $this->mockedReceiptHandle,
 						     						'MessageId' => $this->mockedMessageId
                 ]
