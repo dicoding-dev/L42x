@@ -10,15 +10,13 @@ namespace Illuminate\Tests\Container;
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Container\Container;
 use Illuminate\Container\EntryNotFoundException;
-use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use stdClass;
 use TypeError;
 
 /**
  * These are the tests backported from L9
  */
-class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
+class ContainerNewTest extends \L4\Tests\BackwardCompatibleTestCase
 {
     protected function tearDown(): void
     {
@@ -82,7 +80,7 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
         });
         $firstInstantiation = $container->make('class');
         $container->singletonIf('class', function () {
-            return new ContainerConcreteStub;
+            return new ContainerNewConcreteStub;
         });
         $secondInstantiation = $container->make('class');
         $this->assertSame($firstInstantiation, $secondInstantiation);
@@ -95,7 +93,7 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
             return new stdClass;
         });
         $container->singletonIf('otherClass', function () {
-            return new ContainerConcreteStub;
+            return new ContainerNewConcreteStub;
         });
         $firstInstantiation = $container->make('otherClass');
         $secondInstantiation = $container->make('otherClass');
@@ -116,16 +114,16 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testAutoConcreteResolution(): void
     {
         $container = new Container;
-        $this->assertInstanceOf(ContainerConcreteStub::class, $container->make(ContainerConcreteStub::class));
+        $this->assertInstanceOf(ContainerNewConcreteStub::class, $container->make(ContainerNewConcreteStub::class));
     }
 
     public function testSharedConcreteResolution(): void
     {
         $container = new Container;
-        $container->singleton(ContainerConcreteStub::class);
+        $container->singleton(ContainerNewConcreteStub::class);
 
-        $var1 = $container->make(ContainerConcreteStub::class);
-        $var2 = $container->make(ContainerConcreteStub::class);
+        $var1 = $container->make(ContainerNewConcreteStub::class);
+        $var2 = $container->make(ContainerNewConcreteStub::class);
         $this->assertSame($var1, $var2);
     }
 
@@ -134,8 +132,8 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
         $this->expectException(TypeError::class);
         $container = new Container;
 
-        $concrete = new ContainerConcreteStub;
-        $container->bind(ContainerConcreteStub::class, $concrete);
+        $concrete = new ContainerNewConcreteStub;
+        $container->bind(ContainerNewConcreteStub::class, $concrete);
     }
 
     public function testAbstractToConcreteResolution(): void
@@ -229,7 +227,7 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     {
         $container = new Container;
         $instance = $container->make(ContainerDefaultValueStub::class);
-        $this->assertInstanceOf(ContainerConcreteStub::class, $instance->stub);
+        $this->assertInstanceOf(ContainerNewConcreteStub::class, $instance->stub);
         $this->assertSame('taylor', $instance->default);
     }
 
@@ -342,19 +340,19 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testForgetInstanceForgetsInstance(): void
     {
         $container = new Container;
-        $containerConcreteStub = new ContainerConcreteStub;
-        $container->instance(ContainerConcreteStub::class, $containerConcreteStub);
-        $this->assertTrue($container->isShared(ContainerConcreteStub::class));
-        $container->forgetInstance(ContainerConcreteStub::class);
-        $this->assertFalse($container->isShared(ContainerConcreteStub::class));
+        $containerConcreteStub = new ContainerNewConcreteStub;
+        $container->instance(ContainerNewConcreteStub::class, $containerConcreteStub);
+        $this->assertTrue($container->isShared(ContainerNewConcreteStub::class));
+        $container->forgetInstance(ContainerNewConcreteStub::class);
+        $this->assertFalse($container->isShared(ContainerNewConcreteStub::class));
     }
 
     public function testForgetInstancesForgetsAllInstances(): void
     {
         $container = new Container;
-        $containerConcreteStub1 = new ContainerConcreteStub;
-        $containerConcreteStub2 = new ContainerConcreteStub;
-        $containerConcreteStub3 = new ContainerConcreteStub;
+        $containerConcreteStub1 = new ContainerNewConcreteStub;
+        $containerConcreteStub2 = new ContainerNewConcreteStub;
+        $containerConcreteStub3 = new ContainerNewConcreteStub;
         $container->instance('Instance1', $containerConcreteStub1);
         $container->instance('Instance2', $containerConcreteStub2);
         $container->instance('Instance3', $containerConcreteStub3);
@@ -371,7 +369,7 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     {
         $container = new Container;
         $container->bind('ConcreteStub', function () {
-            return new ContainerConcreteStub;
+            return new ContainerNewConcreteStub;
         }, true);
         $container->alias('ConcreteStub', 'ContainerConcreteStub');
         $container->make('ConcreteStub');
@@ -390,7 +388,7 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     {
         $container = new Container;
         $container->bind('ConcreteStub', function () {
-            return new ContainerConcreteStub;
+            return new ContainerNewConcreteStub;
         }, true);
         $container->alias('ConcreteStub', 'foo');
 
@@ -513,7 +511,7 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testCanBuildWithoutParameterStackWithNoConstructors(): void
     {
         $container = new Container;
-        $this->assertInstanceOf(ContainerConcreteStub::class, $container->build(ContainerConcreteStub::class));
+        $this->assertInstanceOf(ContainerNewConcreteStub::class, $container->build(ContainerNewConcreteStub::class));
     }
 
     public function testCanBuildWithoutParameterStackWithConstructors(): void
@@ -567,9 +565,9 @@ class ContainerTest extends \L4\Tests\BackwardCompatibleTestCase
     public function testContainerCanResolveClasses(): void
     {
         $container = new Container;
-        $class = $container->get(ContainerConcreteStub::class);
+        $class = $container->get(ContainerNewConcreteStub::class);
 
-        $this->assertInstanceOf(ContainerConcreteStub::class, $class);
+        $this->assertInstanceOf(ContainerNewConcreteStub::class, $class);
     }
 
     // public function testContainerCanCatchCircularDependency()
@@ -605,7 +603,7 @@ class CircularCStub
     }
 }
 
-class ContainerConcreteStub
+class ContainerNewConcreteStub
 {
     //
 }
@@ -650,7 +648,7 @@ class ContainerDefaultValueStub
     public $stub;
     public $default;
 
-    public function __construct(ContainerConcreteStub $stub, $default = 'taylor')
+    public function __construct(ContainerNewConcreteStub $stub, $default = 'taylor')
     {
         $this->stub = $stub;
         $this->default = $default;
@@ -663,7 +661,7 @@ class ContainerMixedPrimitiveStub
     public $last;
     public $stub;
 
-    public function __construct($first, ContainerConcreteStub $stub, $last)
+    public function __construct($first, ContainerNewConcreteStub $stub, $last)
     {
         $this->stub = $stub;
         $this->last = $last;
@@ -675,7 +673,7 @@ class ContainerInjectVariableStub
 {
     public $something;
 
-    public function __construct(ContainerConcreteStub $concrete, $something)
+    public function __construct(ContainerNewConcreteStub $concrete, $something)
     {
         $this->something = $something;
     }
@@ -685,7 +683,7 @@ class ContainerInjectVariableStubWithInterfaceImplementation implements IContain
 {
     public $something;
 
-    public function __construct(ContainerConcreteStub $concrete, $something)
+    public function __construct(ContainerNewConcreteStub $concrete, $something)
     {
         $this->something = $something;
     }
