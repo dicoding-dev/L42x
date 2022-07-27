@@ -273,7 +273,7 @@ class Writer {
 		{
 			$this->formatParameters($parameters);
 
-			call_user_func_array(array($this, 'fireLogEvent'), array_merge(array($method), $parameters));
+			call_user_func_array($this->fireLogEvent(...), array_merge(array($method), $parameters));
 
 			$method = 'add'.ucfirst($method);
 
