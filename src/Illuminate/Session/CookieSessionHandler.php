@@ -35,23 +35,23 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function open($savePath, $sessionName)
-	{
+	public function open($savePath, $sessionName): bool
+    {
 		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function close()
-	{
+	public function close(): bool
+    {
 		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function read($sessionId)
+	public function read($sessionId): string|false
 	{
 		return $this->request->cookies->get($sessionId) ?: '';
 	}
@@ -59,24 +59,27 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function write($sessionId, $data)
+	public function write($sessionId, $data): bool
 	{
 		$this->cookie->queue($sessionId, $data, $this->minutes);
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function destroy($sessionId)
+	public function destroy($sessionId): bool
 	{
 		$this->cookie->queue($this->cookie->forget($sessionId));
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function gc($lifetime)
-	{
+	public function gc($lifetime): int|false
+    {
 		return true;
 	}
 
