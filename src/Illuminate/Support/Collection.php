@@ -799,7 +799,7 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
      * @param  mixed  $value
      * @return bool
      */
-    protected function useAsCallable($value): bool
+    protected function useAsCallable($value)
     {
         return ! is_string($value) && is_callable($value);
     }
