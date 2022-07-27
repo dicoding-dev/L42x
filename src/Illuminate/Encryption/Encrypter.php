@@ -45,7 +45,7 @@ class Encrypter {
      */
     private static function supported($key, $cipher): bool
     {
-        $length = mb_strlen($key, '8bit');
+        $length = mb_strlen((string) $key, '8bit');
         return ($cipher === 'AES-128-CBC' && $length === 16) ||
             ($cipher === 'AES-256-CBC' && $length === 32);
     }
@@ -113,7 +113,7 @@ class Encrypter {
 	{
         $payload = $this->getJsonPayload($payload);
 
-        $iv = base64_decode($payload['iv']);
+        $iv = base64_decode((string) $payload['iv']);
 
         // Here we will decrypt the value. If we are able to successfully decrypt it
         // we will then unserialize it and return it out to the caller. If we are
@@ -189,7 +189,7 @@ class Encrypter {
     protected function validPayload($payload): bool
     {
         return \is_array($payload) && isset($payload['iv'], $payload['value'], $payload['mac']) &&
-            \strlen(base64_decode($payload['iv'], true)) === openssl_cipher_iv_length($this->cipher);
+            \strlen(base64_decode((string) $payload['iv'], true)) === openssl_cipher_iv_length($this->cipher);
     }
 
     /**
@@ -205,7 +205,7 @@ class Encrypter {
         $calculated = $this->calculateMac($payload, $bytes = random_bytes(16));
 
         return hash_equals(
-            hash_hmac('sha256', $payload['mac'], $bytes, true), $calculated
+            hash_hmac('sha256', (string) $payload['mac'], $bytes, true), $calculated
         );
     }
 
