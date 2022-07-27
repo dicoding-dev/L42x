@@ -55,7 +55,7 @@ class Grammar extends BaseGrammar {
 			// function for the component which is responsible for making the SQL.
 			if ( ! is_null($query->$component))
 			{
-				$method = 'compile'.ucfirst($component);
+				$method = 'compile'.ucfirst((string) $component);
 
 				$sql[$component] = $this->$method($query, $query->$component);
 			}
@@ -477,7 +477,7 @@ class Grammar extends BaseGrammar {
 	 */
 	protected function compileHavings(Builder $query, $havings)
 	{
-		$sql = implode(' ', array_map(array($this, 'compileHaving'), $havings));
+		$sql = implode(' ', array_map($this->compileHaving(...), $havings));
 
 		return 'having '.preg_replace('/and |or /', '', $sql, 1);
 	}
@@ -690,7 +690,7 @@ class Grammar extends BaseGrammar {
 		// intended records are updated by the SQL statements we generate to run.
 		$where = $this->compileWheres($query);
 
-		return trim("update {$table}{$joins} set $columns $where");
+		return trim((string) "update {$table}{$joins} set $columns $where");
 	}
 
 	/**
