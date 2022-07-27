@@ -65,7 +65,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface, ExistenceAware
 		{
 			$this->exists = true;
 
-			return base64_decode($session->payload);
+			return base64_decode((string) $session->payload);
 		}
 	}
 
