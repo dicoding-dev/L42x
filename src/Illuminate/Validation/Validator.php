@@ -1003,7 +1003,7 @@ class Validator implements MessageProviderInterface {
 		{
 			list($idColumn, $id) = $this->getUniqueIds($parameters);
 
-			if (strtolower($id) == 'null') $id = null;
+			if (strtolower((string) $id) == 'null') $id = null;
 		}
 
 		// The presence verifier is responsible for counting rows within this store
@@ -1172,7 +1172,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validateActiveUrl($attribute, $value)
 	{
-		$url = str_replace(array('http://', 'https://', 'ftp://'), '', strtolower($value));
+		$url = str_replace(array('http://', 'https://', 'ftp://'), '', strtolower((string) $value));
 
 		return checkdnsrr($url);
 	}
@@ -1229,7 +1229,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validateAlpha($attribute, $value)
 	{
-		return preg_match('/^[\pL\pM]+$/u', $value);
+		return preg_match('/^[\pL\pM]+$/u', (string) $value);
 	}
 
 	/**
@@ -1241,7 +1241,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validateAlphaNum($attribute, $value)
 	{
-		return preg_match('/^[\pL\pM\pN]+$/u', $value);
+		return preg_match('/^[\pL\pM\pN]+$/u', (string) $value);
 	}
 
 	/**
@@ -1253,7 +1253,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validateAlphaDash($attribute, $value)
 	{
-		return preg_match('/^[\pL\pM\pN_-]+$/u', $value);
+		return preg_match('/^[\pL\pM\pN_-]+$/u', (string) $value);
 	}
 
 	/**
@@ -1268,7 +1268,7 @@ class Validator implements MessageProviderInterface {
 	{
 		$this->requireParameterCount(1, $parameters, 'regex');
 
-		return preg_match($parameters[0], $value);
+		return preg_match($parameters[0], (string) $value);
 	}
 
 	/**
@@ -1282,7 +1282,7 @@ class Validator implements MessageProviderInterface {
 	{
 		if ($value instanceof DateTime) return true;
 
-		if (strtotime($value) === false) return false;
+		if (strtotime((string) $value) === false) return false;
 
 		$date = date_parse($value);
 
@@ -1323,12 +1323,12 @@ class Validator implements MessageProviderInterface {
 			return $this->validateBeforeWithFormat($format, $value, $parameters);
 		}
 
-		if ( ! ($date = strtotime($parameters[0])))
+		if ( ! ($date = strtotime((string) $parameters[0])))
 		{
-			return strtotime($value) < strtotime($this->getValue($parameters[0]));
+			return strtotime((string) $value) < strtotime((string) $this->getValue($parameters[0]));
 		}
 
-		return strtotime($value) < $date;
+		return strtotime((string) $value) < $date;
 	}
 
 	/**
@@ -1363,12 +1363,12 @@ class Validator implements MessageProviderInterface {
 			return $this->validateAfterWithFormat($format, $value, $parameters);
 		}
 
-		if ( ! ($date = strtotime($parameters[0])))
+		if ( ! ($date = strtotime((string) $parameters[0])))
 		{
-			return strtotime($value) > strtotime($this->getValue($parameters[0]));
+			return strtotime((string) $value) > strtotime((string) $this->getValue($parameters[0]));
 		}
 
-		return strtotime($value) > $date;
+		return strtotime((string) $value) > $date;
 	}
 
 	/**
@@ -1936,7 +1936,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function replaceBefore($message, $attribute, $rule, $parameters)
 	{
-		if ( ! (strtotime($parameters[0])))
+		if ( ! (strtotime((string) $parameters[0])))
 		{
 			return str_replace(':date', $this->getAttribute($parameters[0]), $message);
 		}
@@ -2018,7 +2018,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function parseArrayRule(array $rules)
 	{
-		return array(studly_case(trim(array_get($rules, 0))), array_slice($rules, 1));
+		return array(studly_case(trim((string) array_get($rules, 0))), array_slice($rules, 1));
 	}
 
 	/**
