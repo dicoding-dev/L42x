@@ -71,7 +71,7 @@ class RemoteManager {
 	 */
 	public function multiple(array $names)
 	{
-		return new MultiConnection(array_map(array($this, 'resolve'), $names));
+		return new MultiConnection(array_map($this->resolve(...), $names));
 	}
 
 	/**
@@ -130,11 +130,11 @@ class RemoteManager {
 		{
 			return array('agent' => true);
 		}
-		elseif (isset($config['key']) && trim($config['key']) != '')
+		elseif (isset($config['key']) && trim((string) $config['key']) != '')
 		{
 			return array('key' => $config['key'], 'keyphrase' => $config['keyphrase']);
 		}
-		elseif (isset($config['keytext']) && trim($config['keytext']) != '')
+		elseif (isset($config['keytext']) && trim((string) $config['keytext']) != '')
 		{
 			return array('keytext' => $config['keytext']);
 		}
