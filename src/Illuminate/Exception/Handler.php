@@ -94,7 +94,7 @@ class Handler {
 	 */
 	protected function registerErrorHandler()
 	{
-		set_error_handler(array($this, 'handleError'));
+		set_error_handler($this->handleError(...));
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Handler {
 	 */
 	protected function registerExceptionHandler()
 	{
-		set_exception_handler(array($this, 'handleUncaughtException'));
+		set_exception_handler($this->handleUncaughtException(...));
 	}
 
 	/**
