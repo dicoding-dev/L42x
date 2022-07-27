@@ -372,7 +372,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 	public function testFirstWithCallback(): void
     {
 		$data = new Collection(['foo', 'bar', 'baz']);
-		$result = $data->first(function($key, $value) { return $value === 'bar'; });
+		$result = $data->first(function($value, $key) { return $value === 'bar'; });
 		$this->assertEquals('bar', $result);
 	}
 
