@@ -49,7 +49,7 @@ class MessageSelector
         $explicitRules = [];
         $standardRules = [];
         foreach ($parts as $part) {
-            $part = trim(str_replace('||', '|', $part));
+            $part = trim(str_replace('||', '|', (string) $part));
 
             if (preg_match('/^(?P<interval>'.Interval::getIntervalRegexp().')\s*(?P<message>.*?)$/xs', $part, $matches)) {
                 $explicitRules[$matches['interval']] = $matches['message'];
