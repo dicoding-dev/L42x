@@ -17,7 +17,7 @@ class HandlerTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testHandleErrorExceptionArguments()
+    public function testHandleErrorExceptionArguments(): void
     {
 		$error = null;
 		try {
@@ -33,8 +33,8 @@ class HandlerTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testHandleErrorOptionalArguments()
-	{
+	public function testHandleErrorOptionalArguments(): void
+    {
 		$error = null;
 		try {
 			$this->handler->handleError(E_USER_ERROR, 'message');
