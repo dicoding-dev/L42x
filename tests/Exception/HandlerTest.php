@@ -3,6 +3,7 @@
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Exception\ExceptionDisplayerInterface;
 use Illuminate\Exception\Handler;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Contracts\ResponsePreparerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -52,22 +53,18 @@ class HandlerTest extends TestCase
     public function handleExceptions(): void
     {
         $handler = $this->getHandler();
-        $this->debugDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
-        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
 
-        $exceptionCaught = new stdClass();
-        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) use (&$exceptionCaught) {
-            $exceptionCaught->exception = $exception;
-            $exceptionCaught->code = $code;
-            $exceptionCaught->fromConsole = $fromConsole;
+        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
+            return new JsonResponse([
+                'from_console'  => $fromConsole,
+                'message'       => $exception->getMessage()
+            ], $code);
         });
 
-        $handler->handleException(new BindingResolutionException("not resolved", 111));
+        $response = $handler->handleException(new BindingResolutionException("not resolved", 111));
 
-        self::assertNotNull($exceptionCaught->exception);
-        self::assertInstanceOf(BindingResolutionException::class, $exceptionCaught->exception);
-        self::assertEquals(500, $exceptionCaught->code);
-        self::assertFalse($exceptionCaught->fromConsole);
+        self::assertEquals(500, $response->getStatusCode());
+        self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not resolved"}', $response->getContent());
     }
 
     /**
@@ -76,22 +73,45 @@ class HandlerTest extends TestCase
     public function handlingHttpException(): void
     {
         $handler = $this->getHandler();
-        $this->debugDisplayer->display(Argument::type(NotFoundHttpException::class))->shouldBeCalledOnce();
-        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
 
-        $exceptionCaught = new stdClass();
         $handler->error(function(NotFoundHttpException $exception, $code, $fromConsole) use (&$exceptionCaught) {
-            $exceptionCaught->exception = $exception;
-            $exceptionCaught->code = $code;
-            $exceptionCaught->fromConsole = $fromConsole;
+            return new JsonResponse([
+                'from_console'  => $fromConsole,
+                'message'       => $exception->getMessage()
+            ], $code);
         });
 
-        $handler->handleException(new NotFoundHttpException("not found"));
+        $response = $handler->handleException(new NotFoundHttpException("not found"));
 
-        self::assertNotNull($exceptionCaught->exception);
-        self::assertInstanceOf(NotFoundHttpException::class, $exceptionCaught->exception);
-        self::assertEquals(404, $exceptionCaught->code);
-        self::assertFalse($exceptionCaught->fromConsole);
+        self::assertEquals(404, $response->getStatusCode());
+        self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not found"}', $response->getContent());
+    }
+
+    /**
+     * @test
+     */
+    public function whenVeryBasicHandlerIsUsedButTypeHintedHandlerReturnsResponse(): void
+    {
+        $handler = $this->getHandler();
+
+        $handler->error(function(Throwable $throwable, $code, $fromConsole) {
+            return new JsonResponse([
+                'from_console'  => $fromConsole,
+                'message'       => $throwable->getMessage()
+            ], 500);
+        });
+
+        $handler->error(function(NotFoundHttpException $exception, $code, $fromConsole) {
+            return new JsonResponse([
+                'from_console'  => $fromConsole,
+                'message'       => $exception->getMessage()
+            ], $code);
+        });
+
+        $response = $handler->handleException(new NotFoundHttpException("not found"));
+
+        self::assertEquals(404, $response->getStatusCode());
+        self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not found"}', $response->getContent());
     }
 
     protected function getHandler(bool $debug = true): Handler
@@ -99,6 +119,11 @@ class HandlerTest extends TestCase
         $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
         $this->plainDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
         $this->debugDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
+
+        $this->responsePreparer->prepareResponse(Argument::cetera())->will(function($args) {
+            return $args[0];
+        });
+
         return new Handler(
             $this->responsePreparer->reveal(),
             $this->plainDisplayer->reveal(),
