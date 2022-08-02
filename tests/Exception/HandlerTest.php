@@ -7,29 +7,21 @@ use Illuminate\Support\Contracts\ResponsePreparerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class HandlerTest extends TestCase
 {
     use ProphecyTrait;
 
-    protected function setUp(): void
-    {
-        $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
-        $this->plainDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
-        $this->debugDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
-        $this->handler = new Handler(
-            $this->responsePreparer->reveal(),
-            $this->plainDisplayer->reveal(),
-            $this->debugDisplayer->reveal()
-        );
-    }
-
+    private ObjectProphecy|ResponsePreparerInterface $responsePreparer;
+    private ObjectProphecy|ExceptionDisplayerInterface $plainDisplayer;
+    private ObjectProphecy|ExceptionDisplayerInterface $debugDisplayer;
 
     public function testHandleErrorExceptionArguments(): void
     {
 		$error = null;
 		try {
-			$this->handler->handleError(E_USER_ERROR, 'message', '/path/to/file', 111, []);
+			$this->getHandler()->handleError(E_USER_ERROR, 'message', '/path/to/file', 111, []);
 		} catch (ErrorException $error) {}
 
 		$this->assertInstanceOf('ErrorException', $error);
@@ -45,7 +37,7 @@ class HandlerTest extends TestCase
     {
 		$error = null;
 		try {
-			$this->handler->handleError(E_USER_ERROR, 'message');
+			$this->getHandler()->handleError(E_USER_ERROR, 'message');
 		} catch (ErrorException $error) {}
 
 		$this->assertInstanceOf('ErrorException', $error);
@@ -59,14 +51,28 @@ class HandlerTest extends TestCase
     public function handleExceptions(): void
     {
         $exceptionCaught = null;
-        $this->handler->error(function(BindingResolutionException $exception) use (&$exceptionCaught) {
+        ($handler = $this->getHandler())->error(function(BindingResolutionException $exception) use (&$exceptionCaught) {
             $exceptionCaught = $exception;
         });
 
         $this->debugDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
+        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
 
-        $this->handler->handleException(new BindingResolutionException("not resolved", 111));
+        $handler->handleException(new BindingResolutionException("not resolved", 111));
 
         self::assertNotNull($exceptionCaught);
+    }
+
+    protected function getHandler(bool $debug = true): Handler
+    {
+        $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
+        $this->plainDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
+        $this->debugDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
+        return new Handler(
+            $this->responsePreparer->reveal(),
+            $this->plainDisplayer->reveal(),
+            $this->debugDisplayer->reveal(),
+            $debug
+        );
     }
 }
