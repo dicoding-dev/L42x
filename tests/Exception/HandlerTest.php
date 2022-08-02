@@ -114,6 +114,33 @@ class HandlerTest extends TestCase
         self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not found"}', $response->getContent());
     }
 
+    /**
+     * @test
+     */
+    public function whenBasicErrorHandlerIsUsed(): void
+    {
+        $handler = $this->getHandler();
+
+        $handler->error(function(Throwable $throwable, $code, $fromConsole) {
+            return new JsonResponse([
+                'from_console'  => $fromConsole,
+                'message'       => 'Error'
+            ], 500);
+        });
+
+        $handler->error(function(NotFoundHttpException $exception, $code, $fromConsole) {
+            return new JsonResponse([
+                'from_console'  => $fromConsole,
+                'message'       => $exception->getMessage()
+            ], $code);
+        });
+
+        $response = $handler->handleException(new BindingResolutionException("not found"));
+
+        self::assertEquals(500, $response->getStatusCode());
+        self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"Error"}', $response->getContent());
+    }
+
     protected function getHandler(bool $debug = true): Handler
     {
         $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
