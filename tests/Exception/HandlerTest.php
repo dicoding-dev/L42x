@@ -141,6 +141,40 @@ class HandlerTest extends TestCase
         self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"Error"}', $response->getContent());
     }
 
+    /**
+     * @test
+     */
+    public function whenHandlerDoesNotReturnResponse(): void
+    {
+        $handler = $this->getHandler();
+
+        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
+            return;
+        });
+
+        $handler->handleException(new BindingResolutionException("not found"));
+
+        $this->debugDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
+        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
+    }
+
+    /**
+     * @test
+     */
+    public function whenHandlerDoesNotReturnResponseInProduction(): void
+    {
+        $handler = $this->getHandler(false);
+
+        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
+            return;
+        });
+
+        $handler->handleException(new BindingResolutionException("not found"));
+
+        $this->debugDisplayer->display(Argument::cetera())->shouldNotBeCalled();
+        $this->plainDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
+    }
+
     protected function getHandler(bool $debug = true): Handler
     {
         $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
