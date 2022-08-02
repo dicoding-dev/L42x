@@ -4,17 +4,24 @@ use Illuminate\Container\BindingResolutionException;
 use Illuminate\Exception\ExceptionDisplayerInterface;
 use Illuminate\Exception\Handler;
 use Illuminate\Support\Contracts\ResponsePreparerInterface;
-use L4\Tests\BackwardCompatibleTestCase;
-use Mockery as m;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
-class HandlerTest extends BackwardCompatibleTestCase
+class HandlerTest extends TestCase
 {
+    use ProphecyTrait;
+
     protected function setUp(): void
     {
-        $this->responsePreparer = m::mock(ResponsePreparerInterface::class);
-        $this->plainDisplayer = m::mock(ExceptionDisplayerInterface::class);
-        $this->debugDisplayer = m::mock(ExceptionDisplayerInterface::class);
-        $this->handler = new Handler($this->responsePreparer, $this->plainDisplayer, $this->debugDisplayer);
+        $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
+        $this->plainDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
+        $this->debugDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
+        $this->handler = new Handler(
+            $this->responsePreparer->reveal(),
+            $this->plainDisplayer->reveal(),
+            $this->debugDisplayer->reveal()
+        );
     }
 
 
@@ -56,7 +63,7 @@ class HandlerTest extends BackwardCompatibleTestCase
             $exceptionCaught = $exception;
         });
 
-        $this->debugDisplayer->allows()->display()->with(BindingResolutionException::class)->once();
+        $this->debugDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
 
         $this->handler->handleException(new BindingResolutionException("not resolved", 111));
 
