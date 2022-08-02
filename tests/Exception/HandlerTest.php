@@ -50,17 +50,23 @@ class HandlerTest extends TestCase
      */
     public function handleExceptions(): void
     {
-        $exceptionCaught = null;
-        ($handler = $this->getHandler())->error(function(BindingResolutionException $exception) use (&$exceptionCaught) {
-            $exceptionCaught = $exception;
-        });
-
+        $handler = $this->getHandler();
         $this->debugDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
         $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
 
+        $exceptionCaught = new stdClass();
+        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) use (&$exceptionCaught) {
+            $exceptionCaught->exception = $exception;
+            $exceptionCaught->code = $code;
+            $exceptionCaught->fromConsole = $fromConsole;
+        });
+
         $handler->handleException(new BindingResolutionException("not resolved", 111));
 
-        self::assertNotNull($exceptionCaught);
+        self::assertNotNull($exceptionCaught->exception);
+        self::assertInstanceOf(BindingResolutionException::class, $exceptionCaught->exception);
+        self::assertEquals(500, $exceptionCaught->code);
+        self::assertFalse($exceptionCaught->fromConsole);
     }
 
     protected function getHandler(bool $debug = true): Handler
