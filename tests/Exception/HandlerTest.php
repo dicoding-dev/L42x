@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class HandlerTest extends TestCase
 {
@@ -66,6 +67,30 @@ class HandlerTest extends TestCase
         self::assertNotNull($exceptionCaught->exception);
         self::assertInstanceOf(BindingResolutionException::class, $exceptionCaught->exception);
         self::assertEquals(500, $exceptionCaught->code);
+        self::assertFalse($exceptionCaught->fromConsole);
+    }
+
+    /**
+     * @test
+     */
+    public function handlingHttpException(): void
+    {
+        $handler = $this->getHandler();
+        $this->debugDisplayer->display(Argument::type(NotFoundHttpException::class))->shouldBeCalledOnce();
+        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
+
+        $exceptionCaught = new stdClass();
+        $handler->error(function(NotFoundHttpException $exception, $code, $fromConsole) use (&$exceptionCaught) {
+            $exceptionCaught->exception = $exception;
+            $exceptionCaught->code = $code;
+            $exceptionCaught->fromConsole = $fromConsole;
+        });
+
+        $handler->handleException(new NotFoundHttpException("not found"));
+
+        self::assertNotNull($exceptionCaught->exception);
+        self::assertInstanceOf(NotFoundHttpException::class, $exceptionCaught->exception);
+        self::assertEquals(404, $exceptionCaught->code);
         self::assertFalse($exceptionCaught->fromConsole);
     }
 
