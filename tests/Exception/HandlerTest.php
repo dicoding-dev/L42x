@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Container\BindingResolutionException;
 use Illuminate\Exception\ExceptionDisplayerInterface;
 use Illuminate\Exception\Handler;
 use Illuminate\Support\Contracts\ResponsePreparerInterface;
@@ -44,4 +45,21 @@ class HandlerTest extends BackwardCompatibleTestCase
 		$this->assertSame('', $error->getFile(), 'error handler should use correct default path');
 		$this->assertSame(0, $error->getLine(), 'error handler should use correct default line');
 	}
+
+    /**
+     * @test
+     */
+    public function handleExceptions(): void
+    {
+        $exceptionCaught = null;
+        $this->handler->error(function(BindingResolutionException $exception) use (&$exceptionCaught) {
+            $exceptionCaught = $exception;
+        });
+
+        $this->debugDisplayer->allows()->display()->with(BindingResolutionException::class)->once();
+
+        $this->handler->handleException(new BindingResolutionException("not resolved", 111));
+
+        self::assertNotNull($exceptionCaught);
+    }
 }
