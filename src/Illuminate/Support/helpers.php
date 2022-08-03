@@ -529,8 +529,8 @@ if ( ! function_exists('e'))
 	/**
 	 * Escape HTML entities in a string.
 	 *
-	 * @param  string  $value
-	 * @return string
+	 * @param  string|null  $value
+	 * @return string|null
 	 */
 	function e($value)
 	{
