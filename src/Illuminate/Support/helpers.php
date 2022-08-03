@@ -533,7 +533,7 @@ if ( ! function_exists('e'))
 	 *
 	 * @return string|null
 	 */
-	function e(?string $value): ?string
+	function e(?string $value = null): ?string
     {
         if ($value === null) {
             return null;
