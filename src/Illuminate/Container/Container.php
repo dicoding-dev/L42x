@@ -265,7 +265,7 @@ class Container implements ArrayAccess, ContainerInterface {
      * Register a binding with the container.
      *
      * @param string|array $abstract
-     * @param null         $concrete
+     * @param              $concrete
      * @param bool         $shared
      *
      * @return void
