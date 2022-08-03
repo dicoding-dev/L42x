@@ -529,11 +529,12 @@ if ( ! function_exists('e'))
 	/**
 	 * Escape HTML entities in a string.
 	 *
-	 * @param  string|null  $value
+	 * @param string|null $value
+	 *
 	 * @return string|null
 	 */
-	function e($value)
-	{
+	function e(?string $value): ?string
+    {
         if ($value === null) {
             return null;
         }
