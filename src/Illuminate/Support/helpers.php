@@ -534,6 +534,10 @@ if ( ! function_exists('e'))
 	 */
 	function e($value)
 	{
+        if ($value === null) {
+            return null;
+        }
+
 		return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
 	}
 }
