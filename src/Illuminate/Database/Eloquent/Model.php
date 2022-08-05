@@ -2868,10 +2868,8 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 
 	/**
 	 * Get the current connection name for the model.
-	 *
-	 * @return string
 	 */
-	public function getConnectionName():string
+	public function getConnectionName(): ?string
 	{
 		return $this->connection;
 	}
