@@ -82,9 +82,9 @@ class CacheBasedSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function gc(int $lifetime): int|false
+	public function gc(int $max_lifetime): int|false
 	{
-		return true;
+		return 1;
 	}
 
 	/**
