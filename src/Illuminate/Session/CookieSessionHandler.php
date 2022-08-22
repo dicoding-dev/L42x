@@ -7,17 +7,13 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 
 	/**
 	 * The cookie jar instance.
-	 *
-	 * @var \Illuminate\Cookie\CookieJar
 	 */
-	protected $cookie;
+	protected CookieJar $cookie;
 
 	/**
 	 * The request instance.
-	 *
-	 * @var \Symfony\Component\HttpFoundation\Request
 	 */
-	protected $request;
+	protected Request $request;
 
 	/**
 	 * Create a new cookie driven handler instance.
@@ -35,7 +31,7 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function open($savePath, $sessionName): bool
+	public function open(string $path, string $name): bool
     {
 		return true;
 	}
@@ -51,34 +47,38 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function read($sessionId): string|false
+	public function read($id): string|false
 	{
-		return $this->request->cookies->get($sessionId) ?: '';
+		return $this->request->cookies->get($id) ?: '';
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function write($sessionId, $data): bool
+	public function write(string $id, string $data): bool
 	{
-		$this->cookie->queue($sessionId, $data, $this->minutes);
+		$this->cookie->queue($id, $data, $this->minutes);
         return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function destroy($sessionId): bool
+	public function destroy(string $id): bool
 	{
-		$this->cookie->queue($this->cookie->forget($sessionId));
+		try {
+            $this->cookie->queue($this->cookie->forget($id));
+        } catch (\Throwable) {
+            return false;
+        }
 
-        return true;
+        return 1;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function gc($lifetime): int|false
+	public function gc(int $max_lifetime): int|false
     {
 		return true;
 	}
