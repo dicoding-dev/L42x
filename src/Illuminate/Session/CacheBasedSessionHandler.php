@@ -6,17 +6,13 @@ class CacheBasedSessionHandler implements \SessionHandlerInterface {
 
 	/**
 	 * The cache repository instance.
-	 *
-	 * @var \Illuminate\Cache\Repository
 	 */
-	protected $cache;
+	protected Repository $cache;
 
 	/**
 	 * The number of minutes to store the data in the cache.
-	 *
-	 * @var int
 	 */
-	protected $minutes;
+	protected int $minutes;
 
 	/**
 	 * Create a new cache driven handler instance.
@@ -34,7 +30,7 @@ class CacheBasedSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function open($savePath, $sessionName)
+	public function open(string $path, string $name): bool
 	{
 		return true;
 	}
@@ -42,7 +38,7 @@ class CacheBasedSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function close()
+	public function close(): bool
 	{
 		return true;
 	}
@@ -50,42 +46,52 @@ class CacheBasedSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function read($sessionId)
+	public function read(string $id): string|false
 	{
-		return $this->cache->get($sessionId, '');
+		return $this->cache->get($id, '');
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function write($sessionId, $data)
+	public function write(string $id, string $data): bool
 	{
-		return $this->cache->put($sessionId, $data, $this->minutes);
+		try {
+            $this->cache->put($id, $data, $this->minutes);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function destroy($sessionId)
+	public function destroy(string $id): bool
 	{
-		return $this->cache->forget($sessionId);
+		try {
+            $this->cache->forget($id);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function gc($lifetime)
+	public function gc(int $lifetime): int|false
 	{
 		return true;
 	}
 
 	/**
 	 * Get the underlying cache repository.
-	 *
-	 * @return \Illuminate\Cache\Repository
 	 */
-	public function getCache()
-	{
+	public function getCache(): Repository
+    {
 		return $this->cache;
 	}
 
