@@ -531,9 +531,9 @@ if ( ! function_exists('e'))
 	 *
 	 * @param string|null $value
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	function e(?string $value = null): ?string
+	function e(?string $value = null): string
     {
         if ($value === null) {
             return '';
