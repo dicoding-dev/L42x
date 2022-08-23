@@ -536,7 +536,7 @@ if ( ! function_exists('e'))
 	function e(?string $value = null): ?string
     {
         if ($value === null) {
-            return null;
+            return '';
         }
 
 		return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
