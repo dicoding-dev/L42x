@@ -258,14 +258,15 @@ class Str
     /**
      * Replace the given value in the given string.
      *
-     * @param  string|string[]  $search
-     * @param  string|string[]  $replace
-     * @param  string|string[]  $subject
+     * @param string|string[] $search
+     * @param string|string[] $replace
+     * @param string|null     $subject
+     *
      * @return string
      */
-    public static function replace($search, $replace, $subject)
+    public static function replace(string|array $search, string|array $replace, ?string $subject = null)
     {
-        return str_replace($search, $replace, $subject);
+        return str_replace($search, $replace, $subject ?? '');
     }
 
 	/**

@@ -177,5 +177,7 @@ class SupportStrTest extends TestCase
         $this->assertSame('foo bar baz 8.x', Str::replace('?', '8.x', 'foo bar baz ?'));
         $this->assertSame('foo/bar/baz', Str::replace(' ', '/', 'foo bar baz'));
         $this->assertSame('foo bar baz', Str::replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], '?1 ?2 ?3'));
+        $this->assertEquals('', Str::replace('Yo', 'Laravel', ''));
+        $this->assertEquals('', Str::replace('Yo', 'Laravel', null));
     }
 }
