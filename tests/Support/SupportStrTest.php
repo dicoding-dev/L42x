@@ -130,6 +130,8 @@ class SupportStrTest extends TestCase
 	public function testLimit(): void
     {
 		$this->assertEquals('Laravel is...', Str::limit('Laravel is a free, open source PHP web application framework.', 10));
+        $this->assertEquals('', Str::limit(null));
+        $this->assertEquals('', Str::limit(''));
 	}
 
 

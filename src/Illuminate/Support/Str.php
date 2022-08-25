@@ -163,8 +163,12 @@ class Str
 	 *
 	 * @return string
 	 */
-	public static function limit(string $value, int $limit = 100, string $end = '...'): string
+	public static function limit(?string $value = null, int $limit = 100, string $end = '...'): string
     {
+        if (empty($value)) {
+            return '';
+        }
+
 		if (mb_strlen($value) <= $limit) return $value;
 
 		return rtrim(mb_substr($value, 0, $limit, 'UTF-8')).$end;
