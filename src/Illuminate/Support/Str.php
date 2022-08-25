@@ -173,9 +173,9 @@ class Str
 	 *
 	 * @return string
 	 */
-	public static function lower(string $value): string
+	public static function lower(?string $value = null): string
     {
-		return mb_strtolower($value);
+		return mb_strtolower($value ?? '');
 	}
 
 	/**

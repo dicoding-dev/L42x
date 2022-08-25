@@ -112,6 +112,7 @@ class SupportStrTest extends TestCase
     {
 		$this->assertEquals('foo bar baz', Str::lower('FOO BAR BAZ'));
 		$this->assertEquals('foo bar baz', Str::lower('fOo Bar bAz'));
+        $this->assertEquals('', Str::lower());
 	}
 
 
