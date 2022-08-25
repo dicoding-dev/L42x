@@ -142,16 +142,16 @@ class Str
 		return (bool) preg_match('#^'.$pattern.'#', $value);
 	}
 
-	/**
-	 * Return the length of the given string.
-	 *
-	 * @param string $value
-	 *
-	 * @return int
-	 */
-	public static function length(string $value): int
+    /**
+     * Return the length of the given string.
+     *
+     * @param string|null $value
+     *
+     * @return int
+     */
+	public static function length(?string $value = null): int
     {
-		return mb_strlen($value);
+		return mb_strlen($value ?? '');
 	}
 
 	/**

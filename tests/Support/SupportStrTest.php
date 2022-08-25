@@ -136,6 +136,8 @@ class SupportStrTest extends TestCase
 	public function testLength(): void
     {
 		$this->assertEquals(11, Str::length('foo bar baz'));
+        $this->assertEquals(0, Str::length(''));
+        $this->assertEquals(0, Str::length(null));
 	}
 
 
