@@ -393,4 +393,12 @@ class Str
 		return static::$studlyCache[$key] = str_replace(' ', '', $value);
 	}
 
+    public static function numberFormat(
+        ?float $num = 0.0,
+        ?int $decimals = 0,
+        ?string $decimal_separator = ".",
+        ?string $thousands_separator = ","
+    ): string {
+        return number_format($num, $decimals, $decimal_separator, $thousands_separator);
+    }
 }
