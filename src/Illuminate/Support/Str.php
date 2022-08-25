@@ -59,16 +59,20 @@ class Str
 		return static::$camelCache[$value] = lcfirst(static::studly($value));
 	}
 
-	/**
-	 * Determine if a given string contains a given substring.
-	 *
-	 * @param string       $haystack
-	 * @param array|string $needles
-	 *
-	 * @return bool
-	 */
-	public static function contains(string $haystack, array|string $needles): bool
+    /**
+     * Determine if a given string contains a given substring.
+     *
+     * @param string            $haystack
+     * @param array|string|null $needles
+     *
+     * @return bool
+     */
+	public static function contains(string $haystack, array|string $needles = null): bool
     {
+        if (empty($needles)) {
+            return false;
+        }
+
 		foreach ((array) $needles as $needle)
 		{
 			if (!empty($needle) && str_contains($haystack, (string)$needle)) {
