@@ -112,7 +112,7 @@ class SupportStrTest extends TestCase
     {
 		$this->assertEquals('foo bar baz', Str::lower('FOO BAR BAZ'));
 		$this->assertEquals('foo bar baz', Str::lower('fOo Bar bAz'));
-        $this->assertEquals('', Str::lower());
+        $this->assertEquals('', Str::lower(null));
 	}
 
 
@@ -120,6 +120,7 @@ class SupportStrTest extends TestCase
     {
 		$this->assertEquals('FOO BAR BAZ', Str::upper('foo bar baz'));
 		$this->assertEquals('FOO BAR BAZ', Str::upper('foO bAr BaZ'));
+        $this->assertEquals('', Str::upper(null));
 	}
 
 

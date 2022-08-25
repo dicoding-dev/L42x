@@ -270,9 +270,9 @@ class Str
 	 *
 	 * @return string
 	 */
-	public static function upper(string $value): string
+	public static function upper(?string $value = null): string
     {
-		return mb_strtoupper($value);
+		return mb_strtoupper($value ?? '');
 	}
 
 	/**
