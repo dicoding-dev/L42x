@@ -399,6 +399,6 @@ class Str
         ?string $decimal_separator = ".",
         ?string $thousands_separator = ","
     ): string {
-        return number_format($num, $decimals, $decimal_separator, $thousands_separator);
+        return number_format($num ?? 0.0, $decimals, $decimal_separator, $thousands_separator);
     }
 }

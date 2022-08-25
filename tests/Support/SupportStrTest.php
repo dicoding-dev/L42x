@@ -157,6 +157,7 @@ class SupportStrTest extends TestCase
         $this->assertEquals('1,000,000', Str::numberFormat(1000000));
         $this->assertEquals('150.000,00', Str::numberFormat(150000, 2, ',', '.'));
         $this->assertEquals('0', Str::numberFormat());
+        $this->assertEquals('0', Str::numberFormat(null));
     }
 
 }
