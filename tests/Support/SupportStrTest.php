@@ -30,6 +30,7 @@ class SupportStrTest extends TestCase
     {
 		$this->assertEquals('Jefferson Costella', Str::title('jefferson costella'));
 		$this->assertEquals('Jefferson Costella', Str::title('jefFErson coSTella'));
+        $this->assertEquals('Admin_Role', Str::title('admin_role'));
         $this->assertEquals('', Str::title(null));
         $this->assertEquals('', Str::title(''));
 	}
@@ -170,4 +171,11 @@ class SupportStrTest extends TestCase
         $this->assertEquals('0', Str::numberFormat(null));
     }
 
+    public function testReplace(): void
+    {
+        $this->assertSame('foo bar laravel', Str::replace('baz', 'laravel', 'foo bar baz'));
+        $this->assertSame('foo bar baz 8.x', Str::replace('?', '8.x', 'foo bar baz ?'));
+        $this->assertSame('foo/bar/baz', Str::replace(' ', '/', 'foo bar baz'));
+        $this->assertSame('foo bar baz', Str::replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], '?1 ?2 ?3'));
+    }
 }

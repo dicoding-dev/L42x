@@ -255,6 +255,19 @@ class Str
         return $string;
 	}
 
+    /**
+     * Replace the given value in the given string.
+     *
+     * @param  string|string[]  $search
+     * @param  string|string[]  $replace
+     * @param  string|string[]  $subject
+     * @return string
+     */
+    public static function replace($search, $replace, $subject)
+    {
+        return str_replace($search, $replace, $subject);
+    }
+
 	/**
 	 * Generate a "random" alpha-numeric string.
 	 *
