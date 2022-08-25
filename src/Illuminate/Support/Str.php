@@ -283,16 +283,16 @@ class Str
 		return mb_strtoupper($value ?? '');
 	}
 
-	/**
-	 * Convert the given string to title case.
-	 *
-	 * @param string $value
-	 *
-	 * @return string
-	 */
-	public static function title(string $value): string
+    /**
+     * Convert the given string to title case.
+     *
+     * @param string|null $value
+     *
+     * @return string
+     */
+	public static function title(?string $value = null): string
     {
-		return mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+		return mb_convert_case($value ?? '', MB_CASE_TITLE, 'UTF-8');
 	}
 
 	/**

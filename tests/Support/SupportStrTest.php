@@ -30,6 +30,8 @@ class SupportStrTest extends TestCase
     {
 		$this->assertEquals('Jefferson Costella', Str::title('jefferson costella'));
 		$this->assertEquals('Jefferson Costella', Str::title('jefFErson coSTella'));
+        $this->assertEquals('', Str::title(null));
+        $this->assertEquals('', Str::title(''));
 	}
 
 
