@@ -62,14 +62,14 @@ class Str
     /**
      * Determine if a given string contains a given substring.
      *
-     * @param string            $haystack
+     * @param string|null       $haystack
      * @param array|string|null $needles
      *
      * @return bool
      */
-	public static function contains(string $haystack, array|string $needles = null): bool
+	public static function contains(?string $haystack = null, array|string $needles = null): bool
     {
-        if (empty($needles)) {
+        if (empty($haystack) || empty($needles)) {
             return false;
         }
 
