@@ -54,6 +54,20 @@ class SupportStrTest extends TestCase
 		$this->assertFalse(Str::startsWith('jason', ''));
 	}
 
+    public function testEquals(): void
+    {
+        self::assertTrue(Str::equals('1234', '1234'));
+        self::assertTrue(Str::equals('Laravel', 'Laravel'));
+        self::assertTrue(Str::equals('Laravel', 'laRaVeL'));
+        self::assertFalse(Str::equals('Laravel', 'laRaVeL', true));
+        self::assertTrue(Str::equals('', ''));
+        self::assertTrue(Str::equals('', null));
+        self::assertTrue(Str::equals());
+        self::assertFalse(Str::equals(null, 'Laravel'));
+        self::assertFalse(Str::equals('Laravel'));
+        self::assertFalse(Str::equals('Laravel', null, true));
+    }
+
 
 	public function testEndsWith(): void
     {

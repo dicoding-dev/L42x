@@ -103,6 +103,16 @@ class Str
 		return false;
 	}
 
+    public static function equals(?string $first = null, ?string $second = null, bool $caseSensitive = false): bool
+    {
+        if (!$caseSensitive) {
+            $first = self::lower($first);
+            $second = self::lower($second);
+        }
+
+        return strcmp($first ?? '', $second ?? '') === 0;
+    }
+
 	/**
 	 * Cap a string with a single instance of a given value.
 	 *
