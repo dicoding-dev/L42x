@@ -197,7 +197,16 @@ class HandlerTest extends TestCase
      */
     public function whenHandlerThrowsInProduction(): void
     {
+        $handler = $this->getHandler(false);
 
+        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
+            throw new DomainException('Nooo');
+        });
+
+        $handler->handleException(new BindingResolutionException("not found"));
+
+        $this->debugDisplayer->display(Argument::cetera())->shouldNotBeCalled();
+        $this->plainDisplayer->display(Argument::type(DomainException::class))->shouldBeCalledOnce();
     }
 
     protected function getHandler(bool $debug = true): Handler
