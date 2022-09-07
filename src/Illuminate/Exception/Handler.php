@@ -64,7 +64,7 @@ class Handler {
 	public function __construct(ResponsePreparerInterface $responsePreparer,
                                 ExceptionDisplayerInterface $plainDisplayer,
                                 ExceptionDisplayerInterface $debugDisplayer,
-                                $debug = true)
+                                $debug = false)
 	{
 		$this->debug = $debug;
 		$this->plainDisplayer = $plainDisplayer;
