@@ -175,6 +175,31 @@ class HandlerTest extends TestCase
         $this->plainDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
     }
 
+    /**
+     * @test
+     */
+    public function whenHandlerThrows(): void
+    {
+        $handler = $this->getHandler();
+
+        $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
+            throw new DomainException('Nooo');
+        });
+
+        $handler->handleException(new BindingResolutionException("not found"));
+
+        $this->debugDisplayer->display(Argument::type(DomainException::class))->shouldBeCalledOnce();
+        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
+    }
+
+    /**
+     * @test
+     */
+    public function whenHandlerThrowsInProduction(): void
+    {
+
+    }
+
     protected function getHandler(bool $debug = true): Handler
     {
         $this->responsePreparer = $this->prophesize(ResponsePreparerInterface::class);
