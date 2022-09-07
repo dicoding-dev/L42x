@@ -144,15 +144,18 @@ class Handler {
 	 */
 	public function handleException($exception)
 	{
-		$response = $this->callCustomHandlers($exception);
+		try {
+            $response = $this->callCustomHandlers($exception);
 
-		// If one of the custom error handlers returned a response, we will send that
-		// response back to the client after preparing it. This allows a specific
-		// type of exceptions to handled by a Closure giving great flexibility.
-		if ( ! is_null($response))
-		{
-			return $this->prepareResponse($response);
-		}
+            // If one of the custom error handlers returned a response, we will send that
+            // response back to the client after preparing it. This allows a specific
+            // type of exceptions to handled by a Closure giving great flexibility.
+            if ( ! is_null($response)) {
+                return $this->prepareResponse($response);
+            }
+        } catch (\Throwable $throwable) {
+            $exception = $throwable;
+        }
 
 		// If no response was sent by this custom exception handler, we will call the
 		// default exception displayer for the current application context and let
@@ -212,7 +215,11 @@ class Handler {
 	 */
 	public function handleConsole($exception)
 	{
-		return $this->callCustomHandlers($exception, true);
+		try {
+            return $this->callCustomHandlers($exception, true);
+        } catch (\Throwable $throwable) {
+            return $throwable->getMessage();
+        }
 	}
 
 	/**
@@ -243,14 +250,7 @@ class Handler {
                 continue;
             }
 
-            // We will wrap this handler in a try / catch and avoid white screens of death
-			// if any exceptions are thrown from a handler itself. This way we will get
-			// at least some errors, and avoid errors with no data or not log writes.
-			try {
-				$response = $handler($exception, $code, $fromConsole);
-			} catch (\Throwable $e) {
-				$response = $this->formatException($e);
-			}
+            $response = $handler($exception, $code, $fromConsole);
 
 			// If this handler returns a "non-null" response, we will return it so it will
 			// get sent back to the browsers. Once the handler returns a valid response
@@ -266,7 +266,6 @@ class Handler {
 	 * Display the given exception to the user.
 	 *
 	 * @param  \Exception  $exception
-	 * @return void
 	 */
 	protected function displayException($exception)
 	{
@@ -318,6 +317,7 @@ class Handler {
 	 * Format an exception thrown by a handler.
 	 *
 	 * @return string
+     * @deprecated
 	 */
 	protected function formatException(\Throwable $e): string
     {
