@@ -246,16 +246,9 @@ class Handler {
             // We will wrap this handler in a try / catch and avoid white screens of death
 			// if any exceptions are thrown from a handler itself. This way we will get
 			// at least some errors, and avoid errors with no data or not log writes.
-			try
-			{
+			try {
 				$response = $handler($exception, $code, $fromConsole);
-			}
-			catch (\Exception $e)
-			{
-				$response = $this->formatException($e);
-			}
-			catch (\Throwable $e)
-			{
+			} catch (\Throwable $e) {
 				$response = $this->formatException($e);
 			}
 
@@ -324,11 +317,10 @@ class Handler {
 	/**
 	 * Format an exception thrown by a handler.
 	 *
-	 * @param  \Exception  $e
 	 * @return string
 	 */
-	protected function formatException(\Exception $e)
-	{
+	protected function formatException(\Throwable $e): string
+    {
 		if ($this->debug)
 		{
 			$location = $e->getMessage().' in '.$e->getFile().':'.$e->getLine();
