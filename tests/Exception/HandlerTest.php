@@ -15,6 +15,9 @@ class HandlerTest extends TestCase
 {
     use ProphecyTrait;
 
+    private const DEBUG_ENABLED = true;
+    private const DEBUG_DISABLED = false;
+
     private ObjectProphecy|ResponsePreparerInterface $responsePreparer;
     private ObjectProphecy|ExceptionDisplayerInterface $plainDisplayer;
     private ObjectProphecy|ExceptionDisplayerInterface $debugDisplayer;
@@ -163,7 +166,7 @@ class HandlerTest extends TestCase
      */
     public function whenHandlerDoesNotReturnResponseInProduction(): void
     {
-        $handler = $this->getHandler(false);
+        $handler = $this->getHandler(self::DEBUG_DISABLED);
 
         $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
             return;
@@ -197,7 +200,7 @@ class HandlerTest extends TestCase
      */
     public function whenHandlerThrowsInProduction(): void
     {
-        $handler = $this->getHandler(false);
+        $handler = $this->getHandler(self::DEBUG_DISABLED);
 
         $handler->error(function(BindingResolutionException $exception, $code, $fromConsole) {
             throw new DomainException('Nooo');
