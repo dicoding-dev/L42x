@@ -125,6 +125,8 @@ class SupportStrTest extends TestCase
 		$this->assertFalse(Str::is('/', '/a'));
 		$this->assertTrue(Str::is('foo/*', 'foo/bar/baz'));
 		$this->assertTrue(Str::is('*/foo', 'blah/baz/foo'));
+        $this->assertFalse(Str::is('*/foo', ''));
+        $this->assertFalse(Str::is('*/foo', null));
 	}
 
 

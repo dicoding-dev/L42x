@@ -136,8 +136,12 @@ class Str
 	 *
 	 * @return bool
 	 */
-	public static function is(string $pattern, string $value): bool
+	public static function is(string $pattern, ?string $value = null): bool
     {
+        if (empty($value)) {
+            return false;
+        }
+
 		if ($pattern == $value) {
             return true;
         }
