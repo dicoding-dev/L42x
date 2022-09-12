@@ -42,4 +42,18 @@ class SupportUtilTest extends TestCase
 
         $this->assertTrue(Util::isEmpty($pagination));
     }
+
+    /**
+     * @test
+     */
+    public function isEmptyOnNonEmptyPaginatorObject(): void
+    {
+        $pagination = new Paginator(
+            $this->prophesize(Factory::class)->reveal(),
+            ['1', '2', '3'],
+            3
+        );
+
+        $this->assertFalse(Util::isEmpty($pagination));
+    }
 }
