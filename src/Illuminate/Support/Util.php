@@ -20,6 +20,14 @@ class Util
 
     public static function isEmpty(mixed $value): bool
     {
+        if (!isset($value)) {
+            return true;
+        }
+
+        if ($value instanceof \Countable) {
+            return $value->count() === 0;
+        }
+
         return empty($value);
     }
 }
