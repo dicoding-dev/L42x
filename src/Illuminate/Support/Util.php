@@ -18,7 +18,7 @@ class Util
         return $value instanceof Closure ? $value(...$args) : $value;
     }
 
-    public static function isEmpty(mixed $value): bool
+    public static function isEmpty(mixed $value = null): bool
     {
         if (!isset($value)) {
             return true;
