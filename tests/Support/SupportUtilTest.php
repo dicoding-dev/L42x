@@ -14,4 +14,16 @@ class SupportUtilTest extends TestCase
             return 'foo';
         }));
     }
+
+    /**
+     * @test
+     */
+    public function isValueEmpty(): void
+    {
+        $this->assertTrue(Util::isEmpty(null));
+        $this->assertTrue(Util::isEmpty(0));
+        $this->assertTrue(Util::isEmpty(''));
+        $this->assertTrue(Util::isEmpty(false));
+        $this->assertTrue(Util::isEmpty(0.0));
+    }
 }
