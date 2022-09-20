@@ -4,7 +4,8 @@ use Illuminate\Console\Command;
 
 class BaseCommand extends Command {
 
-	/**
+	protected $packagePath;
+    /**
 	 * Get the path to the migration directory.
 	 *
 	 * @return string

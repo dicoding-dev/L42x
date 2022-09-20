@@ -24,7 +24,7 @@ trait SoftDeletingTrait {
 	 *
 	 * @return void
 	 */
-	public function forceDelete()
+	public function forceDelete(): void
 	{
 		$this->forceDeleting = true;
 
@@ -38,14 +38,15 @@ trait SoftDeletingTrait {
 	 *
 	 * @return void
 	 */
-	protected function performDeleteOnModel()
+	protected function performDeleteOnModel(): void
 	{
 		if ($this->forceDeleting)
 		{
-			return $this->withTrashed()->where($this->getKeyName(), $this->getKey())->forceDelete();
+			$this->withTrashed()->where($this->getKeyName(), $this->getKey())->forceDelete();
+            return;
 		}
 
-		return $this->runSoftDelete();
+		$this->runSoftDelete();
 	}
 
 	/**

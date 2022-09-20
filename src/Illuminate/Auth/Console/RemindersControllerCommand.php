@@ -75,7 +75,7 @@ class RemindersControllerCommand extends Command {
 			$path = $this->laravel['path'].'/controllers';
 		}
 
-		return rtrim($path, '/');
+		return rtrim((string) $path, '/');
 	}
 
 	/**

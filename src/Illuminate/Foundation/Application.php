@@ -1,6 +1,8 @@
 <?php namespace Illuminate\Foundation;
 
 use Closure;
+use Illuminate\Container\BindingResolutionException;
+use ReflectionException;
 use Stack\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -28,7 +30,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 *
 	 * @var string
 	 */
-	const VERSION = '4.2.22';
+	final const VERSION = '4.2.71';
 
 	/**
 	 * Indicates if the application has "booted".
@@ -346,7 +348,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		if (array_key_exists($name, $this->loadedProviders))
 		{
-			return array_first($this->serviceProviders, function($key, $value) use ($name)
+			return array_first($this->serviceProviders, function($value, $key) use ($name)
 			{
 				return get_class($value) == $name;
 			});
@@ -441,16 +443,20 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		}
 	}
 
-	/**
-	 * Resolve the given type from the container.
-	 *
-	 * (Overriding Container::make)
-	 *
-	 * @param  string  $abstract
-	 * @param  array   $parameters
-	 * @return mixed
-	 */
-	public function make($abstract, $parameters = array())
+    /**
+     * Resolve the given type from the container.
+     *
+     * (Overriding Container::make)
+     *
+     * @param string $abstract
+     * @param array  $parameters
+     * @param bool   $raiseEvents
+     *
+     * @return mixed
+     * @throws BindingResolutionException
+     * @throws ReflectionException
+     */
+	public function make($abstract, $parameters = array(), $raiseEvents = true)
 	{
 		$abstract = $this->getAlias($abstract);
 
@@ -459,7 +465,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			$this->loadDeferredProvider($abstract);
 		}
 
-		return parent::make($abstract, $parameters);
+		return parent::make($abstract, $parameters, $raiseEvents);
 	}
 
 	/**
@@ -470,23 +476,25 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @param  string  $abstract
 	 * @return bool
 	 */
-	public function bound($abstract)
+	public function bound($abstract): bool
 	{
 		return isset($this->deferredServices[$abstract]) || parent::bound($abstract);
 	}
 
-	/**
-	 * "Extend" an abstract type in the container.
-	 *
-	 * (Overriding Container::extend)
-	 *
-	 * @param  string   $abstract
-	 * @param  \Closure  $closure
-	 * @return void
-	 *
-	 * @throws \InvalidArgumentException
-	 */
-	public function extend($abstract, Closure $closure)
+    /**
+     * "Extend" an abstract type in the container.
+     *
+     * (Overriding Container::extend)
+     *
+     * @param string   $abstract
+     * @param \Closure $closure
+     *
+     * @return void
+     *
+     * @throws BindingResolutionException
+     * @throws ReflectionException
+     */
+	public function extend($abstract, Closure $closure): void
 	{
 		$abstract = $this->getAlias($abstract);
 
@@ -495,7 +503,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			$this->loadDeferredProvider($abstract);
 		}
 
-		return parent::extend($abstract, $closure);
+		parent::extend($abstract, $closure);
 	}
 
 	/**
@@ -674,11 +682,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	{
 		foreach ($this->middlewares as $middleware)
 		{
-			list($class, $parameters) = array_values($middleware);
+			[$class, $parameters] = array_values($middleware);
 
 			array_unshift($parameters, $class);
 
-			call_user_func_array(array($stack, 'push'), $parameters);
+			call_user_func_array($stack->push(...), $parameters);
 		}
 	}
 

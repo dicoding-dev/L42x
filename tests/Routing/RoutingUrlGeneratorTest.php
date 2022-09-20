@@ -5,8 +5,8 @@ use L4\Tests\BackwardCompatibleTestCase;
 
 class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 
-	public function testBasicGeneration()
-	{
+	public function testBasicGeneration(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com/')
@@ -39,8 +39,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testBasicRouteGeneration()
-	{
+	public function testBasicRouteGeneration(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com/')
@@ -104,8 +104,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testRoutesMaintainRequestScheme()
-	{
+	public function testRoutesMaintainRequestScheme(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('https://www.foo.com/')
@@ -121,8 +121,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testHttpOnlyRoutes()
-	{
+	public function testHttpOnlyRoutes(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('https://www.foo.com/')
@@ -138,8 +138,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testRoutesWithDomains()
-	{
+	public function testRoutesWithDomains(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com/')
@@ -160,8 +160,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testRoutesWithDomainsAndPorts()
-	{
+	public function testRoutesWithDomainsAndPorts(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com:8080/')
@@ -181,8 +181,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testHttpsRoutesWithDomains()
-	{
+	public function testHttpsRoutesWithDomains(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('https://foo.com/')
@@ -198,8 +198,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testUrlGenerationForControllers()
-	{
+	public function testUrlGenerationForControllers(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com:8080/')
@@ -212,8 +212,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testForceRootUrl()
-	{
+	public function testForceRootUrl(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com/')
@@ -242,8 +242,8 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testPrevious()
-	{
+	public function testPrevious(): void
+    {
 		$url = new UrlGenerator(
 			$routes = new Illuminate\Routing\RouteCollection,
 			$request = Illuminate\Http\Request::create('http://www.foo.com/')

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Traversable;
 
 class RouteCollection implements Countable, IteratorAggregate {
 
@@ -220,7 +221,7 @@ class RouteCollection implements Countable, IteratorAggregate {
 	 */
 	protected function check(array $routes, $request, $includingMethod = true)
 	{
-		return array_first($routes, function($key, $value) use ($request, $includingMethod)
+		return array_first($routes, function($value, $key) use ($request, $includingMethod)
 		{
 			return $value->matches($request, $includingMethod);
 		});
@@ -287,7 +288,7 @@ class RouteCollection implements Countable, IteratorAggregate {
 	 *
 	 * @return \ArrayIterator
 	 */
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		return new ArrayIterator($this->getRoutes());
 	}
@@ -297,7 +298,7 @@ class RouteCollection implements Countable, IteratorAggregate {
 	 *
 	 * @return int
 	 */
-	public function count()
+	public function count(): int
 	{
 		return count($this->getRoutes());
 	}

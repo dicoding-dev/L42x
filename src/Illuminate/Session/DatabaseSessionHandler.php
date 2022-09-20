@@ -1,29 +1,24 @@
 <?php namespace Illuminate\Session;
 
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
 
 class DatabaseSessionHandler implements \SessionHandlerInterface, ExistenceAwareInterface {
 
 	/**
 	 * The database connection instance.
-	 *
-	 * @var \Illuminate\Database\Connection
 	 */
-	protected $connection;
+	protected Connection $connection;
 
 	/**
 	 * The name of the session table.
-	 *
-	 * @var string
 	 */
-	protected $table;
+	protected string $table;
 
 	/**
 	 * The existence state of the session.
-	 *
-	 * @var bool
 	 */
-	protected $exists;
+	protected bool $exists;
 
 	/**
 	 * Create a new database session handler instance.
@@ -41,7 +36,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface, ExistenceAware
 	/**
 	 * {@inheritDoc}
 	 */
-	public function open($savePath, $sessionName)
+	public function open(string $path, string $name): bool
 	{
 		return true;
 	}
@@ -49,7 +44,7 @@ class DatabaseSessionHandler implements \SessionHandlerInterface, ExistenceAware
 	/**
 	 * {@inheritDoc}
 	 */
-	public function close()
+	public function close(): bool
 	{
 		return true;
 	}
@@ -57,62 +52,72 @@ class DatabaseSessionHandler implements \SessionHandlerInterface, ExistenceAware
 	/**
 	 * {@inheritDoc}
 	 */
-	public function read($sessionId)
+	public function read(string $id): string|false
 	{
-		$session = (object) $this->getQuery()->find($sessionId);
+		$session = (object) $this->getQuery()->find($id);
 
 		if (isset($session->payload))
 		{
 			$this->exists = true;
 
-			return base64_decode($session->payload);
+			return base64_decode((string) $session->payload);
 		}
+
+        return false;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function write($sessionId, $data)
+	public function write(string $id, string $data): bool
 	{
 		if ($this->exists)
 		{
-			$this->getQuery()->where('id', $sessionId)->update([
+			$this->getQuery()->where('id', $id)->update([
 				'payload' => base64_encode($data), 'last_activity' => time(),
 			]);
 		}
 		else
 		{
 			$this->getQuery()->insert([
-				'id' => $sessionId, 'payload' => base64_encode($data), 'last_activity' => time(),
+                'id' => $id, 'payload' => base64_encode($data), 'last_activity' => time(),
 			]);
 		}
 
 		$this->exists = true;
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function destroy($sessionId)
+	public function destroy(string $id): bool
 	{
-		$this->getQuery()->where('id', $sessionId)->delete();
+		try {
+            $this->getQuery()->where('id', $id)->delete();
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function gc($lifetime)
+	public function gc(int $max_lifetime): int|false
 	{
-		$this->getQuery()->where('last_activity', '<=', time() - $lifetime)->delete();
+		return $this->getQuery()->where('last_activity', '<=', time() - $max_lifetime)->delete();
 	}
 
 	/**
 	 * Get a fresh query builder instance for the table.
 	 *
-	 * @return \Illuminate\Database\Query\Builder
+	 * @return Builder
 	 */
-	protected function getQuery()
-	{
+	protected function getQuery(): Builder
+    {
 		return $this->connection->table($this->table);
 	}
 

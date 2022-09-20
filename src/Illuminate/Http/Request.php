@@ -532,7 +532,7 @@ class Request extends SymfonyRequest {
 	 */
 	public function isJson()
 	{
-		return Str::contains($this->header('CONTENT_TYPE'), '/json');
+		return Str::contains((string) $this->header('CONTENT_TYPE'), '/json');
 	}
 
 	/**

@@ -6,6 +6,7 @@ use Illuminate\Routing\Matching\HostValidator;
 use Illuminate\Routing\Matching\MethodValidator;
 use Illuminate\Routing\Matching\SchemeValidator;
 use Illuminate\Support\Str;
+use Symfony\Component\Routing\CompiledRoute;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 
 class Route {
@@ -15,63 +16,61 @@ class Route {
 	 *
 	 * @var string
 	 */
-	protected $uri;
+	protected string $uri;
 
 	/**
 	 * The HTTP methods the route responds to.
 	 *
 	 * @var array
 	 */
-	protected $methods;
+	protected array $methods = [];
 
 	/**
 	 * The route action array.
 	 *
 	 * @var array
 	 */
-	protected $action;
+	protected array $action = [];
 
 	/**
 	 * The default values for the route.
 	 *
 	 * @var array
 	 */
-	protected $defaults = array();
+	protected array $defaults = [];
 
 	/**
 	 * The regular expression requirements.
 	 *
 	 * @var array
 	 */
-	protected $wheres = array();
+	protected array $wheres = [];
 
 	/**
 	 * The array of matched parameters.
 	 *
 	 * @var array
 	 */
-	protected $parameters;
+	protected array $parameters = [];
 
 	/**
 	 * The parameter names for the route.
 	 *
 	 * @var array|null
 	 */
-	protected $parameterNames;
+	protected ?array $parameterNames;
 
 	/**
 	 * The compiled version of the route.
-	 *
-	 * @var \Symfony\Component\Routing\CompiledRoute
 	 */
-	protected $compiled;
+	protected ?CompiledRoute $compiled = null;
 
 	/**
 	 * The validators used by the routes.
 	 *
 	 * @var array
 	 */
-	protected static $validators;
+	protected static array $validators;
 
 	/**
 	 * Create a new Route instance.
@@ -107,7 +106,7 @@ class Route {
 	{
 		$parameters = array_filter($this->parameters(), function($p) { return isset($p); });
 
-		return call_user_func_array($this->action['uses'], $parameters);
+		return call_user_func_array($this->action['uses'], array_values($parameters));
 	}
 
 	/**
@@ -142,10 +141,8 @@ class Route {
 
 		$uri = preg_replace('/\{(\w+?)\?\}/', '{$1}', $this->uri);
 
-		$this->compiled = with(
-
+		$this->compiled = (
 			new SymfonyRoute($uri, $optionals, $this->wheres, array(), $this->domain() ?: '')
-
 		)->compile();
 	}
 
@@ -224,7 +221,7 @@ class Route {
 
 		foreach ($filters as $filter)
 		{
-			$results = array_merge($results, array_map('trim', explode('|', $filter)));
+			$results = array_merge($results, array_map('trim', explode('|', (string) $filter)));
 		}
 
 		return $results;
@@ -251,7 +248,7 @@ class Route {
 	 */
 	protected static function parseParameterFilter($filter)
 	{
-		list($name, $parameters) = explode(':', $filter, 2);
+		[$name, $parameters] = explode(':', $filter, 2);
 
 		return array($name, explode(',', $parameters));
 	}
@@ -385,9 +382,7 @@ class Route {
 	 */
 	public function bindParameters(Request $request)
 	{
-		// If the route has a regular expression for the host part of the URI, we will
-		// compile that and get the parameter matches for this domain. We will then
-		// merge them into this parameters array so that this array is completed.
+		// Get the route parameters from the request
 		$params = $this->matchToKeys(
 
 			array_slice($this->bindPathParameters($request), 1)
@@ -503,7 +498,7 @@ class Route {
 	 */
 	protected function findClosure(array $action)
 	{
-		return array_first($action, function($key, $value)
+		return array_first($action, function($value, $key)
 		{
 			return is_callable($value);
 		});
@@ -805,7 +800,7 @@ class Route {
 	/**
 	 * Get the compiled version of the route.
 	 *
-	 * @return \Symfony\Component\Routing\CompiledRoute
+	 * @return CompiledRoute
 	 */
 	public function getCompiled()
 	{

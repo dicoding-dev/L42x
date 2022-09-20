@@ -5,8 +5,8 @@ use L4\Tests\BackwardCompatibleTestCase;
 
 class SupportSerializableClosureTest extends BackwardCompatibleTestCase {
 
-	public function testClosureCanBeSerializedAndRebuilt()
-	{
+	public function testClosureCanBeSerializedAndRebuilt(): void
+    {
 		$f = new S(function() { return 'hello'; });
 		$serialized = serialize($f);
 		$unserialized = unserialize($serialized);
@@ -16,8 +16,8 @@ class SupportSerializableClosureTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testClosureCanBeSerializedAndRebuiltAndInheritState()
-	{
+	public function testClosureCanBeSerializedAndRebuiltAndInheritState(): void
+    {
 		$a = 1;
 		$b = 1;
 		$f = new S(function($i) use ($a, $b)

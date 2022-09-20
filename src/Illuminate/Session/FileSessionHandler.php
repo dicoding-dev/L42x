@@ -7,17 +7,13 @@ class FileSessionHandler implements \SessionHandlerInterface {
 
 	/**
 	 * The filesystem instance.
-	 *
-	 * @var \Illuminate\Filesystem\Filesystem
 	 */
-	protected $files;
+	protected Filesystem $files;
 
 	/**
 	 * The path where sessions should be stored.
-	 *
-	 * @var string
 	 */
-	protected $path;
+	protected string $path;
 
 	/**
 	 * Create a new file driven handler instance.
@@ -35,7 +31,15 @@ class FileSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function open($savePath, $sessionName)
+	public function open(string $path, string $name): bool
+    {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function close(): bool
 	{
 		return true;
 	}
@@ -43,17 +47,9 @@ class FileSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function close()
-	{
-		return true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function read($sessionId)
-	{
-		if ($this->files->exists($path = $this->path.'/'.$sessionId))
+	public function read(string $id): false|string
+    {
+		if ($this->files->exists($path = $this->path.'/'.$id))
 		{
 			return $this->files->get($path);
 		}
@@ -64,34 +60,48 @@ class FileSessionHandler implements \SessionHandlerInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function write($sessionId, $data)
+	public function write($id, $data): bool
 	{
-		$this->files->put($this->path.'/'.$sessionId, $data, true);
+		try {
+            $this->files->put($this->path.'/'.$id, $data, true);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function destroy($sessionId)
+	public function destroy(string $id): bool
 	{
-		$this->files->delete($this->path.'/'.$sessionId);
+		try {
+            $this->files->delete($this->path.'/'.$id);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function gc($lifetime)
+	public function gc(int $max_lifetime): int|false
 	{
 		$files = Finder::create()
 					->in($this->path)
 					->files()
 					->ignoreDotFiles(true)
-					->date('<= now - '.$lifetime.' seconds');
+					->date('<= now - '.$max_lifetime.' seconds');
 
 		foreach ($files as $file)
 		{
 			$this->files->delete($file->getRealPath());
 		}
+
+        return count($files);
 	}
 
 }

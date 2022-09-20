@@ -272,7 +272,7 @@ class Factory {
 	{
 		$extensions = array_keys($this->extensions);
 
-		return array_first($extensions, function($key, $value) use ($path)
+		return array_first($extensions, function($value, $key) use ($path)
 		{
 			return ends_with($path, $value);
 		});
@@ -581,7 +581,7 @@ class Factory {
 	{
 		if (isset($this->sections[$section]))
 		{
-			$content = str_replace('@parent', $content, $this->sections[$section]);
+			$content = str_replace('@parent', $content, (string) $this->sections[$section]);
 		}
 
 		$this->sections[$section] = $content;
@@ -603,7 +603,7 @@ class Factory {
 			$sectionContent = $this->sections[$section];
 		}
 
-		return str_replace('@parent', '', $sectionContent);
+		return str_replace('@parent', '', (string) $sectionContent);
 	}
 
 	/**

@@ -27,7 +27,7 @@ class AuthDatabaseReminderRepositoryTest extends BackwardCompatibleTestCase
         $results = $repo->create($user);
 
         $this->assertIsString($results);
-        $this->assertGreaterThan(1, strlen($results));
+        $this->assertGreaterThan(1, strlen((string) $results));
     }
 
 

@@ -15,7 +15,7 @@ class FoundationArtisanTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testArtisanIsCalledWithProperArguments()
+    public function testArtisanIsCalledWithProperArguments(): void
     {
         $artisan = $this->getMock(
             Artisan::class,

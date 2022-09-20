@@ -29,7 +29,7 @@ class EncrypterTest extends BackwardCompatibleTestCase
         $this->expectExceptionMessage("The payload is invalid.");
         $e = $this->getEncrypter();
         $payload = $e->encrypt('foo');
-        $payload = str_shuffle($payload);
+        $payload = str_shuffle((string) $payload);
         $e->decrypt($payload);
     }
 

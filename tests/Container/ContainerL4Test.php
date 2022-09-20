@@ -1,21 +1,36 @@
 <?php
 
+namespace Illuminate\Tests\Container;
+
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Container\Container;
-use L4\Tests\BackwardCompatibleTestCase;
+use Mockery as m;
+use PHPUnit\Framework\TestCase;
+use stdClass;
 
-class ContainerTest extends BackwardCompatibleTestCase {
+/**
+ * These tests check backward compatibility with the
+ * container in L4 edition.
+ *
+ * Please don't delete these tests.
+ */
+class ContainerL4Test extends TestCase
+{
+    public function tearDown(): void
+    {
+        m::close();
+    }
 
-	public function testClosureResolution()
-	{
+	public function testClosureResolution(): void
+    {
 		$container = new Container;
 		$container->bind('name', function() { return 'Taylor'; });
 		$this->assertEquals('Taylor', $container->make('name'));
 	}
 
 
-	public function testBindIfDoesntRegisterIfServiceAlreadyRegistered()
-	{
+	public function testBindIfDoesntRegisterIfServiceAlreadyRegistered(): void
+    {
 		$container = new Container;
 		$container->bind('name', function() { return 'Taylor'; });
 		$container->bindIf('name', function() { return 'Dayle'; });
@@ -24,8 +39,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testSharedClosureResolution()
-	{
+	public function testSharedClosureResolution(): void
+    {
 		$container = new Container;
 		$class = new stdClass;
 		$container->singleton('class', function() use ($class) { return $class; });
@@ -33,64 +48,94 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testAutoConcreteResolution()
-	{
+	public function testAutoConcreteResolution(): void
+    {
 		$container = new Container;
-		$this->assertInstanceOf('ContainerConcreteStub', $container->make('ContainerConcreteStub'));
+		$this->assertInstanceOf(
+            ContainerConcreteStub::class,
+            $container->make(ContainerConcreteStub::class)
+        );
 	}
 
 
-	public function testSlashesAreHandled()
-	{
+	public function testSlashesAreHandled(): void
+    {
 		$container = new Container;
 		$container->bind('\Foo', function() { return 'hello'; });
 		$this->assertEquals('hello', $container->make('Foo'));
 	}
 
 
-	public function testParametersCanOverrideDependencies()
-	{
+	public function testParametersCanOverrideDependencies(): void
+    {
 		$container = new Container;
-		$stub = new ContainerDependentStub($mock = $this->getMock('IContainerContractStub'));
-		$resolved = $container->make('ContainerNestedDependentStub', [$stub]);
-		$this->assertInstanceOf('ContainerNestedDependentStub', $resolved);
+		$stub = new ContainerDependentStub($mock = m::mock(IContainerContractStub::class));
+		$resolved = $container->make(ContainerNestedDependentStub::class, [$stub]);
+		$this->assertInstanceOf(ContainerNestedDependentStub::class, $resolved);
 		$this->assertEquals($mock, $resolved->inner->impl);
 	}
 
 
-	public function testSharedConcreteResolution()
-	{
+	public function testSharedConcreteResolution(): void
+    {
 		$container = new Container;
-		$container->singleton('ContainerConcreteStub');
+		$container->singleton(ContainerConcreteStub::class);
 		$bindings = $container->getBindings();
 
-		$var1 = $container->make('ContainerConcreteStub');
-		$var2 = $container->make('ContainerConcreteStub');
+		$var1 = $container->make(ContainerConcreteStub::class);
+		$var2 = $container->make(ContainerConcreteStub::class);
 		$this->assertSame($var1, $var2);
 	}
 
+    public function testSingletonIfDoesntRegisterIfBindingAlreadyRegistered(): void
+    {
+        $container = new Container;
+        $container->singleton('class', function () {
+            return new stdClass;
+        });
+        $firstInstantiation = $container->make('class');
+        $container->singletonIf('class', function () {
+            return new ContainerConcreteStub;
+        });
+        $secondInstantiation = $container->make('class');
+        $this->assertSame($firstInstantiation, $secondInstantiation);
+    }
 
-	public function testAbstractToConcreteResolution()
-	{
+    public function testSingletonIfDoesRegisterIfBindingNotRegisteredYet(): void
+    {
+        $container = new Container;
+        $container->singleton('class', function () {
+            return new stdClass;
+        });
+        $container->singletonIf('otherClass', function () {
+            return new ContainerConcreteStub;
+        });
+        $firstInstantiation = $container->make('otherClass');
+        $secondInstantiation = $container->make('otherClass');
+        $this->assertSame($firstInstantiation, $secondInstantiation);
+    }
+
+	public function testAbstractToConcreteResolution(): void
+    {
 		$container = new Container;
-		$container->bind('IContainerContractStub', 'ContainerImplementationStub');
-		$class = $container->make('ContainerDependentStub');
-		$this->assertInstanceOf('ContainerImplementationStub', $class->impl);
+		$container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
+		$class = $container->make(ContainerDependentStub::class);
+		$this->assertInstanceOf(ContainerImplementationStub::class, $class->impl);
 	}
 
 
-	public function testNestedDependencyResolution()
-	{
+	public function testNestedDependencyResolution(): void
+    {
 		$container = new Container;
-		$container->bind('IContainerContractStub', 'ContainerImplementationStub');
-		$class = $container->make('ContainerNestedDependentStub');
-		$this->assertInstanceOf('ContainerDependentStub', $class->inner);
-		$this->assertInstanceOf('ContainerImplementationStub', $class->inner->impl);
+		$container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
+		$class = $container->make(ContainerNestedDependentStub::class);
+		$this->assertInstanceOf(ContainerDependentStub::class, $class->inner);
+		$this->assertInstanceOf(ContainerImplementationStub::class, $class->inner->impl);
 	}
 
 
-	public function testContainerIsPassedToResolvers()
-	{
+	public function testContainerIsPassedToResolvers(): void
+    {
 		$container = new Container;
 		$container->bind('something', function($c) { return $c; });
 		$c = $container->make('something');
@@ -98,8 +143,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testArrayAccess()
-	{
+	public function testArrayAccess(): void
+    {
 		$container = new Container;
 		$container['something'] = function() { return 'foo'; };
 		$this->assertTrue(isset($container['something']));
@@ -109,8 +154,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testAliases()
-	{
+	public function testAliases(): void
+    {
 		$container = new Container;
 		$container['foo'] = 'bar';
 		$container->alias('foo', 'baz');
@@ -125,8 +170,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testShareMethod()
-	{
+	public function testShareMethod(): void
+    {
 		$container = new Container;
 		$closure = $container->share(function() { return new stdClass; });
 		$class1 = $closure($container);
@@ -134,9 +179,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 		$this->assertSame($class1, $class2);
 	}
 
-
-	public function testBindingsCanBeOverridden()
-	{
+	public function testBindingsCanBeOverridden(): void
+    {
 		$container = new Container;
 		$container['foo'] = 'bar';
 		$foo = $container['foo'];
@@ -144,80 +188,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 		$this->assertEquals('baz', $container['foo']);
 	}
 
-
-	public function testExtendedBindings()
-	{
-		$container = new Container;
-		$container['foo'] = 'foo';
-		$container->extend('foo', function($old, $container)
-		{
-			return $old.'bar';
-		});
-
-		$this->assertEquals('foobar', $container->make('foo'));
-
-		$container = new Container;
-
-		$container['foo'] = $container->share(function()
-		{
-			return (object) ['name' => 'taylor'];
-		});
-		$container->extend('foo', function($old, $container)
-		{
-			$old->age = 26;
-			return $old;
-		});
-
-		$result = $container->make('foo');
-
-		$this->assertEquals('taylor', $result->name);
-		$this->assertEquals(26, $result->age);
-		$this->assertSame($result, $container->make('foo'));
-	}
-
-
-	public function testMultipleExtends()
-	{
-		$container = new Container;
-		$container['foo'] = 'foo';
-		$container->extend('foo', function($old, $container)
-		{
-			return $old.'bar';
-		});
-		$container->extend('foo', function($old, $container)
-		{
-			return $old.'baz';
-		});
-
-		$this->assertEquals('foobarbaz', $container->make('foo'));
-	}
-
-
-	public function testExtendInstancesArePreserved()
-	{
-		$container = new Container;
-		$container->bind('foo', function() { $obj = new StdClass; $obj->foo = 'bar'; return $obj; });
-		$obj = new StdClass; $obj->foo = 'foo';
-		$container->instance('foo', $obj);
-		$container->extend('foo', function($obj, $container) { $obj->bar = 'baz'; return $obj; });
-		$container->extend('foo', function($obj, $container) { $obj->baz = 'foo'; return $obj; });
-		$this->assertEquals('foo', $container->make('foo')->foo);
-	}
-
-
-	public function testExtendIsLazyInitialized()
-	{
-		$container = new Container;
-		$container->bind('ContainerLazyExtendStub');
-		$container->extend('ContainerLazyExtendStub', function($obj, $container) { $obj->init(); return $obj; });
-		$this->assertFalse(ContainerLazyExtendStub::$initialized);
-		$container->make('ContainerLazyExtendStub');
-		$this->assertTrue(ContainerLazyExtendStub::$initialized);
-	}
-
-
-	public function testParametersCanBePassedThroughToClosure()
-	{
+	public function testParametersCanBePassedThroughToClosure(): void
+    {
 		$container = new Container;
 		$container->bind('foo', function($c, $parameters)
 		{
@@ -227,18 +199,17 @@ class ContainerTest extends BackwardCompatibleTestCase {
 		$this->assertEquals([1, 2, 3], $container->make('foo', [1, 2, 3]));
 	}
 
-
-	public function testResolutionOfDefaultParameters()
-	{
+	public function testResolutionOfDefaultParameters(): void
+    {
 		$container = new Container;
-		$instance = $container->make('ContainerDefaultValueStub');
-		$this->assertInstanceOf('ContainerConcreteStub', $instance->stub);
+		$instance = $container->make(ContainerDefaultValueStub::class);
+		$this->assertInstanceOf(ContainerConcreteStub::class, $instance->stub);
 		$this->assertEquals('taylor', $instance->default);
 	}
 
 
-	public function testResolvingCallbacksAreCalledForSpecificAbstracts()
-	{
+	public function testResolvingCallbacksAreCalledForSpecificAbstracts(): void
+    {
 		$container = new Container;
 		$container->resolving('foo', function($object) { return $object->name = 'taylor'; });
 		$container->bind('foo', function() { return new StdClass; });
@@ -248,8 +219,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testResolvingCallbacksAreCalled()
-	{
+	public function testResolvingCallbacksAreCalled(): void
+    {
 		$container = new Container;
 		$container->resolvingAny(function($object) { return $object->name = 'taylor'; });
 		$container->bind('foo', function() { return new StdClass; });
@@ -259,8 +230,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testUnsetRemoveBoundInstances()
-	{
+	public function testUnsetRemoveBoundInstances(): void
+    {
 		$container = new Container;
 		$container->instance('object', new StdClass);
 		unset($container['object']);
@@ -269,8 +240,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testReboundListeners()
-	{
+	public function testReboundListeners(): void
+    {
 		unset($_SERVER['__test.rebind']);
 
 		$container = new Container;
@@ -282,8 +253,8 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testReboundListenersOnInstances()
-	{
+	public function testReboundListenersOnInstances(): void
+    {
 		unset($_SERVER['__test.rebind']);
 
 		$container = new Container;
@@ -295,36 +266,36 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testPassingSomePrimitiveParameters()
-	{
+	public function testPassingSomePrimitiveParameters(): void
+    {
 		$container = new Container;
-		$value = $container->make('ContainerMixedPrimitiveStub', ['first' => 'taylor', 'last' => 'otwell']);
-		$this->assertInstanceOf('ContainerMixedPrimitiveStub', $value);
+		$value = $container->make(ContainerMixedPrimitiveStub::class, ['first' => 'taylor', 'last' => 'otwell']);
+		$this->assertInstanceOf(ContainerMixedPrimitiveStub::class, $value);
 		$this->assertEquals('taylor', $value->first);
 		$this->assertEquals('otwell', $value->last);
-		$this->assertInstanceOf('ContainerConcreteStub', $value->stub);
+		$this->assertInstanceOf(ContainerConcreteStub::class, $value->stub);
 
 		$container = new Container;
-		$value = $container->make('ContainerMixedPrimitiveStub', [0 => 'taylor', 2 => 'otwell']);
-		$this->assertInstanceOf('ContainerMixedPrimitiveStub', $value);
+		$value = $container->make(ContainerMixedPrimitiveStub::class, [0 => 'taylor', 2 => 'otwell']);
+		$this->assertInstanceOf(ContainerMixedPrimitiveStub::class, $value);
 		$this->assertEquals('taylor', $value->first);
 		$this->assertEquals('otwell', $value->last);
-		$this->assertInstanceOf('ContainerConcreteStub', $value->stub);
+		$this->assertInstanceOf(ContainerConcreteStub::class, $value->stub);
 	}
 
 
-	public function testCreatingBoundConcreteClassPassesParameters()
-	{
+	public function testCreatingBoundConcreteClassPassesParameters(): void
+    {
 		$container = new Container;
-		$container->bind('TestAbstractClass', 'ContainerConstructorParameterLoggingStub');
+		$container->bind('TestAbstractClass', ContainerConstructorParameterLoggingStub::class);
 		$parameters = ['First', 'Second'];
 		$instance = $container->make('TestAbstractClass', $parameters);
 		$this->assertEquals($parameters, $instance->receivedParameters);
 	}
 
 
-	public function testInternalClassWithDefaultParameters()
-	{
+	public function testInternalClassWithDefaultParameters(): void
+    {
 		$this->expectException(BindingResolutionException::class, 'Unresolvable dependency resolving [Parameter #0 [ <required> $first ]] in class ContainerMixedPrimitiveStub');
 		$container = new Container;
 		$parameters = [];
@@ -332,13 +303,13 @@ class ContainerTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testUnsetAffectsResolved()
-	{
+	public function testUnsetAffectsResolved(): void
+    {
 		$container = new Container;
-		$container->make('ContainerConcreteStub');
+		$container->make(ContainerConcreteStub::class);
 
-		unset($container['ContainerConcreteStub']);
-		$this->assertFalse($container->resolved('ContainerConcreteStub'));
+		unset($container[ContainerConcreteStub::class]);
+		$this->assertFalse($container->resolved(ContainerConcreteStub::class));
 	}
 
 }
@@ -375,13 +346,8 @@ class ContainerDefaultValueStub {
 }
 
 class ContainerMixedPrimitiveStub {
-	public $first; public $last; public $stub;
-	public function __construct($first, ContainerConcreteStub $stub, $last)
-	{
-		$this->stub = $stub;
-		$this->last = $last;
-		$this->first = $first;
-	}
+	public function __construct(public $first, public ContainerConcreteStub $stub, public $last)
+	{}
 }
 
 class ContainerConstructorParameterLoggingStub {
@@ -395,5 +361,6 @@ class ContainerConstructorParameterLoggingStub {
 
 class ContainerLazyExtendStub {
 	public static $initialized = false;
-	public function init() { static::$initialized = true; }
+	public function init(): void
+    { static::$initialized = true; }
 }

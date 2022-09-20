@@ -37,7 +37,7 @@ class JsonResponse extends \Symfony\Component\HttpFoundation\JsonResponse {
 	 */
 	public function getData($assoc = false, $depth = 512)
 	{
-		return json_decode($this->data, $assoc, $depth);
+		return json_decode((string) $this->data, $assoc, $depth);
 	}
 
 	/**

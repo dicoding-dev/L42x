@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Html;
 
+use Carbon\Carbon;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as Session;
 use Illuminate\Support\Traits\MacroableTrait;
@@ -383,7 +384,7 @@ class FormBuilder {
 	 */
 	protected function setQuickTextAreaSize($options)
 	{
-		$segments = explode('x', $options['size']);
+		$segments = explode('x', (string) $options['size']);
 
 		return array_merge($options, array('cols' => $segments[0], 'rows' => $segments[1]));
 	}
@@ -470,7 +471,7 @@ class FormBuilder {
 	 */
 	public function selectYear()
 	{
-		return call_user_func_array(array($this, 'selectRange'), func_get_args());
+		return call_user_func_array($this->selectRange(...), func_get_args());
 	}
 
 	/**
@@ -488,7 +489,7 @@ class FormBuilder {
 
 		foreach (range(1, 12) as $month)
 		{
-			$months[$month] = strftime($format, mktime(0, 0, 0, $month, 1));
+			$months[$month] = Carbon::create(0, $month)->getTranslatedMonthName();
 		}
 
 		return $this->select($name, $months, $selected, $options);
@@ -841,7 +842,7 @@ class FormBuilder {
 	 */
 	protected function getAppendage($method)
 	{
-		list($method, $appendage) = array(strtoupper($method), '');
+		[$method, $appendage] = array(strtoupper($method), '');
 
 		// If the HTTP method is in this list of spoofed methods, we will attach the
 		// method spoofer hidden input to the form. This allows us to use regular

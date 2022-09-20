@@ -7,39 +7,32 @@ class Pivot extends Model {
 
 	/**
 	 * The parent model of the relationship.
-	 *
-	 * @var \Illuminate\Database\Eloquent\Model
 	 */
-	protected $parent;
+	protected Model $parent;
 
 	/**
 	 * The name of the foreign key column.
-	 *
-	 * @var string
 	 */
-	protected $foreignKey;
+	protected string $foreignKey;
 
 	/**
 	 * The name of the "other key" column.
-	 *
-	 * @var string
 	 */
-	protected $otherKey;
+	protected string $otherKey;
 
 	/**
 	 * The attributes that aren't mass assignable.
-	 *
-	 * @var array
 	 */
-	protected $guarded = array();
+	protected array $guarded = array();
 
 	/**
 	 * Create a new pivot model instance.
 	 *
-	 * @param  \Illuminate\Database\Eloquent\Model  $parent
-	 * @param  array   $attributes
-	 * @param  string  $table
-	 * @param  bool    $exists
+	 * @param Model   $parent
+	 * @param  array  $attributes
+	 * @param  string $table
+	 * @param  bool   $exists
+	 *
 	 * @return void
 	 */
 	public function __construct(Model $parent, $attributes, $table, $exists = false)
@@ -68,10 +61,11 @@ class Pivot extends Model {
 	/**
 	 * Set the keys for a save update query.
 	 *
-	 * @param  \Illuminate\Database\Eloquent\Builder
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @param Builder
+	 *
+	 * @return Builder
 	 */
-	protected function setKeysForSaveQuery(Builder $query)
+	protected function setKeysForSaveQuery(Builder $query): Builder
 	{
 		$query->where($this->foreignKey, $this->getAttribute($this->foreignKey));
 
@@ -83,7 +77,7 @@ class Pivot extends Model {
 	 *
 	 * @return int
 	 */
-	public function delete()
+	public function delete(): ?bool
 	{
 		return $this->getDeleteQuery()->delete();
 	}
@@ -91,7 +85,7 @@ class Pivot extends Model {
 	/**
 	 * Get the query builder for a delete operation on the pivot.
 	 *
-	 * @return \Illuminate\Database\Eloquent\Builder
+	 * @return Builder
 	 */
 	protected function getDeleteQuery()
 	{
@@ -107,7 +101,7 @@ class Pivot extends Model {
 	 *
 	 * @return string
 	 */
-	public function getForeignKey()
+	public function getForeignKey(): string
 	{
 		return $this->foreignKey;
 	}
@@ -153,7 +147,7 @@ class Pivot extends Model {
 	 *
 	 * @return string
 	 */
-	public function getCreatedAtColumn()
+	public function getCreatedAtColumn(): string
 	{
 		return $this->parent->getCreatedAtColumn();
 	}
@@ -163,7 +157,7 @@ class Pivot extends Model {
 	 *
 	 * @return string
 	 */
-	public function getUpdatedAtColumn()
+	public function getUpdatedAtColumn(): string
 	{
 		return $this->parent->getUpdatedAtColumn();
 	}

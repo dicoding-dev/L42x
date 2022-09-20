@@ -5,8 +5,8 @@ use L4\Tests\BackwardCompatibleTestCase;
 
 class SupportFluentTest extends BackwardCompatibleTestCase {
 
-	public function testAttributesAreSetByConstructor()
-	{
+	public function testAttributesAreSetByConstructor(): void
+    {
 		$array  = ['name' => 'Taylor', 'age' => 25];
 		$fluent = new Fluent($array);
 
@@ -19,8 +19,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testAttributesAreSetByConstructorGivenStdClass()
-	{
+	public function testAttributesAreSetByConstructorGivenStdClass(): void
+    {
 		$array  = ['name' => 'Taylor', 'age' => 25];
 		$fluent = new Fluent((object) $array);
 
@@ -33,8 +33,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testAttributesAreSetByConstructorGivenArrayIterator()
-	{
+	public function testAttributesAreSetByConstructorGivenArrayIterator(): void
+    {
 		$array  = ['name' => 'Taylor', 'age' => 25];
 		$fluent = new Fluent(new FluentArrayIteratorStub($array));
 
@@ -47,8 +47,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testGetMethodReturnsAttribute()
-	{
+	public function testGetMethodReturnsAttribute(): void
+    {
 		$fluent = new Fluent(['name' => 'Taylor']);
 
 		$this->assertEquals('Taylor', $fluent->get('name'));
@@ -58,8 +58,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testMagicMethodsCanBeUsedToSetAttributes()
-	{
+	public function testMagicMethodsCanBeUsedToSetAttributes(): void
+    {
 		$fluent = new Fluent;
 
 		$fluent->name = 'Taylor';
@@ -73,8 +73,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testIssetMagicMethod()
-	{
+	public function testIssetMagicMethod(): void
+    {
 		$array  = ['name' => 'Taylor', 'age' => 25];
 		$fluent = new Fluent($array);
 
@@ -86,8 +86,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testToArrayReturnsAttribute()
-	{
+	public function testToArrayReturnsAttribute(): void
+    {
 		$array  = ['name' => 'Taylor', 'age' => 25];
 		$fluent = new Fluent($array);
 
@@ -95,8 +95,8 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testToJsonEncodesTheToArrayResult()
-	{
+	public function testToJsonEncodesTheToArrayResult(): void
+    {
 		$fluent = $this->getMock(Fluent::class, ['toArray']);
 		$fluent->expects($this->once())->method('toArray')->willReturn('foo');
 		$results = $fluent->toJson();
@@ -108,14 +108,14 @@ class SupportFluentTest extends BackwardCompatibleTestCase {
 
 
 class FluentArrayIteratorStub implements \IteratorAggregate {
-	protected $items = [];
+	protected array $items = [];
 
 	public function __construct(array $items = [])
 	{
 		$this->items = (array) $items;
 	}
 
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		return new \ArrayIterator($this->items);
 	}

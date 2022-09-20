@@ -1,11 +1,6 @@
 <?php namespace Illuminate\Support;
 
-use Opis\Closure\SerializableClosure as SuperClosure;
-
-/**
- * Extends SuperClosure for backwards compatibility.
- */
-class SerializableClosure extends SuperClosure
+class SerializableClosure extends \Laravel\SerializableClosure\SerializableClosure
 {
 
     /**

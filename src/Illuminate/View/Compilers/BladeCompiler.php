@@ -190,7 +190,7 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 	 */
 	protected function compileEchos($value)
 	{
-		$difference = strlen($this->contentTags[0]) - strlen($this->escapedTags[0]);
+		$difference = strlen((string) $this->contentTags[0]) - strlen((string) $this->escapedTags[0]);
 
 		if ($difference > 0)
 		{
@@ -210,7 +210,7 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 	{
 		$callback = function($match)
 		{
-			if (method_exists($this, $method = 'compile'.ucfirst($match[1])))
+			if (method_exists($this, $method = 'compile'.ucfirst((string) $match[1])))
 			{
 				$match[0] = $this->$method(array_get($match, 3));
 			}
@@ -235,7 +235,7 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		{
 			$whitespace = empty($matches[3]) ? '' : $matches[3].$matches[3];
 
-			return $matches[1] ? substr($matches[0], 1) : '<?php echo '.$this->compileEchoDefaults($matches[2]).'; ?>'.$whitespace;
+			return $matches[1] ? substr((string) $matches[0], 1) : '<?php echo '.$this->compileEchoDefaults($matches[2]).'; ?>'.$whitespace;
 		};
 
 		return preg_replace_callback($pattern, $callback, $value);

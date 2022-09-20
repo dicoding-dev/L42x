@@ -49,7 +49,7 @@ class PostgresGrammar extends Grammar {
 
 		$where = $this->compileUpdateWheres($query);
 
-		return trim("update {$table} set {$columns}{$from} $where");
+		return trim((string) "update {$table} set {$columns}{$from} $where");
 	}
 
 	/**

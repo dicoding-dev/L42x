@@ -7,6 +7,7 @@ use IteratorAggregate;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
+use Traversable;
 
 class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorAggregate, JsonableInterface {
 
@@ -226,7 +227,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 
 		$fragment = $this->buildFragment();
 
-		return $this->factory->getCurrentUrl().'?'.http_build_query($parameters, null, '&').$fragment;
+		return $this->factory->getCurrentUrl().'?'.http_build_query($parameters, '', '&').$fragment;
 	}
 
 	/**
@@ -434,7 +435,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return \ArrayIterator
 	 */
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		return new ArrayIterator($this->items);
 	}
@@ -454,8 +455,8 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return int
 	 */
-	public function count()
-	{
+	public function count(): int
+    {
 		return count($this->items);
 	}
 
@@ -465,8 +466,8 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 * @param  mixed  $key
 	 * @return bool
 	 */
-	public function offsetExists($key)
-	{
+	public function offsetExists($key): bool
+    {
 		return array_key_exists($key, $this->items);
 	}
 
@@ -476,8 +477,8 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 * @param  mixed  $key
 	 * @return mixed
 	 */
-	public function offsetGet($key)
-	{
+	public function offsetGet($key): mixed
+    {
 		return $this->items[$key];
 	}
 
@@ -488,8 +489,8 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 * @param  mixed  $value
 	 * @return void
 	 */
-	public function offsetSet($key, $value)
-	{
+	public function offsetSet($key, $value): void
+    {
 		$this->items[$key] = $value;
 	}
 
@@ -499,8 +500,8 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 * @param  mixed  $key
 	 * @return void
 	 */
-	public function offsetUnset($key)
-	{
+	public function offsetUnset($key): void
+    {
 		unset($this->items[$key]);
 	}
 

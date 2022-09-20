@@ -18,7 +18,7 @@ class SupportFacadeTest extends BackwardCompatibleTestCase
         m::close();
     }
 
-    public function testFacadeCallsUnderlyingApplication()
+    public function testFacadeCallsUnderlyingApplication(): void
     {
         $app = new ApplicationStub;
         $app->setAttributes(['foo' => $mock = m::mock('StdClass')]);
@@ -27,8 +27,8 @@ class SupportFacadeTest extends BackwardCompatibleTestCase
 		$this->assertEquals('baz', FacadeStub::bar());
 	}
 
-	public function testShouldReceiveReturnsAMockeryMock()
-	{
+	public function testShouldReceiveReturnsAMockeryMock(): void
+    {
 		$app = new ApplicationStub;
 		$app->setAttributes(['foo' => new stdClass]);
 		FacadeStub::setFacadeApplication($app);
@@ -37,8 +37,8 @@ class SupportFacadeTest extends BackwardCompatibleTestCase
 		$this->assertEquals('baz', $app['foo']->foo('bar'));
 	}
 
-	public function testShouldReceiveCanBeCalledTwice()
-	{
+	public function testShouldReceiveCanBeCalledTwice(): void
+    {
 		$app = new ApplicationStub;
 		$app->setAttributes(['foo' => new stdClass]);
 		FacadeStub::setFacadeApplication($app);
@@ -49,8 +49,8 @@ class SupportFacadeTest extends BackwardCompatibleTestCase
 		$this->assertEquals('baz2', $app['foo']->foo2('bar2'));
 	}
 
-	public function testCanBeMockedWithoutUnderlyingInstance()
-	{
+	public function testCanBeMockedWithoutUnderlyingInstance(): void
+    {
 		FacadeStub::shouldReceive('foo')->once()->andReturn('bar');
 		$this->assertEquals('bar', FacadeStub::foo());
 	}
@@ -77,22 +77,22 @@ class ApplicationStub implements ArrayAccess
         $this->attributes[$key] = $instance;
     }
 
-	public function offsetExists($offset)
+	public function offsetExists($offset): bool
     {
         return isset($this->attributes[$offset]);
     }
 
-	public function offsetGet($key)
+	public function offsetGet($key): mixed
     {
         return $this->attributes[$key];
     }
 
-	public function offsetSet($key, $value)
+	public function offsetSet($key, $value): void
     {
         $this->attributes[$key] = $value;
     }
 
-	public function offsetUnset($key)
+	public function offsetUnset($key): void
     {
         unset($this->attributes[$key]);
     }

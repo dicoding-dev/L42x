@@ -112,7 +112,7 @@ class QueueWorkerTest extends BackwardCompatibleTestCase
         $worker = new Illuminate\Queue\Worker(m::mock(QueueManager::class));
         $job = m::mock(Job::class);
         $job->shouldReceive('fire')->once()->andReturnUsing(
-            function () {
+            function (): never {
                 throw new RuntimeException;
             }
         );
@@ -129,7 +129,7 @@ class QueueWorkerTest extends BackwardCompatibleTestCase
         $worker = new Illuminate\Queue\Worker(m::mock(QueueManager::class));
         $job = m::mock(Job::class);
         $job->shouldReceive('fire')->once()->andReturnUsing(
-            function () {
+            function (): never {
                 throw new RuntimeException;
             }
         );

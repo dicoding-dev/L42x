@@ -5,8 +5,8 @@ use L4\Tests\BackwardCompatibleTestCase;
 
 class FoundationAliasLoaderTest extends BackwardCompatibleTestCase {
 
-	public function testLoaderCanBeCreatedAndRegisteredOnce()
-	{
+	public function testLoaderCanBeCreatedAndRegisteredOnce(): void
+    {
 		$loader = $this->getMock(AliasLoader::class, ['prependToLoaderStack'], [['foo' => 'bar']]);
 		$loader->expects($this->once())->method('prependToLoaderStack');
 
@@ -18,8 +18,8 @@ class FoundationAliasLoaderTest extends BackwardCompatibleTestCase {
 	}
 
 
-	public function testGetInstanceCreatesOneInstance()
-	{
+	public function testGetInstanceCreatesOneInstance(): void
+    {
 		$loader = AliasLoader::getInstance(['foo' => 'bar']);
 		$this->assertEquals($loader, AliasLoader::getInstance());
 	}

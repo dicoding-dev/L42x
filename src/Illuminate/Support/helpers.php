@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 if ( ! function_exists('action'))
@@ -220,11 +221,10 @@ if ( ! function_exists('array_forget'))
 	 *
 	 * @param  array  $array
 	 * @param  array|string  $keys
-	 * @return void
 	 */
-	function array_forget(&$array, $keys)
+	function array_forget(&$array, $keys): void
 	{
-		return Arr::forget($array, $keys);
+		Arr::forget($array, $keys);
 	}
 }
 
@@ -462,41 +462,51 @@ if ( ! function_exists('data_get'))
 	 * Get an item from an array or object using "dot" notation.
 	 *
 	 * @param  mixed   $target
-	 * @param  string  $key
+	 * @param  string|array  $key
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
 	function data_get($target, $key, $default = null)
 	{
-		if (is_null($key)) return $target;
+        if (is_null($key)) {
+            return $target;
+        }
 
-		foreach (explode('.', $key) as $segment)
-		{
-			if (is_array($target))
-			{
-				if ( ! array_key_exists($segment, $target))
-				{
-					return value($default);
-				}
+        $key = is_array($key) ? $key : explode('.', $key);
 
-				$target = $target[$segment];
-			}
-			elseif (is_object($target))
-			{
-				if ( ! isset($target->{$segment}))
-				{
-					return value($default);
-				}
+        foreach ($key as $i => $segment) {
+            unset($key[$i]);
 
-				$target = $target->{$segment};
-			}
-			else
-			{
-				return value($default);
-			}
-		}
+            if (is_null($segment)) {
+                return $target;
+            }
 
-		return $target;
+            if ($segment === '*') {
+                if ($target instanceof Collection) {
+                    $target = $target->all();
+                } elseif (! is_iterable($target)) {
+                    return value($default);
+                }
+
+                $result = [];
+
+                foreach ($target as $item) {
+                    $result[] = data_get($item, $key);
+                }
+
+                return in_array('*', $key) ? Arr::collapse($result) : $result;
+            }
+
+            if (Arr::accessible($target) && Arr::exists($target, $segment)) {
+                $target = $target[$segment];
+            } elseif (is_object($target) && isset($target->{$segment})) {
+                $target = $target->{$segment};
+            } else {
+                return value($default);
+            }
+        }
+
+        return $target;
 	}
 }
 
@@ -519,11 +529,16 @@ if ( ! function_exists('e'))
 	/**
 	 * Escape HTML entities in a string.
 	 *
-	 * @param  string  $value
+	 * @param string|null $value
+	 *
 	 * @return string
 	 */
-	function e($value)
-	{
+	function e(?string $value = null): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
 		return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
 	}
 }
@@ -773,7 +788,7 @@ if ( ! function_exists('starts_with'))
 	 */
 	function starts_with($haystack, $needles)
 	{
-		return Str::startsWith($haystack, $needles);
+		return Str::startsWith((string) $haystack, $needles);
 	}
 }
 
@@ -878,11 +893,17 @@ if ( ! function_exists('str_replace_array'))
 	 * @param  string  $subject
 	 * @return string
 	 */
-	function str_replace_array($search, array $replace, $subject)
+	function str_replace_array($search, array $replace = null, string $subject = '')
 	{
+        if (empty($replace)) {
+            return $subject;
+        }
+
 		foreach ($replace as $value)
 		{
-			$subject = preg_replace('/'.$search.'/', $value, $subject, 1);
+            if ($value !== null) {
+                $subject = preg_replace('/'.$search.'/', $value, $subject, 1);
+            }
 		}
 
 		return $subject;

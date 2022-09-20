@@ -189,7 +189,7 @@ abstract class Grammar extends BaseGrammar {
 	 */
 	protected function getType(Fluent $column)
 	{
-		return $this->{"type".ucfirst($column->type)}($column);
+		return $this->{"type".ucfirst((string) $column->type)}($column);
 	}
 
 	/**

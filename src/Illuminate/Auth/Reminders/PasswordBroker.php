@@ -11,35 +11,35 @@ class PasswordBroker {
 	 *
 	 * @var int
 	 */
-	const REMINDER_SENT = 'reminders.sent';
+	final const REMINDER_SENT = 'reminders.sent';
 
 	/**
 	 * Constant representing a successfully reset password.
 	 *
 	 * @var int
 	 */
-	const PASSWORD_RESET = 'reminders.reset';
+	final const PASSWORD_RESET = 'reminders.reset';
 
 	/**
 	 * Constant representing the user not found response.
 	 *
 	 * @var int
 	 */
-	const INVALID_USER = 'reminders.user';
+	final const INVALID_USER = 'reminders.user';
 
 	/**
 	 * Constant representing an invalid password.
 	 *
 	 * @var int
 	 */
-	const INVALID_PASSWORD = 'reminders.password';
+	final const INVALID_PASSWORD = 'reminders.password';
 
 	/**
 	 * Constant representing an invalid token.
 	 *
 	 * @var int
 	 */
-	const INVALID_TOKEN = 'reminders.token';
+	final const INVALID_TOKEN = 'reminders.token';
 
 	/**
 	 * The password reminder repository.
@@ -244,7 +244,7 @@ class PasswordBroker {
 	{
 		list($password, $confirm) = [$credentials['password'], $credentials['password_confirmation']];
 
-		return $password === $confirm && mb_strlen($password) >= 6;
+		return $password === $confirm && mb_strlen((string) $password) >= 6;
 	}
 
 	/**

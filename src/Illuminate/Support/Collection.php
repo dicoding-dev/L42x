@@ -9,15 +9,14 @@ use JsonSerializable;
 use IteratorAggregate;
 use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
+use Traversable;
 
 class Collection implements ArrayAccess, ArrayableInterface, Countable, IteratorAggregate, JsonableInterface, JsonSerializable {
 
 	/**
 	 * The items contained in the collection.
-	 *
-	 * @var array
 	 */
-	protected $items = array();
+	protected array $items = array();
 
 	/**
 	 * Create a new collection.
@@ -277,6 +276,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 */
 	public function implode($value, $glue = null)
 	{
+        $glue = $glue ?? '';
+
 		return implode($glue, $this->lists($value));
 	}
 
@@ -325,12 +326,30 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * Get an array with the values of a given key.
 	 *
 	 * @param  string  $value
-	 * @param  string  $key
+	 * @param  ?string  $key
 	 * @return array
 	 */
-	public function lists($value, $key = null)
-	{
-		return array_pluck($this->items, $value, $key);
+	public function lists(string $value, ?string $key = null): array
+    {
+        $results = array();
+
+        foreach ($this->items as $item)
+        {
+            $itemValue = is_object($item) ? $item->{$value} : $item[$value];
+
+            // If the key is "null", we will just append the value to the array and keep
+            // looping. Otherwise we will key the array using the value of the key we
+            // received from the developer. Then we'll return the final array form.
+            if (is_null($key)) {
+                $results[] = $itemValue;
+            } else {
+                $itemKey = is_object($item) ? $item->{$key} : $item[$key];
+
+                $results[$itemKey] = $itemValue;
+            }
+        }
+
+        return $results;
 	}
 
 	/**
@@ -343,6 +362,32 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	{
 		return new static(array_map($callback, $this->items, array_keys($this->items)));
 	}
+
+    /**
+     * Run an associative map over each of the items.
+     *
+     * The callback should return an associative array with a single key/value pair.
+     *
+     * @template TMapWithKeysKey of array-key
+     * @template TMapWithKeysValue
+     *
+     * @param  callable(TValue, TKey): array<TMapWithKeysKey, TMapWithKeysValue>  $callback
+     * @return static<TMapWithKeysKey, TMapWithKeysValue>
+     */
+    public function mapWithKeys(callable $callback)
+    {
+        $result = [];
+
+        foreach ($this->items as $key => $value) {
+            $assoc = $callback($value, $key);
+
+            foreach ($assoc as $mapKey => $mapValue) {
+                $result[$mapKey] = $mapValue;
+            }
+        }
+
+        return new static($result);
+    }
 
 	/**
 	 * Merge the collection with the given items.
@@ -559,17 +604,20 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 */
 	public function sortBy($callback, $options = SORT_REGULAR, $descending = false)
 	{
-		$results = array();
+        if (is_array($callback) && ! is_callable($callback)) {
+            return $this->sortByMany($callback);
+        }
 
-		if (is_string($callback)) $callback =
-                          $this->valueRetriever($callback);
+		$results = [];
+
+        $callback = $this->valueRetriever($callback);
 
 		// First we will loop through the items and get the comparator from a callback
 		// function which we were given. Then, we will sort the returned values and
 		// and grab the corresponding values for the sorted keys from this array.
 		foreach ($this->items as $key => $value)
 		{
-			$results[$key] = $callback($value);
+			$results[$key] = $callback($value, $key);
 		}
 
 		$descending ? arsort($results, $options)
@@ -585,7 +633,7 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 
 		$this->items = $results;
 
-		return $this;
+        return $this;
 	}
 
 	/**
@@ -599,6 +647,48 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	{
 		return $this->sortBy($callback, $options, true);
 	}
+
+    /**
+     * Sort the collection using multiple comparisons.
+     *
+     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, string}>  $comparisons
+     * @return static
+     */
+    protected function sortByMany(array $comparisons = [])
+    {
+        $items = $this->items;
+
+        usort($items, static function ($a, $b) use ($comparisons) {
+            foreach ($comparisons as $comparison) {
+                $comparison = Arr::wrap($comparison);
+
+                $prop = $comparison[0];
+
+                $ascending = Arr::get($comparison, 1, true) === true ||
+                    Arr::get($comparison, 1, true) === 'asc';
+
+                if (! is_string($prop) && is_callable($prop)) {
+                    $result = $prop($a, $b);
+                } else {
+                    $values = [data_get($a, $prop), data_get($b, $prop)];
+
+                    if (! $ascending) {
+                        $values = array_reverse($values);
+                    }
+
+                    $result = $values[0] <=> $values[1];
+                }
+
+                if ($result === 0) {
+                    continue;
+                }
+
+                return $result;
+            }
+        });
+
+        return new static($items);
+    }
 
 	/**
 	 * Splice portion of the underlying collection array.
@@ -694,11 +784,25 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 */
 	protected function valueRetriever($value)
 	{
-		return function($item) use ($value)
-		{
-			return data_get($item, $value);
-		};
+        if ($this->useAsCallable($value)) {
+            return $value;
+        }
+
+        return function ($item) use ($value) {
+            return data_get($item, $value);
+        };
 	}
+
+    /**
+     * Determine if the given value is callable, but not a string.
+     *
+     * @param  mixed  $value
+     * @return bool
+     */
+    protected function useAsCallable($value)
+    {
+        return ! is_string($value) && is_callable($value);
+    }
 
 	/**
 	 * Get the collection of items as a plain array.
@@ -716,10 +820,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 
 	/**
 	 * Convert the object into something JSON serializable.
-	 *
-	 * @return array
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return $this->toArray();
 	}
@@ -737,10 +839,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 
 	/**
 	 * Get an iterator for the items.
-	 *
-	 * @return \ArrayIterator
 	 */
-	public function getIterator()
+	public function getIterator(): Traversable
 	{
 		return new ArrayIterator($this->items);
 	}
@@ -761,8 +861,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 *
 	 * @return int
 	 */
-	public function count()
-	{
+	public function count(): int
+    {
 		return count($this->items);
 	}
 
@@ -772,8 +872,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  mixed  $key
 	 * @return bool
 	 */
-	public function offsetExists($key)
-	{
+	public function offsetExists($key): bool
+    {
 		return array_key_exists($key, $this->items);
 	}
 
@@ -783,8 +883,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  mixed  $key
 	 * @return mixed
 	 */
-	public function offsetGet($key)
-	{
+	public function offsetGet($key): mixed
+    {
 		return $this->items[$key];
 	}
 
@@ -795,8 +895,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  mixed  $value
 	 * @return void
 	 */
-	public function offsetSet($key, $value)
-	{
+	public function offsetSet($key, $value): void
+    {
 		if (is_null($key))
 		{
 			$this->items[] = $value;
@@ -813,8 +913,8 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 	 * @param  string  $key
 	 * @return void
 	 */
-	public function offsetUnset($key)
-	{
+	public function offsetUnset($key): void
+    {
 		unset($this->items[$key]);
 	}
 
