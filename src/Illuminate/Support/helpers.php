@@ -893,8 +893,12 @@ if ( ! function_exists('str_replace_array'))
 	 * @param  string  $subject
 	 * @return string
 	 */
-	function str_replace_array($search, array $replace, $subject)
+	function str_replace_array($search, array $replace = null, string $subject = '')
 	{
+        if (empty($replace)) {
+            return $subject;
+        }
+
 		foreach ($replace as $value)
 		{
 			$subject = preg_replace('/'.$search.'/', $value, $subject, 1);
