@@ -134,6 +134,17 @@ class RoutingRedirectorTest extends BackwardCompatibleTestCase
 	}
 
 
+    public function testBackRedirectToFallbackUrl()
+	{
+        $this->headers->shouldReceive('has')->with('referer')->andReturn(false);
+        $this->headers->shouldReceive('get')->with('referer')->andReturnNull();
+        $this->url->shouldReceive('previous')->with('/fallback')->andReturn('http://foo.com/fallback');
+
+        $response = $this->redirect->back(fallback: '/fallback');
+		$this->assertEquals('http://foo.com/fallback', $response->getTargetUrl());
+	}
+
+
 	public function testAwayDoesntValidateTheUrl()
 	{
 		$response = $this->redirect->away('bar');
