@@ -636,6 +636,19 @@ class Blueprint {
 		$this->dateTime('updated_at');
 	}
 
+    /**
+	 * This is the original `timestamps` method from Laravel. We decided to use `datetime` type as default to store
+     * date to avoid issues with timezone configuration.
+	 *
+	 * @return void
+	 */
+	public function timestampsWithTimestampColumnType()
+	{
+		$this->timestamp('created_at');
+
+		$this->timestamp('updated_at');
+	}
+
 	/**
 	 * Add a "deleted at" timestamp for the table.
 	 *
