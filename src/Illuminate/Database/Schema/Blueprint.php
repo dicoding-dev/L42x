@@ -619,9 +619,9 @@ class Blueprint {
 	 */
 	public function nullableTimestamps()
 	{
-		$this->timestamp('created_at')->nullable();
+		$this->dateTime('created_at')->nullable();
 
-		$this->timestamp('updated_at')->nullable();
+		$this->dateTime('updated_at')->nullable();
 	}
 
 	/**
