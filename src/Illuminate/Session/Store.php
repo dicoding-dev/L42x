@@ -580,6 +580,27 @@ class Store implements SessionInterface {
 		$this->put('_token', Str::random(40));
 	}
 
+    /**
+     * Get the previous URL from the session.
+     *
+     * @return string|null
+     */
+    public function previousUrl()
+    {
+        return $this->get('_previous.url');
+    }
+
+    /**
+     * Set the "previous" URL in the session.
+     *
+     * @param  string  $url
+     * @return void
+     */
+    public function setPreviousUrl($url)
+    {
+        $this->put('_previous.url', $url);
+    }
+
 	/**
 	 * Set the existence of the session on the handler if applicable.
 	 *
