@@ -256,4 +256,19 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 		$this->assertEquals($url->to('/'), $url->previous());
 	}
 
+
+    public function testPreviousWithFallback(): void
+    {
+		$url = new UrlGenerator(
+			$routes = new Illuminate\Routing\RouteCollection,
+			$request = Illuminate\Http\Request::create('http://www.foo.com/')
+		);
+
+		$url->getRequest()->headers->set('referer', 'http://www.bar.com/');
+		$this->assertEquals('http://www.bar.com/', $url->previous('/some-page'));
+
+		$url->getRequest()->headers->remove('referer');
+		$this->assertEquals($url->to('/some-page'), $url->previous('/some-page'));
+	}
+
 }
