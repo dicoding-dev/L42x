@@ -89,11 +89,22 @@ class UrlGenerator {
 	/**
 	 * Get the URL for the previous request.
 	 *
+     * @param string|null $fallback
 	 * @return string
 	 */
-	public function previous()
+	public function previous($fallback = null)
 	{
-		return $this->to($this->request->headers->get('referer'));
+        $referrer = $this->request->headers->get('referer');
+
+        if ($referrer) {
+            return $this->to($referrer);
+        }
+
+        if (!empty($fallback)) {
+            return $this->to($fallback);
+        }
+
+		return $this->to('/');
 	}
 
 	/**
