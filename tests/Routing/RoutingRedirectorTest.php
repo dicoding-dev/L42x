@@ -122,6 +122,17 @@ class RoutingRedirectorTest extends BackwardCompatibleTestCase
 	}
 
 
+    public function testBackRedirectToPreviousUrlFromSession()
+	{
+        $this->headers->shouldReceive('has')->with('referer')->andReturn(false);
+        $this->headers->shouldReceive('get')->with('referer')->andReturnNull();
+        $this->url->shouldReceive('previous')->andReturn('http://foo.com/bar');
+
+        $response = $this->redirect->back();
+		$this->assertEquals('http://foo.com/bar', $response->getTargetUrl());
+	}
+
+
 	public function testAwayDoesntValidateTheUrl()
 	{
 		$response = $this->redirect->away('bar');
