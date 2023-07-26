@@ -291,6 +291,19 @@ class SessionStoreTest extends BackwardCompatibleTestCase
 	}
 
 
+    public function testSetPreviousUrl()
+    {
+        $session = $this->getSession();
+        $session->setPreviousUrl('https://example.com/foo/bar');
+
+        $this->assertTrue($session->has('_previous.url'));
+        $this->assertSame('https://example.com/foo/bar', $session->get('_previous.url'));
+
+        $url = $session->previousUrl();
+        $this->assertSame('https://example.com/foo/bar', $url);
+    }
+
+
 	public function getSession()
 	{
 		$reflection = new ReflectionClass(Store::class);
