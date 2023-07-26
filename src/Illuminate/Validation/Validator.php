@@ -3,6 +3,7 @@
 use Closure;
 use DateTime;
 use DateTimeZone;
+use Exception;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\MessageBag;
 use Illuminate\Container\Container;
@@ -306,7 +307,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validate($attribute, $rule)
 	{
-		list($rule, $parameters) = $this->parseRule($rule);
+		[$rule, $parameters] = $this->parseRule($rule);
 
 		if ($rule == '') return;
 
@@ -997,11 +998,11 @@ class Validator implements MessageProviderInterface {
 		// assume that this column to be verified shares the attribute's name.
 		$column = isset($parameters[1]) ? $parameters[1] : $attribute;
 
-		list($idColumn, $id) = array(null, null);
+		[$idColumn, $id] = array(null, null);
 
 		if (isset($parameters[2]))
 		{
-			list($idColumn, $id) = $this->getUniqueIds($parameters);
+			[$idColumn, $id] = $this->getUniqueIds($parameters);
 
 			if (strtolower((string) $id) == 'null') $id = null;
 		}
@@ -1172,9 +1173,26 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validateActiveUrl($attribute, $value)
 	{
-		$url = str_replace(array('http://', 'https://', 'ftp://'), '', strtolower((string) $value));
+		if (! is_string($value)) {
+            return false;
+        }
 
-		return checkdnsrr($url);
+        $host = parse_url($value, PHP_URL_HOST);
+
+        if ($host === false) {
+            return false;
+        }
+
+        try {
+            $records = dns_get_record($host.'.', DNS_A | DNS_AAAA);
+
+            if (is_array($records) && count($records) > 0) {
+                return true;
+            }
+        } catch (Exception) {
+        }
+
+        return false;
 	}
 
 	/**
@@ -1988,7 +2006,7 @@ class Validator implements MessageProviderInterface {
 
 		foreach ($this->rules[$attribute] as $rule)
 		{
-			list($rule, $parameters) = $this->parseRule($rule);
+			[$rule, $parameters] = $this->parseRule($rule);
 
 			if (in_array($rule, $rules)) return [$rule, $parameters];
 		}
@@ -2036,7 +2054,7 @@ class Validator implements MessageProviderInterface {
 		// rule "Max:3" states that the value may only be three letters.
 		if (strpos($rules, ':') !== false)
 		{
-			list($rules, $parameter) = explode(':', $rules, 2);
+			[$rules, $parameter] = explode(':', $rules, 2);
 
 			$parameters = $this->parseParameters($rules, $parameter);
 		}
@@ -2481,7 +2499,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function callClassBasedExtension($callback, $parameters)
 	{
-		list($class, $method) = explode('@', $callback);
+		[$class, $method] = explode('@', $callback);
 
 		return call_user_func_array(array($this->container->make($class), $method), $parameters);
 	}
@@ -2521,7 +2539,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function callClassBasedReplacer($callback, $message, $attribute, $rule, $parameters)
 	{
-		list($class, $method) = explode('@', $callback);
+		[$class, $method] = explode('@', $callback);
 
 		return call_user_func_array(array($this->container->make($class), $method), array_slice(func_get_args(), 1));
 	}
