@@ -867,6 +867,23 @@ class RoutingRouteTest extends BackwardCompatibleTestCase
 	}
 
 
+    public function testRouteParametersDefaultValue()
+    {
+        $router = $this->getRouter();
+
+        $router->get('foo/{bar?}', function ($bar = '') {
+            return $bar;
+        })->defaults('bar', 'foo');
+        $this->assertEquals('foo', $router->dispatch(Request::create('foo', 'GET'))->getContent());
+
+
+        $router->get('foo/{bar?}', function ($bar = '') {
+            return $bar;
+        })->defaults('bar', 'foo');
+        $this->assertEquals('bar', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+    }
+
+
     public function testRouteRedirect()
     {
         $router = $this->getRouter();
