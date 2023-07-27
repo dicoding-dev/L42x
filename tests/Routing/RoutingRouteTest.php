@@ -89,10 +89,9 @@ class RoutingRouteTest extends BackwardCompatibleTestCase
 		$router->get('foo/bar', fn() => 'second');
 		$this->assertEquals('second', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
 
-		// @todo fix this thest onnce you understand it
-//		$router = $this->getRouter();
-//		$router->get('foo/bar/åαф', function() { return 'hello'; });
-//		$this->assertEquals('hello', $router->dispatch(Request::create('foo/bar/%C3%A5%CE%B1%D1%84', 'GET'))->getContent());
+		$router = $this->getRouter();
+		$router->get('foo/bar/åαф', function() { return 'hello'; });
+		$this->assertEquals('hello', $router->dispatch(Request::create('foo/bar/%C3%A5%CE%B1%D1%84', 'GET'))->getContent());
 	}
 
 
