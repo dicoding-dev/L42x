@@ -3,7 +3,6 @@
 namespace Illuminate\Routing;
 
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class RedirectController extends Controller
 {
