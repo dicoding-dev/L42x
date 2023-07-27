@@ -89,12 +89,35 @@ class UrlGenerator {
 	/**
 	 * Get the URL for the previous request.
 	 *
+     * @param string|null $fallback
 	 * @return string
 	 */
-	public function previous()
+	public function previous($fallback = null)
 	{
-		return $this->to($this->request->headers->get('referer'));
+        $previousUrl = $this->request->headers->get('referer') ?: $this->getPreviousUrlFromSession();
+
+        if ($previousUrl) {
+            return $this->to($previousUrl);
+        }
+
+        if (!empty($fallback)) {
+            return $this->to($fallback);
+        }
+
+		return $this->to('/');
 	}
+
+    /**
+     * Get the previous URL from the session if possible.
+     *
+     * @return string|null
+     */
+    protected function getPreviousUrlFromSession()
+    {
+        return $this->getRequest()->hasSession()
+            ? $this->getRequest()->session()->previousUrl()
+            : null;
+    }
 
 	/**
 	 * Generate a absolute URL to the given path.

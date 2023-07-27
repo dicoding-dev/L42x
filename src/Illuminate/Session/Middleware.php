@@ -76,6 +76,7 @@ class Middleware implements HttpKernelInterface {
 		// add the session identifier cookie to the application response headers now.
 		if ($this->sessionConfigured())
 		{
+            $this->storeCurrentUrl($request, $session);
 			$this->closeSession($session);
 
 			$this->addCookieToResponse($response, $session);
@@ -170,6 +171,13 @@ class Middleware implements HttpKernelInterface {
 	{
 		return mt_rand(1, $config['lottery'][1]) <= $config['lottery'][0];
 	}
+
+    protected function storeCurrentUrl(Request $request, $session)
+    {
+        if ($request->isMethod('GET') && ! $request->isXmlHttpRequest()) {
+            $session->setPreviousUrl($this->getUrl($request));
+        }
+    }
 
 	/**
 	 * Add the session cookie to the application response.
