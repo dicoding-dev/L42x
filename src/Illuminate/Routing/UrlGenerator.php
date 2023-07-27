@@ -94,14 +94,10 @@ class UrlGenerator {
 	 */
 	public function previous($fallback = null)
 	{
-        $referrer = $this->request->headers->get('referer');
+        $previousUrl = $this->request->headers->get('referer') ?: $this->getPreviousUrlFromSession();
 
-        if ($referrer) {
-            return $this->to($referrer);
-        }
-
-        if ($this->getPreviousUrlFromSession()) {
-            return $this->to($this->getPreviousUrlFromSession());
+        if ($previousUrl) {
+            return $this->to($previousUrl);
         }
 
         if (!empty($fallback)) {
