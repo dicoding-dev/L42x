@@ -76,6 +76,7 @@ class Middleware implements HttpKernelInterface {
 		// add the session identifier cookie to the application response headers now.
 		if ($this->sessionConfigured())
 		{
+            $session->setPreviousUrl($this->getUrl($request));
 			$this->closeSession($session);
 
 			$this->addCookieToResponse($response, $session);
