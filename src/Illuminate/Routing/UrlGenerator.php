@@ -118,9 +118,9 @@ class UrlGenerator {
      */
     protected function getPreviousUrlFromSession()
     {
-        $session = $this->getRequest()->session();
-
-        return $session ? $session->previousUrl() : null;
+        return $this->getRequest()->hasSession()
+            ? $this->getRequest()->session()->previousUrl()
+            : null;
     }
 
 	/**
