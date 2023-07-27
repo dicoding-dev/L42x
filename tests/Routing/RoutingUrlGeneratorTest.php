@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Session\Store;
 use L4\Tests\BackwardCompatibleTestCase;
+use Mockery as m;
 
 class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 
@@ -254,6 +256,23 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
 
 		$url->getRequest()->headers->remove('referer');
 		$this->assertEquals($url->to('/'), $url->previous());
+	}
+
+
+    public function testPreviousUrlFromSession(): void
+    {
+        $session = m::mock(Store::class);
+        $request = Illuminate\Http\Request::create('http://www.foo.com/some');
+
+        $session->shouldReceive('previousUrl')->andReturn('http://www.foo.com/previous-page');
+        $request->setSession($session);
+
+        $url = new UrlGenerator(
+			new Illuminate\Routing\RouteCollection,
+            $request
+		);
+
+		$this->assertEquals('http://www.foo.com/previous-page', $url->previous());
 	}
 
 
