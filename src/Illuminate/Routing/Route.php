@@ -455,10 +455,15 @@ class Route {
 	 */
 	protected function replaceDefaults(array $parameters)
 	{
-		foreach ($parameters as $key => &$value)
-		{
-			$value = isset($value) ? $value : array_get($this->defaults, $key);
+		foreach ($parameters as $key => $value) {
+			$parameters[$key] = $value ?? array_get($this->defaults, $key);
 		}
+
+        foreach ($this->defaults as $key => $value) {
+            if (! isset($parameters[$key])) {
+                $parameters[$key] = $value;
+            }
+        }
 
 		return $parameters;
 	}
