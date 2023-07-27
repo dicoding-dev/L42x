@@ -619,9 +619,9 @@ class Blueprint {
 	 */
 	public function nullableTimestamps()
 	{
-		$this->timestamp('created_at')->nullable();
+		$this->dateTime('created_at')->nullable();
 
-		$this->timestamp('updated_at')->nullable();
+		$this->dateTime('updated_at')->nullable();
 	}
 
 	/**
@@ -630,6 +630,19 @@ class Blueprint {
 	 * @return void
 	 */
 	public function timestamps()
+	{
+		$this->dateTime('created_at');
+
+		$this->dateTime('updated_at');
+	}
+
+    /**
+	 * This is the original `timestamps` method from Laravel. We decided to use `datetime` type as default to store
+     * date to avoid issues with timezone configuration.
+	 *
+	 * @return void
+	 */
+	public function timestampsWithTimestampColumnType()
 	{
 		$this->timestamp('created_at');
 

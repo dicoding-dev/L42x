@@ -482,7 +482,29 @@ class DatabaseMySqlSchemaGrammarTest extends BackwardCompatibleTestCase
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertCount(1, $statements);
+		$this->assertEquals('alter table `users` add `created_at` datetime not null, add `updated_at` datetime not null', $statements[0]);
+	}
+
+
+    public function testAddingTimeStampsWithRealTimestampColumnType()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->timestampsWithTimestampColumnType();
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertCount(1, $statements);
 		$this->assertEquals('alter table `users` add `created_at` timestamp default 0 not null, add `updated_at` timestamp default 0 not null', $statements[0]);
+	}
+
+
+    public function testAddingNullableTimeStamps()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->nullableTimestamps();
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertCount(1, $statements);
+		$this->assertEquals('alter table `users` add `created_at` datetime null, add `updated_at` datetime null', $statements[0]);
 	}
 
 
