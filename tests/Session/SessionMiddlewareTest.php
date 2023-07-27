@@ -17,7 +17,7 @@ class SessionMiddlewareTest extends BackwardCompatibleTestCase
 
     public function testSessionIsProperlyStartedAndClosed()
     {
-        $request = Symfony\Component\HttpFoundation\Request::create('/', 'GET');
+        $request = Symfony\Component\HttpFoundation\Request::create('http://www.foo.com/some', 'GET');
         $response = new Symfony\Component\HttpFoundation\Response;
 
 		$middle = new Illuminate\Session\Middleware(
@@ -43,6 +43,7 @@ class SessionMiddlewareTest extends BackwardCompatibleTestCase
 		$handler->shouldReceive('gc')->once()->with(120 * 60);
 		$driver->shouldReceive('getName')->andReturn('name');
 		$driver->shouldReceive('getId')->andReturn(1);
+        $driver->shouldReceive('setPreviousUrl')->with('http://www.foo.com/some')->once();
 
 		$middleResponse = $middle->handle($request);
 
