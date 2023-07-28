@@ -142,7 +142,7 @@ class Route {
 		$uri = preg_replace('/\{(\w+?)\?\}/', '{$1}', $this->uri);
 
 		$this->compiled = (
-			new SymfonyRoute($uri, $optionals, $this->wheres, array(), $this->domain() ?: '')
+			new SymfonyRoute($uri, $optionals, $this->wheres, ['utf8' => true], $this->domain() ?: '')
 		)->compile();
 	}
 
@@ -455,10 +455,15 @@ class Route {
 	 */
 	protected function replaceDefaults(array $parameters)
 	{
-		foreach ($parameters as $key => &$value)
-		{
-			$value = isset($value) ? $value : array_get($this->defaults, $key);
+		foreach ($parameters as $key => $value) {
+			$parameters[$key] = $value ?? array_get($this->defaults, $key);
 		}
+
+        foreach ($this->defaults as $key => $value) {
+            if (! isset($parameters[$key])) {
+                $parameters[$key] = $value;
+            }
+        }
 
 		return $parameters;
 	}

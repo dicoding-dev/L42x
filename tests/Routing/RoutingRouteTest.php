@@ -89,10 +89,9 @@ class RoutingRouteTest extends BackwardCompatibleTestCase
 		$router->get('foo/bar', fn() => 'second');
 		$this->assertEquals('second', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
 
-		// @todo fix this thest onnce you understand it
-//		$router = $this->getRouter();
-//		$router->get('foo/bar/åαф', function() { return 'hello'; });
-//		$this->assertEquals('hello', $router->dispatch(Request::create('foo/bar/%C3%A5%CE%B1%D1%84', 'GET'))->getContent());
+		$router = $this->getRouter();
+		$router->get('foo/bar/åαф', function() { return 'hello'; });
+		$this->assertEquals('hello', $router->dispatch(Request::create('foo/bar/%C3%A5%CE%B1%D1%84', 'GET'))->getContent());
 	}
 
 
@@ -866,6 +865,37 @@ class RoutingRouteTest extends BackwardCompatibleTestCase
 		$router->patterns(['test' => 'pattern', 'test2' => 'pattern2']);
 		$this->assertEquals(['test' => 'pattern', 'test2' => 'pattern2'], $router->getPatterns());
 	}
+
+
+    public function testRouteParametersDefaultValue()
+    {
+        $router = $this->getRouter();
+
+        $router->get('foo/{bar?}', function ($bar = '') {
+            return $bar;
+        })->defaults('bar', 'foo');
+        $this->assertEquals('foo', $router->dispatch(Request::create('foo', 'GET'))->getContent());
+
+
+        $router->get('foo/{bar?}', function ($bar = '') {
+            return $bar;
+        })->defaults('bar', 'foo');
+        $this->assertEquals('bar', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+    }
+
+
+    public function testRouteRedirect()
+    {
+        $router = $this->getRouter();
+        $router->get('contact_us', function () {
+            throw new \Exception('Route should not be reachable.');
+        });
+        $router->redirect('contact_us', 'contact', 302);
+
+        $response = $router->dispatch(Request::create('contact_us', 'GET'));
+        $this->assertTrue($response->isRedirect('contact'));
+        $this->assertEquals(302, $response->getStatusCode());
+    }
 
 
 	protected function getRouter(): Router

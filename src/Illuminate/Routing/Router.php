@@ -220,6 +220,21 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 		return $this->addRoute($verbs, $uri, $action);
 	}
 
+    /**
+     * Create a redirect from one URI to another.
+     *
+     * @param  string  $uri
+     * @param  string  $destination
+     * @param  int  $status
+     * @return \Illuminate\Routing\Route
+     */
+    public function redirect($uri, $destination, $status = 301)
+    {
+        return $this->any($uri, '\Illuminate\Routing\RedirectController@action')
+            ->defaults('destination', $destination)
+            ->defaults('status', $status);
+    }
+
 	/**
 	 * Register a new route with the given verbs.
 	 *
