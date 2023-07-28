@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM php:7.4-cli
+FROM php:8.1-cli
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libzip-dev libbz2-dev && \
