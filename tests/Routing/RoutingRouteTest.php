@@ -898,6 +898,21 @@ class RoutingRouteTest extends BackwardCompatibleTestCase
     }
 
 
+    public function testDispatchingCallableActionClasses()
+    {
+        $router = $this->getRouter();
+        $router->get('foo/bar', 'ActionStub');
+
+        $this->assertEquals('hello', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+
+        $router->get('foo/bar2', [
+            'uses' => 'ActionStub',
+        ]);
+
+        $this->assertEquals('hello', $router->dispatch(Request::create('foo/bar2', 'GET'))->getContent());
+    }
+
+
 	protected function getRouter(): Router
     {
 		return new Router(new Illuminate\Events\Dispatcher);
@@ -993,4 +1008,12 @@ class RouteTestFilterStub {
     {
 		return 'handling!';
 	}
+}
+
+class ActionStub extends Controller
+{
+    public function __invoke(): string
+    {
+        return 'hello';
+    }
 }
