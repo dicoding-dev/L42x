@@ -992,9 +992,13 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 			// Now we can split the controller and method out of the action string so that we
 			// can call them appropriately on the class. This controller and method are in
 			// in the Class@method format and we need to explode them out then use them.
-            $classAndMethod = explode('@', $controller);
+            $controller = explode('@', $controller);
+            $class = $controller[0];
 
-            return $d->dispatch($route, $request, $classAndMethod[0], $classAndMethod[1] ?? '__invoke');
+            // if route action doesn't define method, then by default use `__invoke` method, thus invokable action
+            $method = $controller[1] ?? '__invoke';
+
+            return $d->dispatch($route, $request, $class, $method);
 		};
 	}
 
