@@ -435,6 +435,15 @@ empty
 	}
 
 
+    public function testSelectedStatementsAreCompiled()
+    {
+        $string = '<input @selected(name(foo(bar)))/>';
+        $expected = "<input <?php if(name(foo(bar))): echo 'selected'; endif; ?>/>";
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
