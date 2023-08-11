@@ -453,6 +453,15 @@ empty
     }
 
 
+    public function testDisabledStatementsAreCompiled()
+    {
+        $string = '<button @disabled(name(foo(bar)))>Foo</button>';
+        $expected = "<button <?php if(name(foo(bar))): echo 'disabled'; endif; ?>>Foo</button>";
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
