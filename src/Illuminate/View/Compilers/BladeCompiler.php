@@ -638,6 +638,15 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return "<?php if{$expression}: echo 'checked'; endif; ?>";
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileDisabled($expression)
+	{
+		return "<?php if{$expression}: echo 'disabled'; endif; ?>";
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
