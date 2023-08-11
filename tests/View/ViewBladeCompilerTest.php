@@ -444,6 +444,15 @@ empty
     }
 
 
+    public function testCheckedStatementsAreCompiled()
+    {
+        $string = '<input @checked(name(foo(bar)))/>';
+        $expected = "<input <?php if(name(foo(bar))): echo 'checked'; endif; ?>/>";
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
