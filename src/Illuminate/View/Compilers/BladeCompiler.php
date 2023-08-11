@@ -620,6 +620,15 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return "<?php \$__env->appendSection(); ?>";
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileSelected($expression)
+	{
+		return "<?php if{$expression}: echo 'selected'; endif; ?>";
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
