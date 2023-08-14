@@ -1,6 +1,7 @@
 <?php namespace Illuminate\View\Compilers;
 
 use Closure;
+use Illuminate\Support\Str;
 
 class BladeCompiler extends Compiler implements CompilerInterface {
 
@@ -656,6 +657,18 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return "class=\"<?php echo e(\Illuminate\Support\Arr::toCssClasses{$expression}); ?>\"";
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileJson($expression)
+	{
+        $safeEncodingOptions = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
+        $data = $this->stripParentheses($expression);
+
+		return "<?php echo json_encode({$data}, {$safeEncodingOptions}, 512) ?>";
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
@@ -760,4 +773,18 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return array_map('stripcslashes', $tags);
 	}
 
+    /**
+     * Strip the parentheses from the given expression.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    public function stripParentheses($expression)
+    {
+        if (Str::startsWith($expression, '(')) {
+            $expression = substr($expression, 1, -1);
+        }
+
+        return $expression;
+    }
 }
