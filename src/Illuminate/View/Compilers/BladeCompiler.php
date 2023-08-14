@@ -691,7 +691,7 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 	 * @param  string  $expression
 	 * @return string
 	 */
-	protected function compileProduction(string $expression)
+	protected function compileProduction($expression)
 	{
 		return "<?php if (app()->environment('production')): ?>";
 	}
@@ -701,6 +701,24 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 	 * @return string
 	 */
 	protected function compileEndproduction($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileAuth($expression)
+	{
+		return "<?php if (\Auth::check()): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndauth($expression)
 	{
 		return '<?php endif; ?>';
 	}
