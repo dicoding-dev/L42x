@@ -480,6 +480,23 @@ empty
     }
 
 
+    public function testEnvStatementsAreCompiled()
+    {
+        $string = "@env('staging')
+breeze
+@else
+boom
+@endenv";
+        $expected = "<?php if (\Illuminate\Foundation\Application::environment('staging')): ?>
+breeze
+<?php else: ?>
+boom
+<?php endif; ?>";
+
+		$this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
