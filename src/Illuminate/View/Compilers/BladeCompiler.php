@@ -687,6 +687,24 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return '<?php endif; ?>';
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileProduction(string $expression)
+	{
+		return "<?php if (app()->environment('production')): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndproduction($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
