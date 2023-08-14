@@ -471,6 +471,15 @@ empty
     }
 
 
+    public function testJsonIsCompiledWithSafeDefaultEncodingOptions()
+    {
+        $string = 'var foo = @json($var);';
+        $expected = 'var foo = <?php echo json_encode($var, 15, 512) ?>;';
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
