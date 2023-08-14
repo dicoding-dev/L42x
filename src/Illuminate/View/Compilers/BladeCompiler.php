@@ -675,7 +675,7 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 	 */
 	protected function compileEnv($expression)
 	{
-		return "<?php if (\App::environment{$expression}): ?>";
+		return "<?php if (app()->environment{$expression}): ?>";
 	}
 
     /**

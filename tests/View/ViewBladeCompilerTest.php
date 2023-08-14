@@ -487,7 +487,7 @@ breeze
 @else
 boom
 @endenv";
-        $expected = "<?php if (\App::environment('staging')): ?>
+        $expected = "<?php if (app()->environment('staging')): ?>
 breeze
 <?php else: ?>
 boom
@@ -504,7 +504,7 @@ breeze
 @else
 boom
 @endenv";
-        $expected = "<?php if (\App::environment('staging', 'production')): ?>
+        $expected = "<?php if (app()->environment('staging', 'production')): ?>
 breeze
 <?php else: ?>
 boom
@@ -521,7 +521,7 @@ breeze
 @else
 boom
 @endenv";
-        $expected = "<?php if (\App::environment(['staging', 'production'])): ?>
+        $expected = "<?php if (app()->environment(['staging', 'production'])): ?>
 breeze
 <?php else: ?>
 boom
