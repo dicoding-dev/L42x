@@ -653,7 +653,7 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 	 */
 	protected function compileClass($expression)
 	{
-		return "class=\"<?php echo \Illuminate\Support\Arr::toCssClasses{$expression}; ?>\"";
+		return "class=\"<?php echo e(\Illuminate\Support\Arr::toCssClasses{$expression}); ?>\"";
 	}
 
 	/**
