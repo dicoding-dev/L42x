@@ -531,6 +531,23 @@ boom
     }
 
 
+    public function testProductionEnvStatementsAreCompiled()
+    {
+        $string = "@production
+breeze
+@else
+boom
+@endproduction";
+        $expected = "<?php if (app()->environment('production')): ?>
+breeze
+<?php else: ?>
+boom
+<?php endif; ?>";
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
