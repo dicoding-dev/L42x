@@ -509,6 +509,24 @@ breeze
 <?php else: ?>
 boom
 <?php endif; ?>";
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
+    public function testEnvStatementsWithArrayParamAreCompiled()
+    {
+        $string = "@env(['staging', 'production'])
+breeze
+@else
+boom
+@endenv";
+        $expected = "<?php if (\Illuminate\Foundation\Application::environment(['staging', 'production'])): ?>
+breeze
+<?php else: ?>
+boom
+<?php endif; ?>";
+
         $this->assertEquals($expected, $this->compiler->compileString($string));
     }
 
