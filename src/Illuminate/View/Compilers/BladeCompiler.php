@@ -669,6 +669,24 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return "<?php echo json_encode({$data}, {$safeEncodingOptions}, 512) ?>";
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEnv($expression)
+	{
+		return "<?php if (\Illuminate\Foundation\Application::environment{$expression}): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndenv($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
