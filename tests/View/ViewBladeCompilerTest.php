@@ -497,6 +497,22 @@ boom
     }
 
 
+    public function testEnvStatementsWithMultipleStringParamsAreCompiled()
+    {
+        $string = "@env('staging', 'production')
+breeze
+@else
+boom
+@endenv";
+        $expected = "<?php if (\Illuminate\Foundation\Application::environment('staging', 'production')): ?>
+breeze
+<?php else: ?>
+boom
+<?php endif; ?>";
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
