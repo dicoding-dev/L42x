@@ -723,6 +723,24 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return '<?php endif; ?>';
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileGuest($expression)
+	{
+		return "<?php if (\Auth::guest()): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndguest($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
