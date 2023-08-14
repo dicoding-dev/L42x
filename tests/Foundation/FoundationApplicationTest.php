@@ -143,6 +143,22 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 		);
 	}
 
+
+    public function testEnvironment()
+    {
+        $app = new Application;
+        $app['env'] = 'foo';
+
+        $this->assertSame('foo', $app->environment());
+
+        $this->assertTrue($app->environment('foo'));
+        $this->assertTrue($app->environment('foo', 'bar'));
+        $this->assertTrue($app->environment(['foo', 'bar']));
+
+        $this->assertFalse($app->environment('qux'));
+        $this->assertFalse($app->environment('qux', 'bar'));
+        $this->assertFalse($app->environment(['qux', 'bar']));
+    }
 }
 
 class ApplicationCustomExceptionHandlerStub extends Illuminate\Foundation\Application {
