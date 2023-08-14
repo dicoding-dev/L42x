@@ -548,6 +548,19 @@ boom
     }
 
 
+    public function testPlainAuthIfStatementsAreCompiled()
+    {
+        $string = '@auth
+breeze
+@endauth';
+        $expected = '<?php if (\Auth::check()): ?>
+breeze
+<?php endif; ?>';
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
