@@ -561,6 +561,19 @@ breeze
     }
 
 
+    public function testPlainGuestIfStatementsAreCompiled()
+    {
+        $string = '@guest
+breeze
+@endguest';
+        $expected = '<?php if (\Auth::guest()): ?>
+breeze
+<?php endif; ?>';
+
+        $this->assertEquals($expected, $this->compiler->compileString($string));
+    }
+
+
 	protected function getFiles()
 	{
 		return m::mock('Illuminate\Filesystem\Filesystem');
