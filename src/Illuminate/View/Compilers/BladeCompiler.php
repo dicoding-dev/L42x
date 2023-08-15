@@ -1,6 +1,7 @@
 <?php namespace Illuminate\View\Compilers;
 
 use Closure;
+use Illuminate\Support\Str;
 
 class BladeCompiler extends Compiler implements CompilerInterface {
 
@@ -620,6 +621,126 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return "<?php \$__env->appendSection(); ?>";
 	}
 
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileSelected($expression)
+	{
+		return "<?php if{$expression}: echo 'selected'; endif; ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileChecked($expression)
+	{
+		return "<?php if{$expression}: echo 'checked'; endif; ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileDisabled($expression)
+	{
+		return "<?php if{$expression}: echo 'disabled'; endif; ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileClass($expression)
+	{
+		return "class=\"<?php echo e(\Illuminate\Support\Arr::toCssClasses{$expression}); ?>\"";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileJson($expression)
+	{
+        $safeEncodingOptions = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
+        $data = $this->stripParentheses($expression);
+
+		return "<?php echo json_encode({$data}, {$safeEncodingOptions}, 512) ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEnv($expression)
+	{
+		return "<?php if (app()->environment{$expression}): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndenv($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileProduction($expression)
+	{
+		return "<?php if (app()->environment('production')): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndproduction($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileAuth($expression)
+	{
+		return "<?php if (\Auth::check()): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndauth($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileGuest($expression)
+	{
+		return "<?php if (\Auth::guest()): ?>";
+	}
+
+    /**
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndguest($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
 	/**
 	 * Register a custom Blade compiler.
 	 *
@@ -724,4 +845,18 @@ class BladeCompiler extends Compiler implements CompilerInterface {
 		return array_map('stripcslashes', $tags);
 	}
 
+    /**
+     * Strip the parentheses from the given expression.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    public function stripParentheses($expression)
+    {
+        if (Str::startsWith($expression, '(')) {
+            $expression = substr($expression, 1, -1);
+        }
+
+        return $expression;
+    }
 }

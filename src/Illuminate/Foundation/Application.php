@@ -227,14 +227,16 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	/**
 	 * Get or check the current application environment.
 	 *
-	 * @param  mixed
-	 * @return string
+	 * @param  string|array
+	 * @return string|bool
 	 */
-	public function environment()
+	public function environment(...$environments)
 	{
-		if (count(func_get_args()) > 0)
+		if (count($environments) > 0)
 		{
-			return in_array($this['env'], func_get_args());
+            $environments = is_array($environments[0]) ? $environments[0] : $environments;
+
+			return in_array($this['env'], $environments, true);
 		}
 
 		return $this['env'];
