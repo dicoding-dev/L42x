@@ -1448,6 +1448,26 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         }, 'someIdField');
     }
 
+    public function testChunkPaginatesUsingIdWithAlias(): void
+    {
+        $builder = $this->getMockQueryBuilder();
+        $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
+
+        $chunk1 = Collection::make([(object) ['table_id' => 1], (object) ['table_id' => 10]]);
+        $chunk2 = Collection::make([]);
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'table.id')->andReturnSelf();
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 10, 'table.id')->andReturnSelf();
+        $builder->shouldReceive('get')->times(2)->andReturn($chunk1, $chunk2);
+
+        $callbackAssertor = m::mock(stdClass::class);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk1);
+        $callbackAssertor->shouldReceive('doSomething')->never()->with($chunk2);
+
+        $builder->chunkById(2, function ($results) use ($callbackAssertor) {
+            $callbackAssertor->doSomething($results);
+        }, 'table.id', 'table_id');
+    }
+
 	protected function getBuilder(): Builder
     {
 		$grammar = new Illuminate\Database\Query\Grammars\Grammar;
