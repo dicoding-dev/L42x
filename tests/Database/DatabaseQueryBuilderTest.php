@@ -1431,6 +1431,22 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         }, 'someIdField');
     }
 
+    public function testChunkPaginatesUsingIdWithCountZero(): void
+    {
+        $builder = $this->getMockQueryBuilder();
+        $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
+
+        $chunk = Collection::make([]);
+        $builder->shouldReceive('forPageAfterId')->once()->with(0, 0, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('get')->times(1)->andReturn($chunk);
+
+        $callbackAssertor = m::mock(stdClass::class);
+        $callbackAssertor->shouldReceive('doSomething')->never();
+
+        $builder->chunkById(0, function ($results) use ($callbackAssertor) {
+            $callbackAssertor->doSomething($results);
+        }, 'someIdField');
+    }
 
 	protected function getBuilder(): Builder
     {
