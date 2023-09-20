@@ -6,8 +6,10 @@ use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Pagination\Factory;
+use Illuminate\Support\Collection;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use Mockery\MockInterface;
 
 class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 {
@@ -1368,9 +1370,9 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk1 = collect([['someIdField' => 1], ['someIdField' => 2]]);
-        $chunk2 = collect([['someIdField' => 10], ['someIdField' => 11]]);
-        $chunk3 = collect([]);
+        $chunk1 = Collection::make([['someIdField' => 1], ['someIdField' => 2]]);
+        $chunk2 = Collection::make([['someIdField' => 10], ['someIdField' => 11]]);
+        $chunk3 = Collection::make([]);
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 11, 'someIdField')->andReturnSelf();
@@ -1433,5 +1435,17 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 		$processor = new Illuminate\Database\Query\Processors\MySqlProcessor;
 		return new Builder(m::mock(ConnectionInterface::class), $grammar, $processor);
 	}
+
+    /**
+     * @return MockInterface|\Illuminate\Database\Query\Builder
+     */
+    protected function getMockQueryBuilder(): MockInterface|Builder
+    {
+        return m::mock(Builder::class, [
+            m::mock(ConnectionInterface::class),
+            new Grammar,
+            m::mock(Processor::class),
+        ])->makePartial();
+    }
 
 }
