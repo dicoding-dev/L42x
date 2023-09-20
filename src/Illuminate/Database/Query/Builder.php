@@ -2273,4 +2273,9 @@ class Builder {
             })->values()->all();
     }
 
+    private function defaultKeyName(): string
+    {
+        return 'id';
+    }
+
 }
