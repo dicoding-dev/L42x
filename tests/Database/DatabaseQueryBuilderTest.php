@@ -1388,6 +1388,29 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         }, 'someIdField');
     }
 
+    public function testChunkPaginatesUsingIdWithLastChunkComplete(): void
+    {
+        $builder = $this->getMockQueryBuilder();
+        $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
+
+        $chunk1 = Collection::make([(object) ['someIdField' => 1], (object) ['someIdField' => 2]]);
+        $chunk2 = Collection::make([(object) ['someIdField' => 10], (object) ['someIdField' => 11]]);
+        $chunk3 = Collection::make([]);
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 11, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('get')->times(3)->andReturn($chunk1, $chunk2, $chunk3);
+
+        $callbackAssertor = m::mock(stdClass::class);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk1);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk2);
+        $callbackAssertor->shouldReceive('doSomething')->never()->with($chunk3);
+
+        $builder->chunkById(2, function ($results) use ($callbackAssertor) {
+            $callbackAssertor->doSomething($results);
+        }, 'someIdField');
+    }
+
 
 	protected function getBuilder(): Builder
     {
