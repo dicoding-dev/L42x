@@ -1411,6 +1411,26 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         }, 'someIdField');
     }
 
+    public function testChunkPaginatesUsingIdWithLastChunkPartial(): void
+    {
+        $builder = $this->getMockQueryBuilder();
+        $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
+
+        $chunk1 = Collection::make([(object) ['someIdField' => 1], (object) ['someIdField' => 2]]);
+        $chunk2 = Collection::make([(object) ['someIdField' => 10]]);
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('get')->times(2)->andReturn($chunk1, $chunk2);
+
+        $callbackAssertor = m::mock(stdClass::class);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk1);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk2);
+
+        $builder->chunkById(2, function ($results) use ($callbackAssertor) {
+            $callbackAssertor->doSomething($results);
+        }, 'someIdField');
+    }
+
 
 	protected function getBuilder(): Builder
     {
