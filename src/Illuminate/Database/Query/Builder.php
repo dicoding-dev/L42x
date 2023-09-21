@@ -2212,7 +2212,7 @@ class Builder {
             // we will call the callback with the current chunk of these results here.
             $results = $clone->forPageAfterId($count, $lastId, $column)->get();
 
-            $countResults = $results->count();
+            $countResults = count($results);
 
             if ($countResults == 0) {
                 break;
@@ -2225,7 +2225,7 @@ class Builder {
                 return false;
             }
 
-            $lastId = data_get($results->last(), $alias);
+            $lastId = data_get(end($results), $alias);
 
             if ($lastId === null) {
                 throw new RuntimeException("The chunkById operation was aborted because the [{$alias}] column is not present in the query result.");
