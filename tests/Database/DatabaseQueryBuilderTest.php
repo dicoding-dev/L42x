@@ -1393,9 +1393,9 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk1 = Collection::make([(object) ['someIdField' => 1], (object) ['someIdField' => 2]]);
-        $chunk2 = Collection::make([(object) ['someIdField' => 10], (object) ['someIdField' => 11]]);
-        $chunk3 = Collection::make([]);
+        $chunk1 = [(object) ['someIdField' => 1], (object) ['someIdField' => 2]];
+        $chunk2 = [(object) ['someIdField' => 10], (object) ['someIdField' => 11]];
+        $chunk3 = [];
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 11, 'someIdField')->andReturnSelf();
@@ -1416,8 +1416,8 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk1 = Collection::make([(object) ['someIdField' => 1], (object) ['someIdField' => 2]]);
-        $chunk2 = Collection::make([(object) ['someIdField' => 10]]);
+        $chunk1 = [(object) ['someIdField' => 1], (object) ['someIdField' => 2]];
+        $chunk2 = [(object) ['someIdField' => 10]];
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('get')->times(2)->andReturn($chunk1, $chunk2);
@@ -1436,7 +1436,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk = Collection::make([]);
+        $chunk = [];
         $builder->shouldReceive('forPageAfterId')->once()->with(0, 0, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('get')->times(1)->andReturn($chunk);
 
@@ -1453,8 +1453,8 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk1 = Collection::make([(object) ['table_id' => 1], (object) ['table_id' => 10]]);
-        $chunk2 = Collection::make([]);
+        $chunk1 = [(object) ['table_id' => 1], (object) ['table_id' => 10]];
+        $chunk2 = [];
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'table.id')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 10, 'table.id')->andReturnSelf();
         $builder->shouldReceive('get')->times(2)->andReturn($chunk1, $chunk2);
