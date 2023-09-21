@@ -1370,9 +1370,9 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk1 = Collection::make([['someIdField' => 1], ['someIdField' => 2]]);
-        $chunk2 = Collection::make([['someIdField' => 10], ['someIdField' => 11]]);
-        $chunk3 = Collection::make([]);
+        $chunk1 = [['someIdField' => 1], ['someIdField' => 2]];
+        $chunk2 = [['someIdField' => 10], ['someIdField' => 11]];
+        $chunk3 = [];
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
         $builder->shouldReceive('forPageAfterId')->once()->with(2, 11, 'someIdField')->andReturnSelf();
