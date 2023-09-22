@@ -2214,7 +2214,7 @@ class Builder {
 
             $countResults = count($results);
 
-            if ($countResults == 0) {
+            if ($countResults === 0) {
                 break;
             }
 
@@ -2234,7 +2234,7 @@ class Builder {
             unset($results);
 
             $page++;
-        } while ($countResults == $count);
+        } while ($countResults === $count);
 
         return true;
     }
