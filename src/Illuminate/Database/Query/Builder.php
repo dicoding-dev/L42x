@@ -1584,7 +1584,7 @@ class Builder {
      * @param  string  $column
      * @return $this
      */
-    private function forPageAfterId(int $perPage = 15, int|null $lastId = 0, string $column = 'id'): Builder
+    protected function forPageAfterId(int $perPage = 15, int|null $lastId = 0, string $column = 'id'): Builder
     {
         $this->orders = $this->removeExistingOrdersFor($column);
 
@@ -1602,7 +1602,7 @@ class Builder {
      * @param  string  $column
      * @return array
      */
-    private function removeExistingOrdersFor(string $column): array
+    protected function removeExistingOrdersFor(string $column): array
     {
         return Collection::make($this->orders)
             ->reject(function ($order) use ($column) {

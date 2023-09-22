@@ -1524,7 +1524,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
             m::mock(ConnectionInterface::class),
             new Grammar,
             m::mock(Processor::class),
-        ])->makePartial();
+        ])->makePartial()->shouldAllowMockingProtectedMethods();
     }
 
 }
