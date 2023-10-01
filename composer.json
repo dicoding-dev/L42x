@@ -73,7 +73,6 @@
         "mockery/mockery": "~1.3",
         "phpunit/phpunit": "~9.5",
         "phpspec/prophecy-phpunit": "~2.0",
-        "symfony/debug": "~6.3",
         "symfony/var-dumper": "~6.3"
     },
     "autoload": {
