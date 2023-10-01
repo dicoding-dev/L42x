@@ -2,8 +2,8 @@
 
 use Closure;
 use Illuminate\Container\BindingResolutionException;
+use Illuminate\Foundation\Http\MiddlewareBuilder;
 use ReflectionException;
-use Stack\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Config\FileLoader;
@@ -664,7 +664,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	{
 		$sessionReject = $this->bound('session.reject') ? $this['session.reject'] : null;
 
-		$client = (new Builder)
+		$client = (new MiddlewareBuilder())
                     ->push('Illuminate\Cookie\Guard', $this['encrypter'])
                     ->push('Illuminate\Cookie\Queue', $this['cookie'])
                     ->push('Illuminate\Session\Middleware', $this['session'], $sessionReject);
@@ -674,13 +674,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		return $client->resolve($this);
 	}
 
-	/**
-	 * Merge the developer defined middlewares onto the stack.
-	 *
-	 * @param  \Stack\Builder
-	 * @return void
-	 */
-	protected function mergeCustomMiddlewares(Builder $stack)
+    /**
+     * Merge the developer defined middlewares onto the stack.
+     *
+     * @param MiddlewareBuilder $stack
+     * @return void
+     */
+	protected function mergeCustomMiddlewares(MiddlewareBuilder $stack)
 	{
 		foreach ($this->middlewares as $middleware)
 		{
