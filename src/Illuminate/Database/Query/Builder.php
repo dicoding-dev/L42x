@@ -5,6 +5,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
+use Monolog\Logger;
 use RuntimeException;
 
 class Builder {
@@ -1586,7 +1587,11 @@ class Builder {
      */
     protected function forPageAfterId(int $perPage = 15, int|null $lastId = 0, string $column = 'id'): Builder
     {
+        $logger = new Logger('sqlLog');
+
         $this->orders = $this->removeExistingOrdersFor($column);
+
+        $logger->debug(__CLASS__, [$this->toSql()]);
 
         if (! is_null($lastId)) {
             $this->where($column, '>', $lastId);
