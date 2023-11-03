@@ -22,8 +22,8 @@ class MigratePublishCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$published = $this->laravel['migration.publisher']->publish(
@@ -34,6 +34,8 @@ class MigratePublishCommand extends Command {
 		{
 			$this->line('<info>Published:</info> '.basename((string) $migration));
 		}
+
+        return 0;
 	}
 
 	/**

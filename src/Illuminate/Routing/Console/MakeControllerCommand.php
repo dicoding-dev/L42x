@@ -53,11 +53,13 @@ class MakeControllerCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->generateController();
+
+        return 0;
 	}
 
 	/**

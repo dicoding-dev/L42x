@@ -22,8 +22,8 @@ class ChangesCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		list($version, $changes) = $this->getChangeVersion($this->getChangesArray());
@@ -34,6 +34,8 @@ class ChangesCommand extends Command {
 		{
 			$this->line($this->formatMessage($change));
 		}
+
+        return 0;
 	}
 
 	/**

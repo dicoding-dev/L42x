@@ -52,8 +52,8 @@ class MigrateCommand extends BaseCommand {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ( ! $this->confirmToProceed()) return;
@@ -84,6 +84,8 @@ class MigrateCommand extends BaseCommand {
 		{
 			$this->call('db:seed', ['--force' => true]);
 		}
+
+        return 0;
 	}
 
 	/**

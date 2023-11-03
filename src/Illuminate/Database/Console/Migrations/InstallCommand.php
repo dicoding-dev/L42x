@@ -43,8 +43,8 @@ class InstallCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->repository->setSource($this->input->getOption('database'));
@@ -52,6 +52,8 @@ class InstallCommand extends Command {
 		$this->repository->createRepository();
 
 		$this->info("Migration table created successfully.");
+
+        return 0;
 	}
 
 	/**

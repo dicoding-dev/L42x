@@ -22,8 +22,8 @@ class TinkerCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ($this->supportsBoris())
@@ -36,6 +36,8 @@ class TinkerCommand extends Command {
 
 			$this->runPlainShell();
 		}
+
+        return 0;
 	}
 
 	/**

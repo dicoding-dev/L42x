@@ -21,13 +21,15 @@ class DownCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		touch($this->laravel['config']['app.manifest'].'/down');
 
 		$this->comment('Application is now in maintenance mode.');
+
+        return 0;
 	}
 
 }

@@ -44,8 +44,8 @@ class OptimizeCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->info('Generating optimized class loader');
@@ -75,6 +75,8 @@ class OptimizeCommand extends Command {
 		{
 			$this->call('clear-compiled');
 		}
+
+        return 0;
 	}
 
 	/**
