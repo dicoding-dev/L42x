@@ -14,10 +14,10 @@ use Illuminate\Events\EventServiceProvider;
 use Illuminate\Routing\RoutingServiceProvider;
 use Illuminate\Exception\ExceptionServiceProvider;
 use Illuminate\Config\FileEnvironmentVariablesLoader;
+use Symfony\Component\ErrorHandler\Error\FatalError;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Debug\Exception\FatalErrorException;
 use Illuminate\Support\Contracts\ResponsePreparerInterface;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -972,7 +972,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	public function fatal(Closure $callback)
 	{
-		$this->error(function(FatalErrorException $e) use ($callback)
+		$this->error(function(FatalError $e) use ($callback)
 		{
 			return call_user_func($callback, $e);
 		});
