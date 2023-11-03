@@ -797,8 +797,8 @@ class DatabaseEloquentModelTest extends BackwardCompatibleTestCase
 		$this->assertFalse($clone->exists);
 		$this->assertEquals('taylor', $clone->first);
 		$this->assertEquals('otwell', $clone->last);
-		$this->assertObjectNotHasAttribute('created_at', $clone);
-		$this->assertObjectNotHasAttribute('updated_at', $clone);
+		$this->assertObjectNotHasProperty('created_at', $clone);
+		$this->assertObjectNotHasProperty('updated_at', $clone);
 		$this->assertEquals(['bar'], $clone->foo);
 	}
 
