@@ -21,8 +21,10 @@ class FoundationComposerTest extends BackwardCompatibleTestCase
             ['getProcess'],
             [$files = m::mock(Filesystem::class), __DIR__]
         );
+//            public function __construct(array $command, string $cwd = null, array $env = null, mixed $input = null, ?float $timeout = 60)
+
         $files->shouldReceive('exists')->once()->with(__DIR__ . '/composer.phar')->andReturn(true);
-        $process = $this->getMock(Process::class, ['run'], ['composer.phar dump-autoload', __DIR__ . '/composer.phar']);
+        $process = $this->getMock(Process::class, ['run'], [['composer.phar dump-autoload'], __DIR__ . '/composer.phar']);
 		$composer->expects($this->once())->method('getProcess')->willReturn($process);
 		$process->expects($this->once())->method('run');
 
@@ -38,7 +40,7 @@ class FoundationComposerTest extends BackwardCompatibleTestCase
         ), __DIR__
         ]);
 		$files->shouldReceive('exists')->once()->with(__DIR__.'/composer.phar')->andReturn(false);
-        $process = $this->getMock(Process::class, ['run'], ['composer dump-autoload', __DIR__ . '/composer.phar']);
+        $process = $this->getMock(Process::class, ['run'], [['composer dump-autoload'], __DIR__ . '/composer.phar']);
         $composer->expects($this->once())->method('getProcess')->willReturn($process);
         $process->expects($this->once())->method('run');
 
