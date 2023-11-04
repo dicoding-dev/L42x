@@ -44,7 +44,7 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 *
 	 * @var string
 	 */
-	protected $description;
+	protected $description = '';
 
 	/**
 	 * Create a new console command instance.
