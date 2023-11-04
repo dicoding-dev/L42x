@@ -277,14 +277,13 @@ class Handler {
                 $severity = \E_ERROR;
             }
 
-			$e = new FatalError($exception->getMessage(), $exception->getCode(), [
-                'type' => $severity,
-                'message' => $exception->getMessage(),
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-            ], trace: $exception->getTrace());
-
-            return $displayer->display($e);
+			$exception = new ErrorException(
+                $exception->getMessage(),
+                $exception->getCode(),
+                $severity,
+                $exception->getFile(),
+                $exception->getLine(),
+            );
 		}
 
 		return $displayer->display($exception);
