@@ -138,7 +138,7 @@ class Handler {
 	/**
 	 * Handle an exception for the application.
 	 *
-	 * @param  \Throwable  $exception
+	 * @param  \Exception  $exception
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
 	public function handleException($exception)
@@ -222,7 +222,7 @@ class Handler {
 	/**
 	 * Handle the given exception.
 	 *
-	 * @param  \Throwable  $exception
+	 * @param  \Exception  $exception
 	 * @param  bool  $fromConsole
 	 */
 	protected function callCustomHandlers($exception, $fromConsole = false)
@@ -268,9 +268,24 @@ class Handler {
 	{
 		$displayer = $this->debug ? $this->debugDisplayer : $this->plainDisplayer;
 
-//		if (! $exception instanceof \Exception) {
-//			$exception = new FatalThrowableError($exception);
-//		}
+		if (! $exception instanceof \Exception) {
+            if ($exception instanceof \ParseError) {
+                $severity = \E_PARSE;
+            } elseif ($exception instanceof \TypeError) {
+                $severity = \E_RECOVERABLE_ERROR;
+            } else {
+                $severity = \E_ERROR;
+            }
+
+			$e = new FatalError($exception->getMessage(), $exception->getCode(), [
+                'type' => $severity,
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ], trace: $exception->getTrace());
+
+            return $displayer->display($e);
+		}
 
 		return $displayer->display($exception);
 	}
