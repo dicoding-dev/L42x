@@ -37,7 +37,7 @@ class SessionMiddlewareTest extends BackwardCompatibleTestCase
 		$manager->shouldReceive('driver')->andReturn($driver = m::mock(Store::class)->makePartial());
 		$driver->shouldReceive('setRequestOnHandler')->once()->with($request);
 		$driver->shouldReceive('start')->once();
-		$app->shouldReceive('handle')->once()->with($request, Symfony\Component\HttpKernel\HttpKernelInterface::MASTER_REQUEST, true)->andReturn($response);
+		$app->shouldReceive('handle')->once()->with($request, Symfony\Component\HttpKernel\HttpKernelInterface::MAIN_REQUEST, true)->andReturn($response);
 		$driver->shouldReceive('save')->once();
 		$driver->shouldReceive('getHandler')->andReturn($handler = m::mock('StdClass'));
 		$handler->shouldReceive('gc')->once()->with(120 * 60);
@@ -63,7 +63,7 @@ class SessionMiddlewareTest extends BackwardCompatibleTestCase
 		$manager->shouldReceive('getSessionConfig')->andReturn([
 			'driver' => null,
         ]);
-		$app->shouldReceive('handle')->once()->with($request, Symfony\Component\HttpKernel\HttpKernelInterface::MASTER_REQUEST, true)->andReturn($response);
+		$app->shouldReceive('handle')->once()->with($request, Symfony\Component\HttpKernel\HttpKernelInterface::MAIN_REQUEST, true)->andReturn($response);
 		$middleResponse = $middle->handle($request);
 
 		$this->assertSame($response, $middleResponse);

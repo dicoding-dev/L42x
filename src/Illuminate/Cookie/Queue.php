@@ -42,8 +42,8 @@ class Queue implements HttpKernelInterface {
 	 * @param  bool  $catch
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
-	{
+	public function handle(Request $request, $type = HttpKernelInterface::MAIN_REQUEST, $catch = true): \Symfony\Component\HttpFoundation\Response
+    {
 		$response = $this->app->handle($request, $type, $catch);
 
 		foreach ($this->cookies->getQueuedCookies() as $cookie)
