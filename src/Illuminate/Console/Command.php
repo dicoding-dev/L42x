@@ -109,7 +109,10 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): mixed
     {
-		return $this->fire();
+        // Symfony 5 removed support of returning null, so we cast the returned value as integer.
+        // In this case, void-returned fire() method will be casted to 0.
+        // @see https://github.com/symfony/console/blob/6.3/CHANGELOG.md#500
+		return (int) $this->fire();
 	}
 
 	/**
