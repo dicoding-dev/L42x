@@ -473,7 +473,7 @@ class Request extends SymfonyRequest {
             return $this->$source->all()[$key] ?? $default;
         }
 
-		return $this->$source->get($key, $default, true);
+		return $this->$source->get($key, $default);
 	}
 
 	/**
