@@ -36,8 +36,8 @@ class KeyGenerateCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		list($path, $contents) = $this->getKeyFile();
@@ -51,6 +51,8 @@ class KeyGenerateCommand extends Command {
 		$this->laravel['config']['app.key'] = $key;
 
 		$this->info("Application key [$key] set successfully.");
+
+        return 0;
 	}
 
 	/**

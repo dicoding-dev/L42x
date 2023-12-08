@@ -25,8 +25,8 @@ class RefreshCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ( ! $this->confirmToProceed()) return;
@@ -50,6 +50,8 @@ class RefreshCommand extends Command {
 		{
 			$this->runSeeder($database);
 		}
+
+        return 0;
 	}
 
 	/**

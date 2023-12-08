@@ -42,8 +42,8 @@ class FailedTableCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$fullPath = $this->createBaseMigration();
@@ -51,6 +51,8 @@ class FailedTableCommand extends Command {
 		$this->files->put($fullPath, $this->files->get(__DIR__.'/stubs/failed_jobs.stub'));
 
 		$this->info('Migration created successfully!');
+
+        return 0;
 	}
 
 	/**

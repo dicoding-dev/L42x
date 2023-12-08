@@ -21,8 +21,8 @@ class ListFailedCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$rows = array();
@@ -34,7 +34,8 @@ class ListFailedCommand extends Command {
 
 		if (count($rows) == 0)
 		{
-			return $this->info('No failed jobs!');
+			$this->info('No failed jobs!');
+            return 0;
 		}
 
 		$table = $this->getHelperSet()->get('table');
@@ -42,6 +43,8 @@ class ListFailedCommand extends Command {
 		$table->setHeaders(array('ID', 'Connection', 'Queue', 'Class', 'Failed At'))
               ->setRows($rows)
               ->render($this->output);
+
+        return 0;
 	}
 
 	/**

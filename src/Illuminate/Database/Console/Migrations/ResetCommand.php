@@ -46,8 +46,8 @@ class ResetCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ( ! $this->confirmToProceed()) return;
@@ -70,6 +70,8 @@ class ResetCommand extends Command {
 
 			if ($count == 0) break;
 		}
+
+        return 0;
 	}
 
 	/**

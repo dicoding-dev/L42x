@@ -52,8 +52,8 @@ class MigrateMakeCommand extends BaseCommand {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		// It's possible for the developer to specify the tables to modify in this
@@ -73,6 +73,8 @@ class MigrateMakeCommand extends BaseCommand {
 		$this->writeMigration($name, $table, $create);
 
 		$this->call('dump-autoload');
+
+        return 0;
 	}
 
 	/**

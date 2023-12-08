@@ -45,14 +45,16 @@ class AssetPublishCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		foreach ($this->getPackages() as $package)
 		{
 			$this->publishAssets($package);
 		}
+
+        return 0;
 	}
 
 	/**

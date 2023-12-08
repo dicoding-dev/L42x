@@ -44,7 +44,7 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 *
 	 * @var string
 	 */
-	protected $description;
+	protected $description = '';
 
 	/**
 	 * Create a new console command instance.
@@ -91,8 +91,8 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
 	 * @return int
 	 */
-	public function run(InputInterface $input, OutputInterface $output)
-	{
+	public function run(InputInterface $input, OutputInterface $output): int
+    {
 		$this->input = $input;
 
 		$this->output = $output;
@@ -107,9 +107,12 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
 	 * @return mixed
 	 */
-	protected function execute(InputInterface $input, OutputInterface $output)
-	{
-		return $this->fire();
+	protected function execute(InputInterface $input, OutputInterface $output): mixed
+    {
+        // Symfony 5 removed support of returning null, so we cast the returned value as integer.
+        // In this case, void-returned fire() method will be casted to 0.
+        // @see https://github.com/symfony/console/blob/6.3/CHANGELOG.md#500
+		return (int) $this->fire();
 	}
 
 	/**

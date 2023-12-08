@@ -10,10 +10,9 @@ class Client extends HttpKernelBrowser {
 	 * Convert a BrowserKit request into a Illuminate request.
 	 *
 	 * @param  \Symfony\Component\BrowserKit\Request  $request
-	 * @return \Illuminate\Http\Request
 	 */
-	protected function filterRequest(DomRequest $request)
-	{
+	protected function filterRequest(DomRequest $request): \Symfony\Component\HttpFoundation\Request
+    {
 		$httpRequest = Application::onRequest('create', $this->getRequestParameters($request));
 
 		$httpRequest->files->replace($this->filterFiles($httpRequest->files->all()));

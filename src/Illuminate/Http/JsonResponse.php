@@ -43,8 +43,8 @@ class JsonResponse extends \Symfony\Component\HttpFoundation\JsonResponse {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function setData($data = array())
-	{
+	public function setData($data = array()): static
+    {
 		$this->data = $data instanceof JsonableInterface
 								   ? $data->toJson($this->jsonOptions)
 								   : json_encode($data, $this->jsonOptions);

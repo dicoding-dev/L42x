@@ -21,11 +21,13 @@ class EnvironmentCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->line('<info>Current application environment:</info> <comment>'.$this->laravel['env'].'</comment>');
+
+        return 0;
 	}
 
 }

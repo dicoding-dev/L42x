@@ -37,8 +37,8 @@ class CommandMakeCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$path = $this->getPath();
@@ -51,6 +51,8 @@ class CommandMakeCommand extends Command {
 		$file = $path.'/'.$this->input->getArgument('name').'.php';
 
 		$this->writeCommand($file, $stub);
+
+        return 0;
 	}
 
 	/**

@@ -63,8 +63,8 @@ class RoutesCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if (count($this->routes) == 0)
@@ -73,6 +73,8 @@ class RoutesCommand extends Command {
 		}
 
 		$this->displayRoutes($this->getRoutes());
+
+        return 0;
 	}
 
 	/**

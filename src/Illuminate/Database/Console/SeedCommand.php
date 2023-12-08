@@ -46,8 +46,8 @@ class SeedCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ( ! $this->confirmToProceed()) return;
@@ -55,6 +55,8 @@ class SeedCommand extends Command {
 		$this->resolver->setDefaultConnection($this->getDatabase());
 
 		$this->getSeeder()->run();
+
+        return 0;
 	}
 
 	/**

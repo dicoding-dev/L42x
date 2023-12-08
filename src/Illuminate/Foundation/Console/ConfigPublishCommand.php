@@ -47,8 +47,8 @@ class ConfigPublishCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$package = $this->input->getArgument('package');
@@ -70,6 +70,8 @@ class ConfigPublishCommand extends Command {
 		}
 
 		$this->output->writeln('<info>Configuration published for package:</info> '.$package);
+
+        return 0;
 	}
 
 	/**

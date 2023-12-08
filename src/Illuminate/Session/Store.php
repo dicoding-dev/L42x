@@ -83,7 +83,7 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function start()
+	public function start(): bool
 	{
 		$this->loadSession();
 
@@ -135,8 +135,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getId()
-	{
+	public function getId(): string
+    {
 		return $this->id;
 	}
 
@@ -177,8 +177,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getName()
-	{
+	public function getName(): string
+    {
 		return $this->name;
 	}
 
@@ -193,8 +193,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function invalidate($lifetime = null)
-	{
+	public function invalidate($lifetime = null): bool
+    {
 		$this->attributes = array();
 
 		$this->migrate();
@@ -205,8 +205,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function migrate($destroy = false, $lifetime = null)
-	{
+	public function migrate($destroy = false, $lifetime = null): bool
+    {
 		if ($destroy) $this->handler->destroy($this->getId());
 
 		$this->setExists(false);
@@ -269,16 +269,16 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function has($name)
-	{
+	public function has($name): bool
+    {
 		return ! is_null($this->get($name));
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
-	public function get($name, $default = null)
-	{
+	public function get($name, $default = null): mixed
+    {
 		return array_get($this->attributes, $name, $default);
 	}
 
@@ -446,8 +446,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function all()
-	{
+	public function all(): array
+    {
 		return $this->attributes;
 	}
 
@@ -465,8 +465,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function remove($name)
-	{
+	public function remove($name): mixed
+    {
 		return array_pull($this->attributes, $name);
 	}
 
@@ -507,8 +507,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function isStarted()
-	{
+	public function isStarted(): bool
+    {
 		return $this->started;
 	}
 
@@ -523,8 +523,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getBag($name)
-	{
+	public function getBag($name): SessionBagInterface
+    {
 		return array_get($this->bags, $name, function()
 		{
 			throw new \InvalidArgumentException("Bag not registered.");
@@ -534,8 +534,8 @@ class Store implements SessionInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getMetadataBag()
-	{
+	public function getMetadataBag(): MetadataBag
+    {
 		return $this->metaBag;
 	}
 

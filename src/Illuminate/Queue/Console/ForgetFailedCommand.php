@@ -22,8 +22,8 @@ class ForgetFailedCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ($this->laravel['queue.failer']->forget($this->argument('id')))
@@ -34,6 +34,8 @@ class ForgetFailedCommand extends Command {
 		{
 			$this->error('No failed job matches the given ID.');
 		}
+
+        return 0;
 	}
 
 	/**

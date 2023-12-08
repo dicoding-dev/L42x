@@ -21,13 +21,15 @@ class UpCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		@unlink($this->laravel['config']['app.manifest'].'/down');
 
 		$this->info('Application is now live.');
+
+        return 0;
 	}
 
 }

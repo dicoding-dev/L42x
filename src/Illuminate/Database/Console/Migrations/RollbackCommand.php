@@ -46,8 +46,8 @@ class RollbackCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if ( ! $this->confirmToProceed()) return;
@@ -65,6 +65,8 @@ class RollbackCommand extends Command {
 		{
 			$this->output->writeln($note);
 		}
+
+        return 0;
 	}
 
 	/**

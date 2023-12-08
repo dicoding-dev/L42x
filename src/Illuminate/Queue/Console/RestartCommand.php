@@ -21,13 +21,15 @@ class RestartCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->laravel['cache']->forever('illuminate:queue:restart', time());
 
 		$this->info('Broadcasting queue restart signal.');
+
+        return 0;
 	}
 
 }

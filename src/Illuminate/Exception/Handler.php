@@ -3,10 +3,9 @@
 use Closure;
 use ErrorException;
 use ReflectionFunction;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Illuminate\Support\Contracts\ResponsePreparerInterface;
+use Symfony\Component\ErrorHandler\Error\FatalError;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\Debug\Exception\FatalErrorException as FatalError;
 
 class Handler {
 
@@ -188,11 +187,9 @@ class Handler {
 		// code so it can be displayed back out to the developer for information.
 		if ( ! is_null($error))
 		{
-			extract($error);
+			if ( ! $this->isFatal($error['type'])) return;
 
-			if ( ! $this->isFatal($type)) return;
-
-			$this->handleException(new FatalError($message, $type, 0, $file, $line))->send();
+			$this->handleException(new FatalError($error['message'], 0, $error, 0))->send();
 		}
 	}
 
@@ -272,7 +269,21 @@ class Handler {
 		$displayer = $this->debug ? $this->debugDisplayer : $this->plainDisplayer;
 
 		if (! $exception instanceof \Exception) {
-			$exception = new FatalThrowableError($exception);
+            if ($exception instanceof \ParseError) {
+                $severity = \E_PARSE;
+            } elseif ($exception instanceof \TypeError) {
+                $severity = \E_RECOVERABLE_ERROR;
+            } else {
+                $severity = \E_ERROR;
+            }
+
+			$exception = new ErrorException(
+                $exception->getMessage(),
+                $exception->getCode(),
+                $severity,
+                $exception->getFile(),
+                $exception->getLine(),
+            );
 		}
 
 		return $displayer->display($exception);

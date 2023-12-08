@@ -44,8 +44,8 @@ class ListenCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->setListenerOptions();
@@ -69,6 +69,8 @@ class ListenCommand extends Command {
 		$this->listener->listen(
 			$connection, $queue, $delay, $memory, $timeout
 		);
+
+        return 0;
 	}
 
 	/**

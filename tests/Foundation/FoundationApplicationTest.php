@@ -138,7 +138,7 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 		$app['env'] = 'temporarilynottesting';
 		$app->handle(
 			new Symfony\Component\HttpFoundation\Request(),
-			Symfony\Component\HttpKernel\HttpKernelInterface::MASTER_REQUEST,
+			Symfony\Component\HttpKernel\HttpKernelInterface::MAIN_REQUEST,
 			false
 		);
 	}

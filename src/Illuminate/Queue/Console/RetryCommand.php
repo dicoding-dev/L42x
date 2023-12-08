@@ -22,8 +22,8 @@ class RetryCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$failed = $this->laravel['queue.failer']->find($this->argument('id'));
@@ -42,6 +42,8 @@ class RetryCommand extends Command {
 		{
 			$this->error('No failed job matches the given ID.');
 		}
+
+        return 0;
 	}
 
 	/**

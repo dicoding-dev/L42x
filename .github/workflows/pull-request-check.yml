@@ -23,6 +23,6 @@ jobs:
       - name: Running unit test
         uses: php-actions/phpunit@v3
         with:
-          version: 9.5
+          version: 9.6
           php_version: 8.1
           configuration: phpunit.xml
