@@ -885,7 +885,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 
         $path = 'http://foo.bar?cursor='.$cursor->encode();
 
-        $results = collect([['test' => 'foo'], ['test' => 'bar']]);
+        $results = [['test' => 'foo'], ['test' => 'bar']];
 
         $builder->shouldReceive('get')->once()->andReturnUsing(function () use ($builder, $results) {
             $this->assertEquals(
