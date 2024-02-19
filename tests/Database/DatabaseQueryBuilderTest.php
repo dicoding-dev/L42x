@@ -6,7 +6,7 @@ use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Pagination\Factory;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\Cursor;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Mockery\MockInterface;
