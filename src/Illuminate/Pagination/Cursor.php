@@ -2,9 +2,9 @@
 
 namespace Illuminate\Pagination;
 
-use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Contracts\ArrayableInterface;
 
-class Cursor implements Arrayable
+class Cursor implements ArrayableInterface
 {
     /**
      * The parameters associated with the cursor.
