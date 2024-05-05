@@ -14,7 +14,7 @@
         "illuminate/http": "4.2.*",
         "illuminate/support": "4.2.*",
         "symfony/process": "~6.4",
-        "nesbot/carbon": "~2.0"
+        "nesbot/carbon": "^2.71"
     },
     "require-dev": {
         "illuminate/cache": "4.2.*",
