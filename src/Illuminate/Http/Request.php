@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Str;
 use SplFileInfo;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
@@ -464,12 +465,15 @@ class Request extends SymfonyRequest {
 	 */
 	protected function retrieveItem($source, $key, $default)
 	{
-		if (is_null($key))
-		{
+		if (is_null($key)) {
 			return $this->$source->all();
 		}
 
-		return $this->$source->get($key, $default, true);
+        if ($this->$source instanceof InputBag) {
+            return $this->$source->all()[$key] ?? $default;
+        }
+
+		return $this->$source->get($key, $default);
 	}
 
 	/**

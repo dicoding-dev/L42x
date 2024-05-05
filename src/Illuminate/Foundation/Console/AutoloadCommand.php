@@ -43,8 +43,8 @@ class AutoloadCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->call('optimize');
@@ -55,6 +55,8 @@ class AutoloadCommand extends Command {
 
 			$this->composer->setWorkingPath($workbench['path'])->dumpOptimized();
 		}
+
+        return 0;
 	}
 
 	/**

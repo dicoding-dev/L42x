@@ -44,8 +44,8 @@ class ViewPublishCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$package = $this->input->getArgument('package');
@@ -60,6 +60,8 @@ class ViewPublishCommand extends Command {
 		}
 
 		$this->output->writeln('<info>Views published for package:</info> '.$package);
+
+        return 0;
 	}
 
 	/**

@@ -21,8 +21,8 @@ class ClearCompiledCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		if (file_exists($path = $this->laravel['path.base'].'/bootstrap/compiled.php'))
@@ -34,6 +34,8 @@ class ClearCompiledCommand extends Command {
 		{
 			@unlink($path);
 		}
+
+        return 0;
 	}
 
 }

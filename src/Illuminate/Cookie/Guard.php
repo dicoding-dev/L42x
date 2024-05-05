@@ -46,8 +46,8 @@ class Guard implements HttpKernelInterface {
 	 * @param  bool  $catch
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
-	{
+	public function handle(Request $request, $type = HttpKernelInterface::MAIN_REQUEST, $catch = true): Response
+    {
 		return $this->encrypt($this->app->handle($this->decrypt($request), $type, $catch));
 	}
 

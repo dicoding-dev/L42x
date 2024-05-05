@@ -42,6 +42,11 @@ class AuthGuardTest extends BackwardCompatibleTestCase
             $request = Request::create('/', 'GET', [], [], [], ['PHP_AUTH_USER' => 'foo@bar.com', 'PHP_AUTH_PW' => 'secret']
             )
         );
+
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->get(Argument::type('string'))->willReturn(true);
+        $this->session->put(Argument::type('string'), null)->shouldBeCalledOnce();
+        $this->userProvider->retrieveById(Argument::any())->shouldBeCalledOnce();
 	    $this->userProvider
             ->retrieveByCredentials(['email' => 'foo@bar.com', 'password' => 'secret'])
             ->willReturn($this->prophesize(UserInterface::class)->reveal());
@@ -62,6 +67,11 @@ class AuthGuardTest extends BackwardCompatibleTestCase
             $request = Request::create('/', 'GET', [], [], [], ['PHP_AUTH_USER' => 'foo@bar.com', 'PHP_AUTH_PW' => 'secret']
             )
         );
+
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->get(Argument::type('string'))->willReturn(true);
+        $this->session->put(Argument::type('string'), null)->shouldBeCalledOnce();
+        $this->userProvider->retrieveById(Argument::any())->shouldBeCalledOnce();
         $this->userProvider
             ->retrieveByCredentials(['email' => 'foo@bar.com', 'password' => 'secret'])
             ->willReturn($this->prophesize(UserInterface::class)->reveal());
@@ -84,6 +94,11 @@ class AuthGuardTest extends BackwardCompatibleTestCase
             $request = Request::create('/', 'GET', [], [], [], ['PHP_AUTH_USER' => 'foo@bar.com', 'PHP_AUTH_PW' => 'secret']
             )
         );
+
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->get(Argument::type('string'))->willReturn(true);
+        $this->session->put(Argument::type('string'), null)->shouldBeCalledOnce();
+
         $guard->login($this->prophesize(UserInterface::class)->reveal());
 
 		$this->assertNull($guard->basic('email', $request));
@@ -97,6 +112,10 @@ class AuthGuardTest extends BackwardCompatibleTestCase
             $request = Request::create('/', 'GET', [], [], [], ['PHP_AUTH_USER' => 'foo@bar.com', 'PHP_AUTH_PW' => 'secret']
             )
         );
+
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->get(Argument::type('string'))->willReturn(true);
+        $this->userProvider->retrieveById(Argument::any())->shouldBeCalledOnce();
         $this->userProvider
             ->retrieveByCredentials(['email' => 'foo@bar.com', 'password' => 'secret'])
             ->willReturn($this->prophesize(UserInterface::class)->reveal());
@@ -172,6 +191,9 @@ class AuthGuardTest extends BackwardCompatibleTestCase
         $guard->setDispatcher(($events = $this->prophesize(Dispatcher::class))->reveal());
         $user = $this->prophesize(UserInterface::class);
         $user->getAuthIdentifier()->willReturn('foo');
+
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->put(Argument::type('string'), 'foo')->shouldBeCalledOnce();
 
         $events->fire('auth.login', [$user, false])->shouldBeCalledTimes(1);
 
@@ -285,6 +307,9 @@ class AuthGuardTest extends BackwardCompatibleTestCase
         $cookieJar->forever($guard->getRecallerName(), 'foo|recaller')->willReturn($foreverCookie);
         $cookieJar->queue($foreverCookie)->shouldBeCalledTimes(1);
 
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->put(Argument::type('string'), 'foo')->shouldBeCalledOnce();
+
         $guard->login($user->reveal(), true);
 	}
 
@@ -298,6 +323,9 @@ class AuthGuardTest extends BackwardCompatibleTestCase
 
         $user->setRememberToken(Argument::type('string'))->shouldBeCalledTimes(1);
         $this->userProvider->updateRememberToken($user->reveal(), Argument::type('string'))->shouldBeCalledTimes(1);
+
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->put(Argument::type('string'), 'foo')->shouldBeCalledOnce();
 
         $guard->login($user->reveal(), true);
 	}
@@ -321,6 +349,9 @@ class AuthGuardTest extends BackwardCompatibleTestCase
     {
         $guard = new Guard($this->userProvider->reveal(), $this->session->reveal(), new Request());
 
+        $this->session->migrate(true)->willReturn(true);
+        $this->session->put(Argument::type('string'), 10)->shouldBeCalledOnce();
+        $this->session->put(Argument::type('string'), null)->shouldBeCalledOnce();
         $this->userProvider
             ->retrieveById(10)
             ->willReturn(($user = $this->prophesize(UserInterface::class))->reveal());

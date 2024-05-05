@@ -46,8 +46,8 @@ class Response extends SymfonyResponse
 	 * @param  mixed  $content
 	 * @return $this
 	 */
-	public function setContent($content)
-	{
+	public function setContent($content): static
+    {
 		$this->original = $content;
 
 		// If the content is "JSONable" we will set the appropriate header and convert

@@ -24,8 +24,8 @@ class TailCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$path = $this->getPath($this->argument('connection'));
@@ -38,6 +38,8 @@ class TailCommand extends Command {
 		{
 			$this->error('Could not determine path to log file.');
 		}
+
+        return 0;
 	}
 
 	/**

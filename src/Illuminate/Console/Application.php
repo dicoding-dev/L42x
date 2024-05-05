@@ -160,8 +160,8 @@ class Application extends \Symfony\Component\Console\Application {
 	 *
 	 * @return \Symfony\Component\Console\Input\InputDefinition
 	 */
-	protected function getDefaultInputDefinition()
-	{
+	protected function getDefaultInputDefinition(): \Symfony\Component\Console\Input\InputDefinition
+    {
 		$definition = parent::getDefaultInputDefinition();
 
 		$definition->addOption($this->getEnvironmentOption());

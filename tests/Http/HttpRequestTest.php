@@ -196,6 +196,14 @@ class HttpRequestTest extends BackwardCompatibleTestCase
 		$this->assertEquals('Bob', $request->query('foo', 'Bob'));
 		$all = $request->query(null);
 		$this->assertEquals('Taylor', $all['name']);
+
+        $request = Request::create('/', 'GET', ['hello' => 'world', 'user' => ['Taylor', 'Mohamed Said']]);
+        $this->assertSame(['Taylor', 'Mohamed Said'], $request->query('user'));
+        $this->assertSame(['hello' => 'world', 'user' => ['Taylor', 'Mohamed Said']], $request->query->all());
+
+        $request = Request::create('/?hello=world&user[]=Taylor&user[]=Mohamed%20Said', 'GET', []);
+        $this->assertSame(['Taylor', 'Mohamed Said'], $request->query('user'));
+        $this->assertSame(['hello' => 'world', 'user' => ['Taylor', 'Mohamed Said']], $request->query->all());
 	}
 
 

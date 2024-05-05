@@ -1792,8 +1792,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 	 *
 	 * @return Response
 	 */
-	public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
-	{
+	public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MAIN_REQUEST, $catch = true): SymfonyResponse
+    {
 		return $this->dispatch(Request::createFromBase($request));
 	}
 

@@ -45,11 +45,11 @@ class WorkCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
-		if ($this->downForMaintenance() && ! $this->option('daemon')) return;
+		if ($this->downForMaintenance() && ! $this->option('daemon')) return 0;
 
 		$queue = $this->option('queue');
 
@@ -73,6 +73,8 @@ class WorkCommand extends Command {
 		{
 			$this->writeOutput($response['job'], $response['failed']);
 		}
+
+        return 0;
 	}
 
 	/**

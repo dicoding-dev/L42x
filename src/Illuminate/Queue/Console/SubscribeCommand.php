@@ -32,8 +32,8 @@ class SubscribeCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 *
+	 * @return int
+     *
 	 * @throws \RuntimeException
 	 */
 	public function fire()
@@ -48,6 +48,8 @@ class SubscribeCommand extends Command {
 		$iron->getIron()->updateQueue($this->argument('queue'), $this->getQueueOptions());
 
 		$this->line('<info>Queue subscriber added:</info> <comment>'.$this->argument('url').'</comment>');
+
+        return 0;
 	}
 
 	/**

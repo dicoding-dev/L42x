@@ -22,8 +22,8 @@ class ServeCommand extends Command {
 	/**
 	 * Execute the console command.
 	 *
-	 * @return void
-	 */
+	 * @return int
+     */
 	public function fire()
 	{
 		$this->checkPhpVersion();
@@ -39,6 +39,8 @@ class ServeCommand extends Command {
 		$this->info("Laravel development server started on http://{$host}:{$port}");
 
 		passthru('"'.PHP_BINARY.'"'." -S {$host}:{$port} -t \"{$public}\" server.php");
+
+        return 0;
 	}
 
 	/**
