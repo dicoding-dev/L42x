@@ -3,9 +3,31 @@
 use Illuminate\Mail\Message;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use Symfony\Component\Mime\Email;
 
 class MailMessageTest extends BackwardCompatibleTestCase
 {
+    private static string $staticFilePath;
+
+    private Message $message;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+        file_put_contents(self::$staticFilePath = __DIR__.'/foo.jpg', 'expected attachment body');
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+        @unlink(self::$staticFilePath);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->message = new Message(new Email());
+    }
 
     protected function tearDown(): void
     {
@@ -13,32 +35,29 @@ class MailMessageTest extends BackwardCompatibleTestCase
     }
 
 
-    public function testBasicAttachment()
+    public function testBasicAttachment(): void
     {
-        $swift = m::mock('StdClass');
-        $message = $this->getMock(Message::class, ['createAttachmentFromPath'], [$swift]);
-        $attachment = m::mock('StdClass');
-		$message->expects($this->once())->method('createAttachmentFromPath')->with($this->equalTo('foo.jpg'))->willReturn(
-            $attachment
-        );
-		$swift->shouldReceive('attach')->once()->with($attachment);
-		$attachment->shouldReceive('setContentType')->once()->with('image/jpeg');
-		$attachment->shouldReceive('setFilename')->once()->with('bar.jpg');
-		$message->attach('foo.jpg', ['mime' => 'image/jpeg', 'as' => 'bar.jpg']);
+        $this->message->attach(self::$staticFilePath, ['as' => 'bar.jpg', 'mime' => 'image/jpg']);
+
+        $attachment = $this->message->getSymfonyMessage()->getAttachments()[0];
+        $headers = $attachment->getPreparedHeaders()->toArray();
+        self::assertSame('expected attachment body', $attachment->getBody());
+        self::assertSame('Content-Type: image/jpg; name=bar.jpg', $headers[0]);
+        self::assertSame('Content-Transfer-Encoding: base64', $headers[1]);
+        self::assertSame('Content-Disposition: attachment; name=bar.jpg; filename=bar.jpg', $headers[2]);
 	}
 
 
-	public function testDataAttachment()
+	public function testDataAttachment(): void
 	{
-		$swift = m::mock('StdClass');
-		$message = $this->getMock(Message::class, ['createAttachmentFromData'], [$swift]);
-		$attachment = m::mock('StdClass');
-		$message->expects($this->once())->method('createAttachmentFromData')->with($this->equalTo('foo'), $this->equalTo('name'))->willReturn(
-            $attachment
-        );
-		$swift->shouldReceive('attach')->once()->with($attachment);
-		$attachment->shouldReceive('setContentType')->once()->with('image/jpeg');
-		$message->attachData('foo', 'name', ['mime' => 'image/jpeg']);
+        $this->message->attachData('expected attachment body', 'foo.jpg', ['mime' => 'image/jpg']);
+
+        $attachment = $this->message->getSymfonyMessage()->getAttachments()[0];
+        $headers = $attachment->getPreparedHeaders()->toArray();
+        self::assertSame('expected attachment body', $attachment->getBody());
+        self::assertSame('Content-Type: image/jpg; name=foo.jpg', $headers[0]);
+        self::assertSame('Content-Transfer-Encoding: base64', $headers[1]);
+        self::assertSame('Content-Disposition: attachment; name=foo.jpg; filename=foo.jpg', $headers[2]);
 	}
 
 }
