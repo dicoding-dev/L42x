@@ -1,39 +1,43 @@
 <?php namespace Illuminate\Mail;
 
-use Swift_Image;
-use Swift_Attachment;
+use Illuminate\Support\Str;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
+/**
+ * Tested At:
+ * {@see MailMessageTest}
+ */
 class Message {
 
 	/**
-	 * The Swift Message instance.
+	 * The Symfony message instance.
 	 *
-	 * @var \Swift_Message
+	 * @var Email
 	 */
-	protected $swift;
+	protected Email $message;
 
 	/**
 	 * Create a new message instance.
 	 *
-	 * @param  \Swift_Message  $swift
+	 * @param  Email  $message
 	 * @return void
 	 */
-	public function __construct($swift)
+	public function __construct(Email $message)
 	{
-		$this->swift = $swift;
+		$this->message = $message;
 	}
 
 	/**
 	 * Add a "from" address to the message.
 	 *
 	 * @param  string  $address
-	 * @param  string  $name
+	 * @param  ?string  $name
 	 * @return $this
 	 */
-	public function from($address, $name = null)
+	public function from(string $address, ?string $name = null): self
 	{
-		$this->swift->setFrom($address, $name);
-
+		$this->message->from(new Address($address, $name));
 		return $this;
 	}
 
@@ -41,12 +45,12 @@ class Message {
 	 * Set the "sender" of the message.
 	 *
 	 * @param  string  $address
-	 * @param  string  $name
+	 * @param  ?string  $name
 	 * @return $this
 	 */
-	public function sender($address, $name = null)
+	public function sender(string $address, ?string $name = null): self
 	{
-		$this->swift->setSender($address, $name);
+		$this->message->sender(new Address($address, $name));
 
 		return $this;
 	}
@@ -57,10 +61,9 @@ class Message {
 	 * @param  string  $address
 	 * @return $this
 	 */
-	public function returnPath($address)
+	public function returnPath(string $address): self
 	{
-		$this->swift->setReturnPath($address);
-
+		$this->message->returnPath($address);
 		return $this;
 	}
 
@@ -68,10 +71,10 @@ class Message {
 	 * Add a recipient to the message.
 	 *
 	 * @param  string|array  $address
-	 * @param  string  $name
+	 * @param  ?string  $name
 	 * @return $this
 	 */
-	public function to($address, $name = null)
+	public function to(string|array $address, ?string $name = null): self
 	{
 		return $this->addAddresses($address, $name, 'To');
 	}
@@ -83,7 +86,7 @@ class Message {
 	 * @param  string  $name
 	 * @return $this
 	 */
-	public function cc($address, $name = null)
+	public function cc(string $address, ?string $name = null): self
 	{
 		return $this->addAddresses($address, $name, 'Cc');
 	}
@@ -95,7 +98,7 @@ class Message {
 	 * @param  string  $name
 	 * @return $this
 	 */
-	public function bcc($address, $name = null)
+	public function bcc(string $address, ?string $name = null): self
 	{
 		return $this->addAddresses($address, $name, 'Bcc');
 	}
@@ -107,7 +110,7 @@ class Message {
 	 * @param  string  $name
 	 * @return $this
 	 */
-	public function replyTo($address, $name = null)
+	public function replyTo(string $address, ?string $name = null): self
 	{
 		return $this->addAddresses($address, $name, 'ReplyTo');
 	}
@@ -120,15 +123,16 @@ class Message {
 	 * @param  string  $type
 	 * @return $this
 	 */
-	protected function addAddresses($address, $name, $type)
+	protected function addAddresses(string|array $address, string $name, string $type): self
 	{
 		if (is_array($address))
 		{
-			$this->swift->{"set{$type}"}($address, $name);
+            $type = lcfirst($type);
+			$this->message->$type($address, $name);
 		}
 		else
 		{
-			$this->swift->{"add{$type}"}($address, $name);
+			$this->message->{"add{$type}"}($address, $name);
 		}
 
 		return $this;
@@ -140,10 +144,9 @@ class Message {
 	 * @param  string  $subject
 	 * @return $this
 	 */
-	public function subject($subject)
+	public function subject(string $subject): self
 	{
-		$this->swift->setSubject($subject);
-
+		$this->message->subject($subject);
 		return $this;
 	}
 
@@ -153,10 +156,9 @@ class Message {
 	 * @param  int  $level
 	 * @return $this
 	 */
-	public function priority($level)
+	public function priority(int $level): self
 	{
-		$this->swift->setPriority($level);
-
+		$this->message->priority($level);
 		return $this;
 	}
 
@@ -167,22 +169,10 @@ class Message {
 	 * @param  array   $options
 	 * @return $this
 	 */
-	public function attach($file, array $options = array())
+	public function attach(string $file, array $options = []): self
 	{
-		$attachment = $this->createAttachmentFromPath($file);
-
-		return $this->prepAttachment($attachment, $options);
-	}
-
-	/**
-	 * Create a Swift Attachment instance.
-	 *
-	 * @param  string  $file
-	 * @return \Swift_Attachment
-	 */
-	protected function createAttachmentFromPath($file)
-	{
-		return Swift_Attachment::fromPath($file);
+        $this->message->attachFromPath($file, $options['as'] ?? null, $options['mime'] ?? null);
+        return $this;
 	}
 
 	/**
@@ -193,23 +183,10 @@ class Message {
 	 * @param  array   $options
 	 * @return $this
 	 */
-	public function attachData($data, $name, array $options = array())
+	public function attachData(string $data,  string $name, array $options = []): self
 	{
-		$attachment = $this->createAttachmentFromData($data, $name);
-
-		return $this->prepAttachment($attachment, $options);
-	}
-
-	/**
-	 * Create a Swift Attachment instance from data.
-	 *
-	 * @param  string  $data
-	 * @param  string  $name
-	 * @return \Swift_Attachment
-	 */
-	protected function createAttachmentFromData($data, $name)
-	{
-		return Swift_Attachment::newInstance($data, $name);
+        $this->message->attach($data, $name, $options['mime'] ?? null);
+		return $this;
 	}
 
 	/**
@@ -218,9 +195,11 @@ class Message {
 	 * @param  string  $file
 	 * @return string
 	 */
-	public function embed($file)
+	public function embed(string $file): string
 	{
-		return $this->swift->embed(Swift_Image::fromPath($file));
+        $cid = Str::random(10);
+        $this->message->embedFromPath($file, $cid);
+		return "cid:$cid";
 	}
 
 	/**
@@ -231,63 +210,32 @@ class Message {
 	 * @param  string  $contentType
 	 * @return string
 	 */
-	public function embedData($data, $name, $contentType = null)
+	public function embedData(string $data, string $name, ?string $contentType = null): string
 	{
-		$image = Swift_Image::newInstance($data, $name, $contentType);
-
-		return $this->swift->embed($image);
+        $this->message->embed($data, $name, $contentType);
+		return "cid:$name";
 	}
 
 	/**
-	 * Prepare and attach the given attachment.
+	 * Get the underlying Symfony Message instance.
 	 *
-	 * @param  \Swift_Attachment  $attachment
-	 * @param  array  $options
-	 * @return $this
+	 * @return Email
 	 */
-	protected function prepAttachment($attachment, $options = array())
+	public function getSymfonyMessage(): Email
 	{
-		// First we will check for a MIME type on the message, which instructs the
-		// mail client on what type of attachment the file is so that it may be
-		// downloaded correctly by the user. The MIME option is not required.
-		if (isset($options['mime']))
-		{
-			$attachment->setContentType($options['mime']);
-		}
-
-		// If an alternative name was given as an option, we will set that on this
-		// attachment so that it will be downloaded with the desired names from
-		// the developer, otherwise the default file names will get assigned.
-		if (isset($options['as']))
-		{
-			$attachment->setFilename($options['as']);
-		}
-
-		$this->swift->attach($attachment);
-
-		return $this;
+		return $this->message;
 	}
 
 	/**
-	 * Get the underlying Swift Message instance.
-	 *
-	 * @return \Swift_Message
-	 */
-	public function getSwiftMessage()
-	{
-		return $this->swift;
-	}
-
-	/**
-	 * Dynamically pass missing methods to the Swift instance.
+	 * Dynamically pass missing methods to the Symfony Message instance.
 	 *
 	 * @param  string  $method
 	 * @param  array   $parameters
 	 * @return mixed
 	 */
-	public function __call($method, $parameters)
+	public function __call(string $method, array $parameters)
 	{
-		$callable = array($this->swift, $method);
+		$callable = [$this->message, $method];
 
 		return call_user_func_array($callable, $parameters);
 	}
