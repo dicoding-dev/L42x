@@ -2,10 +2,13 @@
 
 use Illuminate\Log\Writer;
 use Illuminate\Mail\Mailer;
+use Illuminate\Mail\Message;
+use Illuminate\Mail\Transport\ArrayTransport;
 use Illuminate\Queue\QueueManager;
 use Illuminate\View\Factory;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use Symfony\Component\Mailer\SentMessage;
 
 class MailMailerTest extends BackwardCompatibleTestCase
 {
@@ -15,23 +18,27 @@ class MailMailerTest extends BackwardCompatibleTestCase
         m::close();
     }
 
-
     public function testMailerSendSendsMessageWithProperViewContent()
     {
         unset($_SERVER['__mailer.test']);
-        $mailer = $this->getMock(Mailer::class, ['createMessage'], $this->getMocks());
-        $message = m::mock('StdClass');
-		$mailer->expects($this->once())->method('createMessage')->willReturn($message);
-		$view = m::mock('StdClass');
-		$mailer->getViewFactory()->shouldReceive('make')->once()->with('foo', ['data', 'message' => $message])->andReturn($view);
-		$view->shouldReceive('render')->once()->andReturn('rendered.view');
-		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
-		$message->shouldReceive('setFrom')->never();
-		$mailer->setSwiftMailer(m::mock('StdClass'));
-		$message->shouldReceive('getSwiftMessage')->once()->andReturn($message);
-		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with($message, []);
-		$mailer->send('foo', ['data'], function($m) { $_SERVER['__mailer.test'] = $m; });
-		unset($_SERVER['__mailer.test']);
+
+        $view = m::mock(Factory::class);
+        $view->shouldReceive('make')->once()->andReturn($view);
+        $view->shouldReceive('render')->once()->andReturn('rendered.view');
+
+        $mailer = new Mailer($view, $transport = new ArrayTransport());
+        $mailer->send('foo', ['data'], function (Message $message) {
+            $message->to('taylor@laravel.com')->from('hello@laravel.com');
+        });
+
+        $sentMessages = $transport->messages();
+        self::assertCount(1, $sentMessages);
+
+        /** @var SentMessage $sentMessage */
+        $sentMessage = $sentMessages[0];
+        self::assertStringContainsString('rendered.view', $sentMessage->toString());
+        self::assertEquals('taylor@laravel.com', $sentMessage->getEnvelope()->getRecipients()[0]->getAddress());
+        self::assertEquals('hello@laravel.com', $sentMessage->getEnvelope()->getSender()->getAddress());
 	}
 
 
