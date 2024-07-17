@@ -37,7 +37,7 @@ class Message {
 	 */
 	public function from(string $address, ?string $name = null): self
 	{
-		$this->message->from(new Address($address, $name));
+		$this->message->from(new Address($address, $name ?? ''));
 		return $this;
 	}
 
@@ -70,7 +70,7 @@ class Message {
 	/**
 	 * Add a recipient to the message.
 	 *
-	 * @param  string|array  $address
+	 * @param  string|Address[]  $address
 	 * @param  ?string  $name
 	 * @return $this
 	 */
@@ -118,21 +118,21 @@ class Message {
 	/**
 	 * Add a recipient to the message.
 	 *
-	 * @param  string|array  $address
+	 * @param  string|Address[]  $address
 	 * @param  string  $name
 	 * @param  string  $type
 	 * @return $this
 	 */
-	protected function addAddresses(string|array $address, string $name, string $type): self
+	protected function addAddresses(string|array $address, ?string $name, string $type): self
 	{
 		if (is_array($address))
 		{
             $type = lcfirst($type);
-			$this->message->$type($address, $name);
+			$this->message->$type($address);
 		}
 		else
 		{
-			$this->message->{"add{$type}"}($address, $name);
+			$this->message->{"add{$type}"}(new Address($address, $name ?? ''));
 		}
 
 		return $this;
