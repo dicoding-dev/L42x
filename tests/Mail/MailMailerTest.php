@@ -20,8 +20,6 @@ class MailMailerTest extends BackwardCompatibleTestCase
 
     public function testMailerSendSendsMessageWithProperViewContent()
     {
-        unset($_SERVER['__mailer.test']);
-
         $view = m::mock(Factory::class);
         $view->shouldReceive('make')->once()->andReturn($view);
         $view->shouldReceive('render')->once()->andReturn('rendered.view');
@@ -251,7 +249,7 @@ class MailMailerTest extends BackwardCompatibleTestCase
         $view = m::mock(Factory::class);
         $view->shouldReceive('make')->once()->andReturn($view);
         $view->shouldReceive('render')->once()->andReturn('rendered.view');
-        $mailer = new Mailer($view, $transport = new ArrayTransport);
+        $mailer = new Mailer($view, $transport = new ArrayTransport());
         $mailer->alwaysFrom('hello@laravel.com');
 
         $mailer->send('foo', ['data'], function (Message $message) {
@@ -266,26 +264,5 @@ class MailMailerTest extends BackwardCompatibleTestCase
         $sentMessage = $sentMessages[0];
         self::assertSame('taylor@laravel.com', $sentMessage->getEnvelope()->getRecipients()[0]->getAddress());
         self::assertSame('hello@laravel.com', $sentMessage->getEnvelope()->getSender()->getAddress());
-	}
-
-
-	protected function getMailer()
-	{
-		return new Illuminate\Mail\Mailer(m::mock(Factory::class), m::mock('Swift_Mailer'));
-	}
-
-
-	protected function getMocks()
-	{
-		return [m::mock(Factory::class), m::mock('Swift_Mailer')];
-	}
-
-}
-
-class FailingSwiftMailerStub
-{
-	public function send($message, &$failed)
-	{
-		$failed[] = 'taylorotwell@gmail.com';
 	}
 }
