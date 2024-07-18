@@ -4,14 +4,14 @@ use Illuminate\Foundation\Application;
 use Illuminate\Mail\Transport\LogTransportV2;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunTransportFactory;
+//use Symfony\Component\HttpClient\HttpClient;
+//use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunTransportFactory;
 use Symfony\Component\Mailer\Transport\Dsn;
 use Symfony\Component\Mailer\Transport\SendmailTransport;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
 use Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+//use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MailServiceProvider extends ServiceProvider {
 
@@ -102,9 +102,9 @@ class MailServiceProvider extends ServiceProvider {
             case 'mail':
                 $this->registerMailTransport($config);
                 break;
-            case 'mailgun':
-                $this->registerMailgunTransport($config);
-                break;
+//            case 'mailgun':
+//                $this->registerMailgunTransport($config);
+//                break;
 //            case 'mandrill':
 //                $this->registerMandrillTransport($config);
 //                break;
@@ -192,24 +192,24 @@ class MailServiceProvider extends ServiceProvider {
 	 * @param  array  $config
 	 * @return void
 	 */
-	protected function registerMailgunTransport(array $config): void
-	{
-		$this->app->bindShared('symfony.transport', function() use ($config)
-		{
-            $factory = new MailgunTransportFactory(null, $this->getHttpClient($config));
-
-            if (! isset($config['secret'])) {
-                $config = $this->app['config']->get('services.mailgun', []);
-            }
-
-            return $factory->create(new Dsn(
-                'mailgun+'.($config['scheme'] ?? 'https'),
-                $config['endpoint'] ?? 'default',
-                $config['secret'],
-                $config['domain']
-            ));
-		});
-	}
+//	protected function registerMailgunTransport(array $config): void
+//	{
+//		$this->app->bindShared('symfony.transport', function() use ($config)
+//		{
+//            $factory = new MailgunTransportFactory(null, $this->getHttpClient($config));
+//
+//            if (! isset($config['secret'])) {
+//                $config = $this->app['config']->get('services.mailgun', []);
+//            }
+//
+//            return $factory->create(new Dsn(
+//                'mailgun+'.($config['scheme'] ?? 'https'),
+//                $config['endpoint'] ?? 'default',
+//                $config['secret'],
+//                $config['domain']
+//            ));
+//		});
+//	}
 
 	/**
 	 * Register the "Log" Symfony Transport instance.
@@ -222,23 +222,23 @@ class MailServiceProvider extends ServiceProvider {
 		$this->app->bindShared('symfony.transport', fn($app) => new LogTransportV2($app->make('Psr\Log\LoggerInterface')));
 	}
 
-    /**
-     * Get a configured Symfony HTTP client instance.
-     *
-     * @return \Symfony\Contracts\HttpClient\HttpClientInterface|null
-     */
-    protected function getHttpClient(array $config): ?HttpClientInterface
-    {
-        $clientOptions = $config['client'] ?? false;
-        if ($clientOptions) {
-            $maxHostConnections = Arr::pull($clientOptions, 'max_host_connections', 6);
-            $maxPendingPushes = Arr::pull($clientOptions, 'max_pending_pushes', 50);
-
-            return HttpClient::create($clientOptions, $maxHostConnections, $maxPendingPushes);
-        }
-
-        return null;
-    }
+//    /**
+//     * Get a configured Symfony HTTP client instance.
+//     *
+//     * @return \Symfony\Contracts\HttpClient\HttpClientInterface|null
+//     */
+//    protected function getHttpClient(array $config): ?HttpClientInterface
+//    {
+//        $clientOptions = $config['client'] ?? false;
+//        if ($clientOptions) {
+//            $maxHostConnections = Arr::pull($clientOptions, 'max_host_connections', 6);
+//            $maxPendingPushes = Arr::pull($clientOptions, 'max_pending_pushes', 50);
+//
+//            return HttpClient::create($clientOptions, $maxHostConnections, $maxPendingPushes);
+//        }
+//
+//        return null;
+//    }
 
 	/**
 	 * Get the services provided by the provider.
