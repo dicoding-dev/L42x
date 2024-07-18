@@ -192,25 +192,6 @@ class MailMailerTest extends BackwardCompatibleTestCase
         });
 
         self::assertEmpty($transport->messages());
-
-//		$mailer = $this->getMock(Mailer::class, ['createMessage'], $this->getMocks());
-//		$message = m::mock('StdClass');
-//		$mailer->expects($this->once())->method('createMessage')->willReturn($message);
-//		$view = m::mock('StdClass');
-//		$mailer->getViewFactory()->shouldReceive('make')->once()->with('foo', ['data', 'message' => $message])->andReturn($view);
-//		$view->shouldReceive('render')->once()->andReturn('rendered.view');
-//		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
-//		$message->shouldReceive('setFrom')->never();
-//		$mailer->setSwiftMailer(m::mock('StdClass'));
-//		$message->shouldReceive('getTo')->once()->andReturn(['taylor@userscape.com' => 'Taylor']);
-//		$message->shouldReceive('getSwiftMessage')->once()->andReturn($message);
-//		$mailer->getSwiftMailer()->shouldReceive('send')->never();
-//		$logger = m::mock(Writer::class);
-//		$logger->shouldReceive('info')->once()->with('Pretending to mail message to: taylor@userscape.com');
-//		$mailer->setLogger($logger);
-//		$mailer->pretend();
-//
-//		$mailer->send('foo', ['data'], function($m) {});
 	}
 
 
