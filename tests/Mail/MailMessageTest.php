@@ -3,6 +3,7 @@
 use Illuminate\Mail\Message;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
 class MailMessageTest extends BackwardCompatibleTestCase
@@ -34,6 +35,62 @@ class MailMessageTest extends BackwardCompatibleTestCase
         m::close();
     }
 
+    public function testFromMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->from('foo@bar.baz', 'Foo'));
+        self::assertEquals(new Address('foo@bar.baz', 'Foo'), $message->getSymfonyMessage()->getFrom()[0]);
+    }
+
+    public function testSenderMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->sender('foo@bar.baz', 'Foo'));
+        self::assertEquals(new Address('foo@bar.baz', 'Foo'), $message->getSymfonyMessage()->getSender());
+    }
+
+    public function testReturnPathMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->returnPath('foo@bar.baz'));
+        self::assertEquals(new Address('foo@bar.baz'), $message->getSymfonyMessage()->getReturnPath());
+    }
+
+    public function testToMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->to('foo@bar.baz', 'Foo'));
+        self::assertEquals(new Address('foo@bar.baz', 'Foo'), $message->getSymfonyMessage()->getTo()[0]);
+
+        self::assertInstanceOf(Message::class, $message = $this->message->to(['bar@bar.baz' => 'Bar']));
+        self::assertEquals(new Address('bar@bar.baz', 'Bar'), $message->getSymfonyMessage()->getTo()[0]);
+    }
+
+    public function testCcMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->cc('foo@bar.baz', 'Foo'));
+        self::assertEquals(new Address('foo@bar.baz', 'Foo'), $message->getSymfonyMessage()->getCc()[0]);
+    }
+
+    public function testBccMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->bcc('foo@bar.baz', 'Foo'));
+        self::assertEquals(new Address('foo@bar.baz', 'Foo'), $message->getSymfonyMessage()->getBcc()[0]);
+    }
+
+    public function testReplyToMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->replyTo('foo@bar.baz', 'Foo'));
+        self::assertEquals(new Address('foo@bar.baz', 'Foo'), $message->getSymfonyMessage()->getReplyTo()[0]);
+    }
+
+    public function testSubjectMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->subject('foo'));
+        self::assertSame('foo', $message->getSymfonyMessage()->getSubject());
+    }
+
+    public function testPriorityMethod()
+    {
+        self::assertInstanceOf(Message::class, $message = $this->message->priority(1));
+        self::assertEquals(1, $message->getSymfonyMessage()->getPriority());
+    }
 
     public function testBasicAttachment(): void
     {
