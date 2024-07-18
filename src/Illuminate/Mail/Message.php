@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Mail;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
@@ -118,7 +119,7 @@ class Message {
 	/**
 	 * Add a recipient to the message.
 	 *
-	 * @param  string|Address[]  $address
+	 * @param  string|Address[]|array<email, string>  $address
 	 * @param  string  $name
 	 * @param  string  $type
 	 * @return $this
@@ -128,7 +129,22 @@ class Message {
 		if (is_array($address))
 		{
             $type = lcfirst($type);
-			$this->message->$type($address);
+            $addresses = (new Collection($address))->map(function ($address, $key) {
+                if (is_string($key) && is_string($address)) {
+                    return new Address($key, $address);
+                }
+
+                if (is_array($address)) {
+                    return new Address($address['email'] ?? $address['address'], $address['name'] ?? null);
+                }
+
+                if (is_null($address)) {
+                    return new Address($key);
+                }
+
+                return $address;
+            })->all();
+            $this->message->$type(...$addresses);
 		}
 		else
 		{
