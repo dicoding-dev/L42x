@@ -1204,7 +1204,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function validateImage($attribute, $value)
 	{
-		return $this->validateMimes($attribute, $value, array('jpeg', 'png', 'gif', 'bmp'));
+		return $this->validateMimes($attribute, $value, array('jpg', 'jpeg', 'png', 'gif', 'bmp'));
 	}
 
 	/**
@@ -1221,6 +1221,10 @@ class Validator implements MessageProviderInterface {
 		{
 			return false;
 		}
+
+        if (in_array('jpg', $parameters) || in_array('jpeg', $parameters)) {
+            $parameters = array_unique(array_merge($parameters, ['jpg', 'jpeg']));
+        }
 
 		return $value->getPath() != '' && in_array($value->guessExtension(), $parameters);
 	}
