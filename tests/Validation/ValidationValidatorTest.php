@@ -991,10 +991,17 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 		$this->assertFalse($v->passes());
 
 		$v = new Validator($trans, [], ['x' => 'Image']);
-		$file2 = $this->getMock(UploadedFile::class, ['guessExtension'], $uploadedFile);
-		$file2->expects($this->any())->method('guessExtension')->willReturn('jpeg');
+		$file2 = $this->getMock(UploadedFile::class, ['guessExtension', 'getClientOriginalExtension'], $uploadedFile);
+        $file2->expects($this->any())->method('guessExtension')->willReturn('jpg');
+		$file2->expects($this->any())->method('getClientOriginalExtension')->willReturn('jpeg');
 		$v->setFiles(['x' => $file2]);
 		$this->assertTrue($v->passes());
+
+        $file2 = $this->getMock(UploadedFile::class, ['guessExtension', 'getClientOriginalExtension'], $uploadedFile);
+        $file2->expects($this->any())->method('guessExtension')->willReturn('jpg');
+        $file2->expects($this->any())->method('getClientOriginalExtension')->willReturn('jpg');
+        $v->setFiles(['x' => $file2]);
+        $this->assertTrue($v->passes());
 
 		$file3 = $this->getMock(UploadedFile::class, ['guessExtension'], $uploadedFile);
 		$file3->expects($this->any())->method('guessExtension')->willReturn('gif');
@@ -1010,12 +1017,6 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 		$file5->expects($this->any())->method('guessExtension')->willReturn('png');
 		$v->setFiles(['x' => $file5]);
 		$this->assertTrue($v->passes());
-
-        $file6 = $this->getMock(UploadedFile::class, ['guessExtension', 'getClientOriginalExtension'], $uploadedFile);
-        $file6->expects($this->any())->method('guessExtension')->willReturn('jpg');
-        $file6->expects($this->any())->method('getClientOriginalExtension')->willReturn('jpg');
-        $v->setFiles(['x' => $file6]);
-        $this->assertTrue($v->passes());
 	}
 
 
@@ -1036,6 +1037,18 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 		$v = new Validator($trans, [], ['x' => 'mimes:php']);
 		$v->setFiles(['x' => $file2]);
 		$this->assertFalse($v->passes());
+
+        $file = $this->getMock(UploadedFile::class, ['guessExtension', 'getClientOriginalExtension'], $uploadedFile);
+        $file->expects($this->any())->method('guessExtension')->willReturn('jpg');
+        $file->expects($this->any())->method('getClientOriginalExtension')->willReturn('jpg');
+        $v = new Validator($trans, ['x' => $file], ['x' => 'mimes:jpeg']);
+        $this->assertTrue($v->passes());
+
+        $file = $this->getMock(UploadedFile::class, ['guessExtension', 'getClientOriginalExtension'], $uploadedFile);
+        $file->expects($this->any())->method('guessExtension')->willReturn('jpg');
+        $file->expects($this->any())->method('getClientOriginalExtension')->willReturn('jpeg');
+        $v = new Validator($trans, ['x' => $file], ['x' => 'mimes:jpg']);
+        $this->assertTrue($v->passes());
 	}
 
 
