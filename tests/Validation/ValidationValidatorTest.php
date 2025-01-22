@@ -1010,6 +1010,12 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 		$file5->expects($this->any())->method('guessExtension')->willReturn('png');
 		$v->setFiles(['x' => $file5]);
 		$this->assertTrue($v->passes());
+
+        $file6 = $this->getMock(UploadedFile::class, ['guessExtension', 'getClientOriginalExtension'], $uploadedFile);
+        $file6->expects($this->any())->method('guessExtension')->willReturn('jpg');
+        $file6->expects($this->any())->method('getClientOriginalExtension')->willReturn('jpg');
+        $v->setFiles(['x' => $file6]);
+        $this->assertTrue($v->passes());
 	}
 
 
