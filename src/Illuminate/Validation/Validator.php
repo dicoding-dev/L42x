@@ -128,7 +128,9 @@ class Validator implements MessageProviderInterface {
 		'Required', 'RequiredWith', 'RequiredWithAll', 'RequiredWithout', 'RequiredWithoutAll', 'RequiredIf', 'Accepted'
 	);
 
-	/**
+    private Container $container;
+
+    /**
 	 * Create a new Validator instance.
 	 *
 	 * @param  \Symfony\Contracts\Translation\TranslatorInterface  $translator
