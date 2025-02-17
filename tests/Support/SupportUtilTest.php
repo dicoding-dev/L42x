@@ -5,9 +5,9 @@ namespace Illuminate\Tests\Support;
 use Illuminate\Pagination\Factory;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Util;
-use PHPUnit\Framework\TestCase;
+use L4\Tests\BackwardCompatibleTestCase;
 
-class SupportUtilTest extends TestCase
+class SupportUtilTest extends BackwardCompatibleTestCase
 {
     public function testUnwrapIfClosure(): void
     {
