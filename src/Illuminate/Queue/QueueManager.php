@@ -18,7 +18,12 @@ class QueueManager {
 	 */
 	protected $connections = array();
 
-	/**
+    /**
+     * @var Closure[]
+     */
+    private array $connectors = [];
+
+    /**
 	 * Create a new queue manager instance.
 	 *
 	 * @param  \Illuminate\Foundation\Application  $app
