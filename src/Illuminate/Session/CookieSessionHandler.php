@@ -15,7 +15,9 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 	 */
 	protected Request $request;
 
-	/**
+    private int $minutes;
+
+    /**
 	 * Create a new cookie driven handler instance.
 	 *
 	 * @param  \Illuminate\Cookie\CookieJar  $cookie
