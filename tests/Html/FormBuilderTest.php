@@ -11,15 +11,16 @@ use Mockery as m;
 
 class FormBuilderTest extends BackwardCompatibleTestCase
 {
+    private FormBuilder $formBuilder;
 
     /**
      * Setup the test environment.
      */
     protected function setUp(): void
     {
-        $this->urlGenerator = new UrlGenerator(new RouteCollection, Request::create('/foo', 'GET'));
-        $this->htmlBuilder = new HtmlBuilder($this->urlGenerator);
-        $this->formBuilder = new FormBuilder($this->htmlBuilder, $this->urlGenerator, '');
+        $urlGenerator = new UrlGenerator(new RouteCollection(), Request::create('/foo', 'GET'));
+        $htmlBuilder = new HtmlBuilder($urlGenerator);
+        $this->formBuilder = new FormBuilder($htmlBuilder, $urlGenerator, '');
     }
 
 
