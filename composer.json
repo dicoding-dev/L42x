@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=8.1.0",
+        "php": ">=8.2.0",
         "d11wtq/boris": "~1.0",
         "filp/whoops": "~2.11",
         "ircmaxell/password-compat": "~1.0",
