@@ -21,7 +21,6 @@
         "pda/pheanstalk": "~4.0",
         "phpseclib/phpseclib": "~2.0",
         "predis/predis": "^1.1",
-        "swiftmailer/swiftmailer": "^6.0",
         "symfony/browser-kit": "~6.4",
         "symfony/console": "~6.4",
         "symfony/css-selector": "~6.4",
