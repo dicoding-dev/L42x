@@ -51,7 +51,7 @@ class Message {
 	 */
 	public function sender(string $address, ?string $name = null): self
 	{
-		$this->message->sender(new Address($address, $name));
+		$this->message->sender(new Address($address, $name ?? ''));
 
 		return $this;
 	}
