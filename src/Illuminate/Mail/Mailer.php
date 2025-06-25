@@ -284,7 +284,7 @@ class Mailer {
 		// array as is, since must should contain both views with numeric keys.
 		if (is_array($view) && isset($view[0]))
 		{
-			return [$view[0], $view[1] ?? null];
+			return $view;
 		}
 
 		// If the view is an array, but doesn't contain numeric keys, we will assume
