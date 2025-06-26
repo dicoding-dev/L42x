@@ -255,7 +255,7 @@ class PasswordBroker {
      *
      * @param array $credentials
      * @return RemindableInterface|null
-     *
+     * @throws \UnexpectedValueException
      */
 	public function getUser(array $credentials): ?RemindableInterface
     {
