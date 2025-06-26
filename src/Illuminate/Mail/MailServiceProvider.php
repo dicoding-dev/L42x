@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Mail;
 
 use Illuminate\Foundation\Application;
-use Illuminate\Mail\Transport\LogTransportV2;
+use Illuminate\Mail\Transport\LogTransport;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 //use Symfony\Component\HttpClient\HttpClient;
@@ -219,7 +219,7 @@ class MailServiceProvider extends ServiceProvider {
 	 */
 	protected function registerLogTransport(array $config): void
 	{
-		$this->app->bindShared('symfony.transport', fn($app) => new LogTransportV2($app->make('Psr\Log\LoggerInterface')));
+		$this->app->bindShared('symfony.transport', fn($app) => new LogTransport($app->make('Psr\Log\LoggerInterface')));
 	}
 
 //    /**
