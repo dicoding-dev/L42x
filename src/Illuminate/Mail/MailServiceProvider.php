@@ -2,16 +2,12 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Mail\Transport\LogTransport;
-use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
-//use Symfony\Component\HttpClient\HttpClient;
-//use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunTransportFactory;
 use Symfony\Component\Mailer\Transport\Dsn;
 use Symfony\Component\Mailer\Transport\SendmailTransport;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
 use Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream;
-//use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MailServiceProvider extends ServiceProvider {
 
