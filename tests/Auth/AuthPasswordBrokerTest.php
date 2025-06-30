@@ -5,9 +5,12 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 use Illuminate\Auth\Reminders\ReminderRepositoryInterface;
 use Illuminate\Auth\UserProviderInterface;
 use Illuminate\Mail\Mailer;
+use Illuminate\Mail\Transport\ArrayTransport;
+use Illuminate\View\Factory;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\Mailer\SentMessage;
 
 class AuthPasswordBrokerTest extends BackwardCompatibleTestCase
 {
@@ -95,21 +98,35 @@ class AuthPasswordBrokerTest extends BackwardCompatibleTestCase
 
 	public function testMailerIsCalledWithProperViewTokenAndCallback()
 	{
-		unset($_SERVER['__auth.reminder']);
-		$broker = $this->getBroker($mocks = $this->getMocks());
-		$callback = function($message, $user) { $_SERVER['__auth.reminder'] = true; };
-		$user = m::mock(RemindableInterface::class);
-		$mocks['mailer']->shouldReceive('send')->once()->with('reminderView', ['token' => 'token', 'user' => $user], m::type('Closure'))->andReturnUsing(function($view, $data, $callback)
-		{
-			return $callback;
-		});
-		$user->shouldReceive('getReminderEmail')->once()->andReturn('email');
-		$message = m::mock('StdClass');
-		$message->shouldReceive('to')->once()->with('email');
-		$result = $broker->sendReminder($user, 'token', $callback);
-		call_user_func($result, $message);
+        $factoryView = m::mock(Factory::class);
+        $factoryView->shouldReceive('make')->once()->andReturnUsing(function ($view, $data) use($factoryView, &$maker) {
+            $factoryView->shouldReceive('render')->once()->andReturn($view);
+            return $factoryView;
+        });
 
-		$this->assertTrue($_SERVER['__auth.reminder']);
+        $broker = $this->getBroker($mocks = [
+            ...$this->getMocks(),
+            'mailer' => new Mailer($factoryView, $transport = new ArrayTransport())
+        ]);
+        $mocks['mailer']->alwaysFrom('sender@mail.com');
+
+        $user = m::mock(RemindableInterface::class);
+        $user->shouldReceive('getReminderEmail')->once()->andReturn('user@email.com');
+
+        $receivedCallback = new stdClass();
+        $someCallback = function($message, $user, $token) use (&$receivedCallback) {
+            $receivedCallback->user = $user;
+            $receivedCallback->token = $token;
+        };
+
+        $broker->sendReminder($user, 'token', $someCallback);
+
+        /** @var SentMessage $message */
+        $message = $transport->messages()[0];
+        self::assertEquals('user@email.com', $message->getEnvelope()->getRecipients()[0]->getAddress());
+        self::assertStringContainsString('reminderView', $message->toString());
+        self::assertEquals($user, $receivedCallback->user);
+        self::assertEquals('token', $receivedCallback->token);
 	}
 
 
@@ -207,22 +224,20 @@ class AuthPasswordBrokerTest extends BackwardCompatibleTestCase
 	}
 
 
-	protected function getBroker($mocks)
-	{
+	protected function getBroker($mocks): PasswordBroker
+    {
 		return new PasswordBroker($mocks['reminders'], $mocks['users'], $mocks['mailer'], $mocks['view']);
 	}
 
 
-	protected function getMocks()
-	{
-		$mocks = [
-			'reminders' => m::mock(ReminderRepositoryInterface::class),
-			'users'     => m::mock(UserProviderInterface::class),
-			'mailer'    => m::mock(Mailer::class),
-			'view'      => 'reminderView',
+	protected function getMocks(): array
+    {
+        return [
+            'reminders' => m::mock(ReminderRepositoryInterface::class),
+            'users'     => m::mock(UserProviderInterface::class),
+            'mailer'    => m::mock(Mailer::class),
+            'view'      => 'reminderView',
         ];
-
-		return $mocks;
 	}
 
 }
