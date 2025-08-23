@@ -59,10 +59,19 @@ class Middleware implements HttpKernelInterface {
     {
 		$this->checkRequestForArraySessions($request);
 
-		// If a session driver has been configured, we will need to start the session here
+        // Check if this request is coming either from API or from Oauth access token
+        $isAPIorOauthRequest = $request->headers->has('Authorization') ||
+            ($request->isMethod('POST') && str_contains($request->getUri(), '/oauth/')) ||
+            str_contains($request->getUri(), '/api/');
+
+
+        // If a session driver has been configured, we will need to start the session here
 		// so that the data is ready for an application. Note that the Laravel sessions
 		// do not make use of PHP "native" sessions in any way since they are crappy.
-		if ($this->sessionConfigured())
+
+        // this api has been modified to prevent request from API starting the
+        // session, and saving the session as we don't need user session here
+		if (!$isAPIorOauthRequest && $this->sessionConfigured())
 		{
 			$session = $this->startSession($request);
 
@@ -74,7 +83,10 @@ class Middleware implements HttpKernelInterface {
 		// Again, if the session has been configured we will need to close out the session
 		// so that the attributes may be persisted to some storage medium. We will also
 		// add the session identifier cookie to the application response headers now.
-		if ($this->sessionConfigured())
+
+        // this api has been modified to prevent request from API starting the
+        // session, and saving the session as we don't need user at backend side here
+		if (!$isAPIorOauthRequest && $this->sessionConfigured())
 		{
             $this->storeCurrentUrl($request, $session);
 			$this->closeSession($session);
