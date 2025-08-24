@@ -61,7 +61,7 @@ class Middleware implements HttpKernelInterface {
 
         // Check if this request is coming either from API or from Oauth access token
         $isAPIorOauthRequest = $request->headers->has('Authorization') ||
-            ($request->isMethod('POST') && str_contains($request->getUri(), '/oauth/')) ||
+            ($request->isMethod('POST') && str_contains($request->getUri(), 'api/v1/oauth/')) ||
             str_contains($request->getUri(), '/api/');
 
 
