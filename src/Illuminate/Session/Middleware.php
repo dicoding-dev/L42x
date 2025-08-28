@@ -59,12 +59,8 @@ class Middleware implements HttpKernelInterface {
     {
 		$this->checkRequestForArraySessions($request);
 
-        // Check if this request is coming either from API or from Oauth access token
-        $currentPath = $request->getRequestUri();
-        $authorizationHeader = $request->headers->get('Authorization');
-        $isFromTokenBasedAuthentication =
-            (!empty($authorizationHeader) && preg_match("/(Basic|Bearer) .+/", $authorizationHeader)) ||
-            starts_with($currentPath, '/api/v1/oauth/');
+        // Check if this request is coming from web based auth
+        $isFromWebBasedAuth = $this->isRequestFromWebBasedAuth($request);
 
         // If a session driver has been configured, we will need to start the session here
 		// so that the data is ready for an application. Note that the Laravel sessions
@@ -72,7 +68,7 @@ class Middleware implements HttpKernelInterface {
 
         // this api has been modified to prevent request from API starting the
         // session, and saving the session as we don't need user session here
-		if (!$isFromTokenBasedAuthentication && $this->sessionConfigured())
+		if ($isFromWebBasedAuth && $this->sessionConfigured())
 		{
 			$session = $this->startSession($request);
 
@@ -87,7 +83,7 @@ class Middleware implements HttpKernelInterface {
 
         // this api has been modified to prevent request from API starting the
         // session, and saving the session as we don't need user at backend side here
-		if (!$isFromTokenBasedAuthentication && $this->sessionConfigured())
+		if ($isFromWebBasedAuth && $this->sessionConfigured())
 		{
             $this->storeCurrentUrl($request, $session);
 			$this->closeSession($session);
@@ -97,6 +93,17 @@ class Middleware implements HttpKernelInterface {
 
 		return $response;
 	}
+
+    private function isRequestFromWebBasedAuth(Request $request): bool
+    {
+        $currentPath = $request->getRequestUri();
+        $authorizationHeader = $request->headers->get('Authorization');
+        $isFromTokenBasedAuthentication =
+            (!empty($authorizationHeader) && preg_match("/(Basic|Bearer) .+/", $authorizationHeader)) ||
+            starts_with($currentPath, '/api/v1/oauth/');
+
+        return !$isFromTokenBasedAuthentication;
+    }
 
 	/**
 	 * Check the request and reject callback for array sessions.
