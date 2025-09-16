@@ -5,7 +5,9 @@ use Illuminate\Filesystem\Filesystem;
 
 class MigrationPublisher {
 
-	/**
+	protected Filesystem $files;
+
+    /**
 	 * A cache of migrations at a given destination.
 	 *
 	 * @var array

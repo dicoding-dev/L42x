@@ -6,7 +6,9 @@ use Illuminate\Filesystem\Filesystem;
 
 class KeyGenerateCommand extends Command {
 
-	/**
+	protected Filesystem $files;
+
+    /**
 	 * The console command name.
 	 *
 	 * @var string

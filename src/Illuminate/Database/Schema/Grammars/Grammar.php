@@ -11,7 +11,12 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager as SchemaManager;
 
 abstract class Grammar extends BaseGrammar {
 
-	/**
+    /**
+     * @var array
+     */
+	protected $modifiers;
+
+    /**
 	 * Compile a rename column command.
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint

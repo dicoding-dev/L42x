@@ -4,7 +4,12 @@ use Closure;
 
 class QueueManager {
 
-	/**
+    /**
+     * @var array
+     */
+	protected $connectors;
+
+    /**
 	 * The application instance.
 	 *
 	 * @var \Illuminate\Foundation\Application

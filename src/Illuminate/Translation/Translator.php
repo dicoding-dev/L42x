@@ -6,7 +6,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class Translator extends NamespacedItemResolver implements TranslatorInterface {
 
-	/**
+	protected MessageSelector $selector;
+
+    /**
 	 * The loader implementation.
 	 *
 	 * @var \Illuminate\Translation\LoaderInterface
