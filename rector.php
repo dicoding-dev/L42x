@@ -7,5 +7,8 @@ use Rector\Config\RectorConfig;
 return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
+        __DIR__ . '/tests',
     ])
-    ->withRules([\Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector::class]);
+    ->withRules([
+        \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector::class,
+    ]);
