@@ -11,4 +11,5 @@ return RectorConfig::configure()
     ])
     ->withRules([
         \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector::class,
+        \Rector\Php82\Rector\FuncCall\Utf8DecodeEncodeToMbConvertEncodingRector::class,
     ]);
