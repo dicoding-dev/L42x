@@ -13,4 +13,5 @@ return RectorConfig::configure()
         \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector::class,
         \Rector\Php82\Rector\FuncCall\Utf8DecodeEncodeToMbConvertEncodingRector::class,
         \Rector\Php82\Rector\New_\FilesystemIteratorSkipDotsRector::class,
+        \Rector\Php82\Rector\Class_\ReadOnlyClassRector::class,
     ]);
