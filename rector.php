@@ -10,9 +10,5 @@ return RectorConfig::configure()
         __DIR__ . '/tests',
     ])
     ->withRules([
-        \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector::class,
-        \Rector\Php82\Rector\FuncCall\Utf8DecodeEncodeToMbConvertEncodingRector::class,
-        \Rector\Php82\Rector\New_\FilesystemIteratorSkipDotsRector::class,
-        \Rector\Php82\Rector\Class_\ReadOnlyClassRector::class,
-        \Rector\Php82\Rector\Encapsed\VariableInStringInterpolationFixerRector::class,
+        \Rector\Php83\Rector\ClassConst\AddTypeToConstRector::class,
     ]);
