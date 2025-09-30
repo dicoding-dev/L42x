@@ -44,7 +44,7 @@ class FileViewFinder implements ViewFinderInterface {
 	 *
 	 * @var string
 	 */
-	final const HINT_PATH_DELIMITER = '::';
+	final const string HINT_PATH_DELIMITER = '::';
 
 	/**
 	 * Create a new file view loader instance.

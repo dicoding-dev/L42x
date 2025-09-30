@@ -15,8 +15,8 @@ class HandlerTest extends TestCase
 {
     use ProphecyTrait;
 
-    private const DEBUG_ENABLED = true;
-    private const DEBUG_DISABLED = false;
+    private const bool DEBUG_ENABLED = true;
+    private const bool DEBUG_DISABLED = false;
 
     private ObjectProphecy|ResponsePreparerInterface $responsePreparer;
     private ObjectProphecy|ExceptionDisplayerInterface $plainDisplayer;
