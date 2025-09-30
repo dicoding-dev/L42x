@@ -22,7 +22,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  array  $values
 	 * @return string
 	 */
-	public function compileInsert(Builder $query, array $values)
+	#[\Override]
+    public function compileInsert(Builder $query, array $values)
 	{
 		// Essentially we will force every insert to be treated as a batch insert which
 		// simply makes creating the SQL easier for us since we can utilize the same
@@ -65,7 +66,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  \Illuminate\Database\Query\Builder  $query
 	 * @return array
 	 */
-	public function compileTruncate(Builder $query)
+	#[\Override]
+    public function compileTruncate(Builder $query)
 	{
 		$sql = array('delete from sqlite_sequence where name = ?' => array($query->from));
 
@@ -81,7 +83,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  array  $where
 	 * @return string
 	 */
-	protected function whereDay(Builder $query, $where)
+	#[\Override]
+    protected function whereDay(Builder $query, $where)
 	{
 		return $this->dateBasedWhere('%d', $query, $where);
 	}
@@ -93,7 +96,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  array  $where
 	 * @return string
 	 */
-	protected function whereMonth(Builder $query, $where)
+	#[\Override]
+    protected function whereMonth(Builder $query, $where)
 	{
 		return $this->dateBasedWhere('%m', $query, $where);
 	}
@@ -105,7 +109,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  array  $where
 	 * @return string
 	 */
-	protected function whereYear(Builder $query, $where)
+	#[\Override]
+    protected function whereYear(Builder $query, $where)
 	{
 		return $this->dateBasedWhere('%Y', $query, $where);
 	}
@@ -118,7 +123,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  array  $where
 	 * @return string
 	 */
-	protected function dateBasedWhere($type, Builder $query, $where)
+	#[\Override]
+    protected function dateBasedWhere($type, Builder $query, $where)
 	{
 		$value = str_pad((string) $where['value'], 2, '0', STR_PAD_LEFT);
 

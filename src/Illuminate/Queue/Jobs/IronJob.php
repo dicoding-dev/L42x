@@ -71,7 +71,8 @@ class IronJob extends Job {
 	 *
 	 * @return void
 	 */
-	public function delete()
+	#[\Override]
+    public function delete()
 	{
 		parent::delete();
 
@@ -163,7 +164,8 @@ class IronJob extends Job {
 	 *
 	 * @return string
 	 */
-	public function getQueue()
+	#[\Override]
+    public function getQueue()
 	{
 		return array_get(json_decode((string) $this->job->body, true), 'queue');
 	}

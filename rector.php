@@ -11,4 +11,5 @@ return RectorConfig::configure()
     ])
     ->withRules([
         \Rector\Php83\Rector\ClassConst\AddTypeToConstRector::class,
+        \Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector::class,
     ]);

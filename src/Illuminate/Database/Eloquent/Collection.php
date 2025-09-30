@@ -64,7 +64,8 @@ class Collection extends BaseCollection {
 	 * @param  mixed  $key
 	 * @return bool
 	 */
-	public function contains($key)
+	#[\Override]
+    public function contains($key)
 	{
 		return ! is_null($this->find($key));
 	}
@@ -75,7 +76,8 @@ class Collection extends BaseCollection {
 	 * @param  string  $key
 	 * @return static
 	 */
-	public function fetch($key)
+	#[\Override]
+    public function fetch($key)
 	{
 		return new static(array_fetch($this->toArray(), $key));
 	}
@@ -124,7 +126,8 @@ class Collection extends BaseCollection {
 	 * @param  \ArrayAccess|array  $items
 	 * @return static
 	 */
-	public function merge($items)
+	#[\Override]
+    public function merge($items)
 	{
 		$dictionary = $this->getDictionary();
 
@@ -142,7 +145,8 @@ class Collection extends BaseCollection {
 	 * @param  \ArrayAccess|array  $items
 	 * @return static
 	 */
-	public function diff($items)
+	#[\Override]
+    public function diff($items)
 	{
 		$diff = new static;
 
@@ -165,7 +169,8 @@ class Collection extends BaseCollection {
  	 * @param  \ArrayAccess|array  $items
 	 * @return static
 	 */
-	public function intersect($items)
+	#[\Override]
+    public function intersect($items)
 	{
 		$intersect = new static;
 
@@ -187,7 +192,8 @@ class Collection extends BaseCollection {
 	 *
 	 * @return static
 	 */
-	public function unique()
+	#[\Override]
+    public function unique()
 	{
 		$dictionary = $this->getDictionary();
 

@@ -55,7 +55,8 @@ class MigratePublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('package', InputArgument::REQUIRED, 'The name of the package being published.'),

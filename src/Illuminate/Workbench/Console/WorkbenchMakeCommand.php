@@ -122,7 +122,8 @@ class WorkbenchMakeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('package', InputArgument::REQUIRED, 'The name (vendor/name) of the package.'),
@@ -134,7 +135,8 @@ class WorkbenchMakeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('resources', null, InputOption::VALUE_NONE, 'Create Laravel specific directories.'),

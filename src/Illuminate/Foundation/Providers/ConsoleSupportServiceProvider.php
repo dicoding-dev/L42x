@@ -56,7 +56,8 @@ class ConsoleSupportServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	#[\Override]
+    public function provides()
 	{
 		$provides = array();
 

@@ -8,7 +8,8 @@ class SQLiteProcessor extends Processor {
 	 * @param  array  $results
 	 * @return array
 	 */
-	public function processColumnListing($results)
+	#[\Override]
+    public function processColumnListing($results)
 	{
 		return array_values(array_map(function($r) { $r = (object) $r; return $r->name; }, $results));
 	}

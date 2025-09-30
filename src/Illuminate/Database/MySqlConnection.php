@@ -12,7 +12,8 @@ class MySqlConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Schema\MySqlBuilder
 	 */
-	public function getSchemaBuilder()
+	#[\Override]
+    public function getSchemaBuilder()
 	{
 		if (is_null($this->schemaGrammar)) { $this->useDefaultSchemaGrammar(); }
 
@@ -24,7 +25,8 @@ class MySqlConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Grammars\MySqlGrammar
 	 */
-	protected function getDefaultQueryGrammar()
+	#[\Override]
+    protected function getDefaultQueryGrammar()
 	{
 		return $this->withTablePrefix(new QueryGrammar);
 	}
@@ -44,7 +46,8 @@ class MySqlConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Processors\Processor
 	 */
-	protected function getDefaultPostProcessor()
+	#[\Override]
+    protected function getDefaultPostProcessor()
 	{
 		return new Query\Processors\MySqlProcessor;
 	}

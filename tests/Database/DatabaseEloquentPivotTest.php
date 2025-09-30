@@ -96,7 +96,8 @@ class DatabaseEloquentPivotTest extends BackwardCompatibleTestCase
 class DatabaseEloquentPivotTestModelStub extends Illuminate\Database\Eloquent\Model {}
 
 class DatabaseEloquentPivotTestDateStub extends Illuminate\Database\Eloquent\Relations\Pivot {
-	public function getDates(): array
+	#[\Override]
+    public function getDates(): array
 	{
 		return [];
 	}

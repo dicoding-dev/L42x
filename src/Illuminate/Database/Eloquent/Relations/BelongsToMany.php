@@ -253,7 +253,8 @@ class BelongsToMany extends Relation {
 	 * @param  \Illuminate\Database\Eloquent\Builder  $parent
 	 * @return \Illuminate\Database\Eloquent\Builder
 	 */
-	public function getRelationCountQuery(Builder $query, Builder $parent)
+	#[\Override]
+    public function getRelationCountQuery(Builder $query, Builder $parent)
 	{
 		if ($parent->getQuery()->from == $query->getQuery()->from)
 		{
@@ -466,7 +467,8 @@ class BelongsToMany extends Relation {
 	 *
 	 * @return void
 	 */
-	public function touch()
+	#[\Override]
+    public function touch()
 	{
 		$key = $this->getRelated()->getKeyName();
 

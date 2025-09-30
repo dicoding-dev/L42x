@@ -110,7 +110,8 @@ class MigrateCommand extends BaseCommand {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('bench', null, InputOption::VALUE_OPTIONAL, 'The name of the workbench to migrate.', null),

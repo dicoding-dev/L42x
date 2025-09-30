@@ -195,7 +195,8 @@ class IronQueue extends Queue implements QueueInterface {
 	 * @param  string  $queue
 	 * @return string
 	 */
-	protected function createPayload($job, $data = '', $queue = null)
+	#[\Override]
+    protected function createPayload($job, $data = '', $queue = null)
 	{
 		$payload = $this->setMeta(parent::createPayload($job, $data), 'attempts', 1);
 

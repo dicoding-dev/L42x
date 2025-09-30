@@ -11,7 +11,8 @@ class SQLiteConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Grammars\SQLiteGrammar
 	 */
-	protected function getDefaultQueryGrammar()
+	#[\Override]
+    protected function getDefaultQueryGrammar()
 	{
 		return $this->withTablePrefix(new QueryGrammar);
 	}
@@ -31,7 +32,8 @@ class SQLiteConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Processors\Processor
 	 */
-	protected function getDefaultPostProcessor()
+	#[\Override]
+    protected function getDefaultPostProcessor()
 	{
 		return new Query\Processors\SQLiteProcessor;
 	}

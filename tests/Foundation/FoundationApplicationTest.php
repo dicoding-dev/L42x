@@ -163,7 +163,8 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 
 class ApplicationCustomExceptionHandlerStub extends Illuminate\Foundation\Application {
 
-	public function prepareResponse($value)
+	#[\Override]
+    public function prepareResponse($value)
 	{
 		$response = m::mock(Response::class);
 		$response->shouldReceive('send')->once();

@@ -74,7 +74,8 @@ class RollbackCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'),
