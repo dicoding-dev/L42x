@@ -136,7 +136,8 @@ class RedisStore extends TaggableStore implements StoreInterface {
 	 * @param  array|mixed  $names
 	 * @return \Illuminate\Cache\RedisTaggedCache
 	 */
-	public function tags($names)
+	#[\Override]
+    public function tags($names)
 	{
 		return new RedisTaggedCache($this, new TagSet($this, is_array($names) ? $names : func_get_args()));
 	}

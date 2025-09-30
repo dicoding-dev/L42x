@@ -114,7 +114,8 @@ class ReminderServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	#[\Override]
+    public function provides()
 	{
 		return array('auth.reminder', 'auth.reminder.repository', 'command.auth.reminders');
 	}

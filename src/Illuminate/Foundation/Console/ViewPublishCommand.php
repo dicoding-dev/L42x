@@ -84,7 +84,8 @@ class ViewPublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('package', InputArgument::REQUIRED, 'The name of the package being published.'),
@@ -96,7 +97,8 @@ class ViewPublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('path', null, InputOption::VALUE_OPTIONAL, 'The path to the source view files.', null),

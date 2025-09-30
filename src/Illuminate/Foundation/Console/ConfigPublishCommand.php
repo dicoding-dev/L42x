@@ -94,7 +94,8 @@ class ConfigPublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('package', InputArgument::REQUIRED, 'The name of the package being published.'),
@@ -106,7 +107,8 @@ class ConfigPublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('path', null, InputOption::VALUE_OPTIONAL, 'The path to the configuration files.', null),

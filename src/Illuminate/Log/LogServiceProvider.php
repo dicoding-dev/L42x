@@ -47,7 +47,8 @@ class LogServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	#[\Override]
+    public function provides()
 	{
 		return array('log', 'Psr\Log\LoggerInterface');
 	}

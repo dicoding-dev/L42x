@@ -16,7 +16,8 @@ class SqlServerConnection extends Connection {
 	 *
 	 * @throws \Throwable
 	 */
-	public function transaction(Closure $callback)
+	#[\Override]
+    public function transaction(Closure $callback)
 	{
 		if ($this->getDriverName() == 'sqlsrv')
 		{
@@ -59,7 +60,8 @@ class SqlServerConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Grammars\SqlServerGrammar
 	 */
-	protected function getDefaultQueryGrammar()
+	#[\Override]
+    protected function getDefaultQueryGrammar()
 	{
 		return $this->withTablePrefix(new QueryGrammar);
 	}
@@ -79,7 +81,8 @@ class SqlServerConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Processors\Processor
 	 */
-	protected function getDefaultPostProcessor()
+	#[\Override]
+    protected function getDefaultPostProcessor()
 	{
 		return new SqlServerProcessor;
 	}

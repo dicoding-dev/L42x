@@ -36,7 +36,8 @@ class CompilerEngine extends PhpEngine {
 	 * @param  array   $data
 	 * @return string
 	 */
-	public function get($path, array $data = array())
+	#[\Override]
+    public function get($path, array $data = array())
 	{
 		$this->lastCompiled[] = $path;
 
@@ -69,7 +70,8 @@ class CompilerEngine extends PhpEngine {
 	 *
 	 * @throws $e
 	 */
-	protected function handleViewException($e, $obLevel)
+	#[\Override]
+    protected function handleViewException($e, $obLevel)
 	{
 //		if (! $e instanceof \Exception) {
 //			$e = new FatalThrowableError($e);

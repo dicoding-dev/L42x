@@ -183,7 +183,8 @@ class Repository extends NamespacedItemResolver implements ArrayAccess {
 	 * @param  string  $key
 	 * @return array
 	 */
-	protected function parseNamespacedSegments($key)
+	#[\Override]
+    protected function parseNamespacedSegments($key)
 	{
 		list($namespace, $item) = explode('::', $key);
 

@@ -458,7 +458,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * @throws BindingResolutionException
      * @throws ReflectionException
      */
-	public function make($abstract, $parameters = array(), $raiseEvents = true)
+	#[\Override]
+    public function make($abstract, $parameters = array(), $raiseEvents = true)
 	{
 		$abstract = $this->getAlias($abstract);
 
@@ -478,7 +479,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @param  string  $abstract
 	 * @return bool
 	 */
-	public function bound($abstract): bool
+	#[\Override]
+    public function bound($abstract): bool
 	{
 		return isset($this->deferredServices[$abstract]) || parent::bound($abstract);
 	}
@@ -496,7 +498,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * @throws BindingResolutionException
      * @throws ReflectionException
      */
-	public function extend($abstract, Closure $closure): void
+	#[\Override]
+    public function extend($abstract, Closure $closure): void
 	{
 		$abstract = $this->getAlias($abstract);
 

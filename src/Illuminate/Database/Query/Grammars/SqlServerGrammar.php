@@ -21,7 +21,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  \Illuminate\Database\Query\Builder
 	 * @return string
 	 */
-	public function compileSelect(Builder $query)
+	#[\Override]
+    public function compileSelect(Builder $query)
 	{
 		$components = $this->compileComponents($query);
 
@@ -43,7 +44,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  array  $columns
 	 * @return string
 	 */
-	protected function compileColumns(Builder $query, $columns)
+	#[\Override]
+    protected function compileColumns(Builder $query, $columns)
 	{
 		if ( ! is_null($query->aggregate)) return;
 
@@ -67,7 +69,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  string  $table
 	 * @return string
 	 */
-	protected function compileFrom(Builder $query, $table)
+	#[\Override]
+    protected function compileFrom(Builder $query, $table)
 	{
 		$from = parent::compileFrom($query, $table);
 
@@ -170,7 +173,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  int  $limit
 	 * @return string
 	 */
-	protected function compileLimit(Builder $query, $limit)
+	#[\Override]
+    protected function compileLimit(Builder $query, $limit)
 	{
 		return '';
 	}
@@ -182,7 +186,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  int  $offset
 	 * @return string
 	 */
-	protected function compileOffset(Builder $query, $offset)
+	#[\Override]
+    protected function compileOffset(Builder $query, $offset)
 	{
 		return '';
 	}
@@ -193,7 +198,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  \Illuminate\Database\Query\Builder  $query
 	 * @return array
 	 */
-	public function compileTruncate(Builder $query)
+	#[\Override]
+    public function compileTruncate(Builder $query)
 	{
 		return array('truncate table '.$this->wrapTable($query->from) => array());
 	}
@@ -203,7 +209,8 @@ class SqlServerGrammar extends Grammar {
 	 *
 	 * @return string
 	 */
-	public function getDateFormat()
+	#[\Override]
+    public function getDateFormat()
 	{
 		return 'Y-m-d H:i:s.000';
 	}
@@ -214,7 +221,8 @@ class SqlServerGrammar extends Grammar {
 	 * @param  string  $value
 	 * @return string
 	 */
-	protected function wrapValue($value)
+	#[\Override]
+    protected function wrapValue($value)
 	{
 		if ($value === '*') return $value;
 

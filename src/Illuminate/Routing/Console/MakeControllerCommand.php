@@ -155,7 +155,8 @@ class MakeControllerCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('name', InputArgument::REQUIRED, 'The name of the controller class'),
@@ -167,7 +168,8 @@ class MakeControllerCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('bench', null, InputOption::VALUE_OPTIONAL, 'The workbench the controller belongs to'),

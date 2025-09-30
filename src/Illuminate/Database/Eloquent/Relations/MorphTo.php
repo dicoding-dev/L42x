@@ -59,7 +59,8 @@ class MorphTo extends BelongsTo {
 	 * @param  array  $models
 	 * @return void
 	 */
-	public function addEagerConstraints(array $models)
+	#[\Override]
+    public function addEagerConstraints(array $models)
 	{
 		$this->buildDictionary($this->models = Collection::make($models));
 	}
@@ -89,7 +90,8 @@ class MorphTo extends BelongsTo {
 	 * @param  string  $relation
 	 * @return array
 	 */
-	public function match(array $models, Collection $results, $relation)
+	#[\Override]
+    public function match(array $models, Collection $results, $relation)
 	{
 		return $models;
 	}
@@ -100,7 +102,8 @@ class MorphTo extends BelongsTo {
 	 * @param  \Illuminate\Database\Eloquent\Model  $model
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function associate(Model $model)
+	#[\Override]
+    public function associate(Model $model)
 	{
 		$this->parent->setAttribute($this->foreignKey, $model->getKey());
 
@@ -116,7 +119,8 @@ class MorphTo extends BelongsTo {
 	 *
 	 * @return mixed
 	 */
-	public function getEager()
+	#[\Override]
+    public function getEager()
 	{
 		foreach (array_keys($this->dictionary) as $type)
 		{

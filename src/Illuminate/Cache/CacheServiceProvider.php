@@ -61,7 +61,8 @@ class CacheServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	#[\Override]
+    public function provides()
 	{
 		return [
 			'cache', 'cache.store', 'memcached.connector', 'command.cache.clear', 'command.cache.table'

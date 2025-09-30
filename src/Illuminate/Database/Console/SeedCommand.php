@@ -88,7 +88,8 @@ class SeedCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('class', null, InputOption::VALUE_OPTIONAL, 'The class name of the root seeder', 'DatabaseSeeder'),

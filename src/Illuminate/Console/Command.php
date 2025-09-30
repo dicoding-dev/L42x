@@ -91,7 +91,8 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
 	 * @return int
 	 */
-	public function run(InputInterface $input, OutputInterface $output): int
+	#[\Override]
+    public function run(InputInterface $input, OutputInterface $output): int
     {
 		$this->input = $input;
 

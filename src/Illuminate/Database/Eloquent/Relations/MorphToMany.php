@@ -55,7 +55,8 @@ class MorphToMany extends BelongsToMany {
 	 *
 	 * @return $this
 	 */
-	protected function setWhere()
+	#[\Override]
+    protected function setWhere()
 	{
 		parent::setWhere();
 
@@ -71,7 +72,8 @@ class MorphToMany extends BelongsToMany {
 	 * @param  \Illuminate\Database\Eloquent\Builder  $parent
 	 * @return \Illuminate\Database\Eloquent\Builder
 	 */
-	public function getRelationCountQuery(Builder $query, Builder $parent)
+	#[\Override]
+    public function getRelationCountQuery(Builder $query, Builder $parent)
 	{
 		$query = parent::getRelationCountQuery($query, $parent);
 
@@ -84,7 +86,8 @@ class MorphToMany extends BelongsToMany {
 	 * @param  array  $models
 	 * @return void
 	 */
-	public function addEagerConstraints(array $models)
+	#[\Override]
+    public function addEagerConstraints(array $models)
 	{
 		parent::addEagerConstraints($models);
 
@@ -98,7 +101,8 @@ class MorphToMany extends BelongsToMany {
 	 * @param  bool  $timed
 	 * @return array
 	 */
-	protected function createAttachRecord($id, $timed)
+	#[\Override]
+    protected function createAttachRecord($id, $timed)
 	{
 		$record = parent::createAttachRecord($id, $timed);
 
@@ -110,7 +114,8 @@ class MorphToMany extends BelongsToMany {
 	 *
 	 * @return \Illuminate\Database\Query\Builder
 	 */
-	protected function newPivotQuery()
+	#[\Override]
+    protected function newPivotQuery()
 	{
 		$query = parent::newPivotQuery();
 
@@ -124,7 +129,8 @@ class MorphToMany extends BelongsToMany {
 	 * @param  bool   $exists
 	 * @return \Illuminate\Database\Eloquent\Relations\Pivot
 	 */
-	public function newPivot(array $attributes = array(), $exists = false)
+	#[\Override]
+    public function newPivot(array $attributes = array(), $exists = false)
 	{
 		$pivot = new MorphPivot($this->parent, $attributes, $this->table, $exists);
 

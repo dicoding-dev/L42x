@@ -1049,7 +1049,8 @@ class EloquentModelStub extends Illuminate\Database\Eloquent\Model {
     {
 		return 'foo';
 	}
-	public function getDates(): array
+	#[\Override]
+    public function getDates(): array
 	{
 		return [];
 	}
@@ -1064,7 +1065,8 @@ class EloquentModelCamelStub extends EloquentModelStub {
 }
 
 class EloquentDateModelStub extends EloquentModelStub {
-	public function getDates(): array
+	#[\Override]
+    public function getDates(): array
 	{
 		return ['created_at', 'updated_at'];
 	}
@@ -1073,15 +1075,18 @@ class EloquentDateModelStub extends EloquentModelStub {
 class EloquentModelSaveStub extends Illuminate\Database\Eloquent\Model {
 	protected string $table = 'save_stub';
 	protected array $guarded = [];
-	public function save(array $options = []): bool { $_SERVER['__eloquent.saved'] = true; return true; }
-	public function setIncrementing($value): void
+	#[\Override]
+    public function save(array $options = []): bool { $_SERVER['__eloquent.saved'] = true; return true; }
+	#[\Override]
+    public function setIncrementing($value): void
 	{
 		$this->incrementing = $value;
 	}
 }
 
 class EloquentModelFindStub extends Illuminate\Database\Eloquent\Model {
-	public function newQuery()
+	#[\Override]
+    public function newQuery()
 	{
 		$mock = m::mock(Builder::class);
 		$mock->shouldReceive('find')->once()->with(1, ['*'])->andReturn('foo');
@@ -1090,7 +1095,8 @@ class EloquentModelFindStub extends Illuminate\Database\Eloquent\Model {
 }
 
 class EloquentModelFindWithWritePdoStub extends Illuminate\Database\Eloquent\Model {
-	public function newQuery()
+	#[\Override]
+    public function newQuery()
 	{
 		$mock = m::mock(Builder::class);
 		$mock->expects('useWritePdo')->andReturnSelf();
@@ -1101,7 +1107,8 @@ class EloquentModelFindWithWritePdoStub extends Illuminate\Database\Eloquent\Mod
 }
 
 class EloquentModelFindNotFoundStub extends Illuminate\Database\Eloquent\Model {
-	public function newQuery()
+	#[\Override]
+    public function newQuery()
 	{
 		$mock = m::mock(Builder::class);
 		$mock->shouldReceive('find')->once()->with(1, ['*'])->andReturn(null);
@@ -1110,7 +1117,8 @@ class EloquentModelFindNotFoundStub extends Illuminate\Database\Eloquent\Model {
 }
 
 class EloquentModelDestroyStub extends Illuminate\Database\Eloquent\Model {
-	public function newQuery()
+	#[\Override]
+    public function newQuery()
 	{
 		$mock = m::mock(Builder::class);
 		$mock->shouldReceive('whereIn')->once()->with('id', [1, 2, 3])->andReturn($mock);
@@ -1121,8 +1129,10 @@ class EloquentModelDestroyStub extends Illuminate\Database\Eloquent\Model {
 }
 
 class EloquentModelHydrateRawStub extends Illuminate\Database\Eloquent\Model {
-	public static function hydrate(array $items, $connection = null): Collection { return new Collection(['hydrated']); }
-	public function getConnection(): Connection
+	#[\Override]
+    public static function hydrate(array $items, $connection = null): Collection { return new Collection(['hydrated']); }
+	#[\Override]
+    public function getConnection(): Connection
 	{
 		$mock = m::mock(Connection::class);
 		$mock->shouldReceive('select')->once()->with('SELECT ?', ['foo'])->andReturn([]);
@@ -1131,7 +1141,8 @@ class EloquentModelHydrateRawStub extends Illuminate\Database\Eloquent\Model {
 }
 
 class EloquentModelFindManyStub extends Illuminate\Database\Eloquent\Model {
-	public function newQuery()
+	#[\Override]
+    public function newQuery()
 	{
 		$mock = m::mock(Builder::class);
 		$mock->shouldReceive('find')->once()->with([1, 2], ['*'])->andReturn('foo');
@@ -1140,7 +1151,8 @@ class EloquentModelFindManyStub extends Illuminate\Database\Eloquent\Model {
 }
 
 class EloquentModelWithStub extends Illuminate\Database\Eloquent\Model {
-	public function newQuery()
+	#[\Override]
+    public function newQuery()
 	{
 		$mock = m::mock(Builder::class);
 		$mock->shouldReceive('with')->once()->with(['foo', 'bar'])->andReturn('foo');

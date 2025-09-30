@@ -10,7 +10,8 @@ class AuthManager extends Manager {
 	 * @param  string  $driver
 	 * @return mixed
 	 */
-	protected function createDriver($driver)
+	#[\Override]
+    protected function createDriver($driver)
 	{
 		$guard = parent::createDriver($driver);
 
@@ -30,7 +31,8 @@ class AuthManager extends Manager {
 	 * @param  string  $driver
 	 * @return \Illuminate\Auth\Guard
 	 */
-	protected function callCustomCreator($driver)
+	#[\Override]
+    protected function callCustomCreator($driver)
 	{
 		$custom = parent::callCustomCreator($driver);
 

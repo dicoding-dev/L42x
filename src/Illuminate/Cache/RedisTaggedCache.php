@@ -9,7 +9,8 @@ class RedisTaggedCache extends TaggedCache {
 	 * @param  mixed   $value
 	 * @return void
 	 */
-	public function forever($key, $value)
+	#[\Override]
+    public function forever($key, $value)
 	{
 		$this->pushForeverKeys($namespace = $this->tags->getNamespace(), $key);
 
@@ -21,7 +22,8 @@ class RedisTaggedCache extends TaggedCache {
 	 *
 	 * @return void
 	 */
-	public function flush()
+	#[\Override]
+    public function flush()
 	{
 		$this->deleteForeverKeys();
 

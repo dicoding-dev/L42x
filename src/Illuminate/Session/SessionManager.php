@@ -11,7 +11,8 @@ class SessionManager extends Manager {
 	 * @param  string  $driver
 	 * @return mixed
 	 */
-	protected function callCustomCreator($driver)
+	#[\Override]
+    protected function callCustomCreator($driver)
 	{
 		return $this->buildSession(parent::callCustomCreator($driver));
 	}

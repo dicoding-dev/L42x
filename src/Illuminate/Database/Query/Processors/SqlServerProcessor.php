@@ -13,7 +13,8 @@ class SqlServerProcessor extends Processor {
 	 * @param  string  $sequence
 	 * @return int
 	 */
-	public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
+	#[\Override]
+    public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
 	{
 		$query->getConnection()->insert($sql, $values);
 
@@ -28,7 +29,8 @@ class SqlServerProcessor extends Processor {
 	 * @param  array  $results
 	 * @return array
 	 */
-	public function processColumnListing($results)
+	#[\Override]
+    public function processColumnListing($results)
 	{
 		return array_values(array_map(function($r) { return $r->name; }, $results));
 	}

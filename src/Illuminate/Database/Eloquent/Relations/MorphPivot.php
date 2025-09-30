@@ -28,7 +28,8 @@ class MorphPivot extends Pivot {
 	 * @param  \Illuminate\Database\Eloquent\Builder  $query
 	 * @return \Illuminate\Database\Eloquent\Builder
 	 */
-	protected function setKeysForSaveQuery(Builder $query)
+	#[\Override]
+    protected function setKeysForSaveQuery(Builder $query)
 	{
 		$query->where($this->morphType, $this->morphClass);
 
@@ -40,7 +41,8 @@ class MorphPivot extends Pivot {
 	 *
 	 * @return int
 	 */
-	public function delete()
+	#[\Override]
+    public function delete()
 	{
 		$query = $this->getDeleteQuery();
 

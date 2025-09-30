@@ -144,7 +144,8 @@ class TailCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('connection', InputArgument::OPTIONAL, 'The remote connection name'),
@@ -156,7 +157,8 @@ class TailCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('path', null, InputOption::VALUE_OPTIONAL, 'The fully qualified path to the log file.'),

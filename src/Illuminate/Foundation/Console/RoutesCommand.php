@@ -208,7 +208,8 @@ class RoutesCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('name', null, InputOption::VALUE_OPTIONAL, 'Filter the routes by name.'),

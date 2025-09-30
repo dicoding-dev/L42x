@@ -83,7 +83,8 @@ class RemindersControllerCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('path', null, InputOption::VALUE_OPTIONAL, 'The directory where the controller should be placed.', null),

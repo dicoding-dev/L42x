@@ -241,7 +241,8 @@ class MailServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides(): array
+	#[\Override]
+    public function provides(): array
 	{
 		return ['mailer', 'symfony.transport'];
 	}

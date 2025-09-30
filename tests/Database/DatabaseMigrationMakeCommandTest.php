@@ -90,7 +90,8 @@ class DatabaseMigrationMakeCommandTest extends BackwardCompatibleTestCase
 
 class DatabaseMigrationMakeCommandTestStub extends MigrateMakeCommand
 {
-	public function call($command, array $arguments = [])
+	#[\Override]
+    public function call($command, array $arguments = [])
 	{
 		//
 	}

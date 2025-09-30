@@ -50,7 +50,8 @@ class ArtisanServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	#[\Override]
+    public function provides()
 	{
 		return array('artisan', 'command.changes', 'command.environment');
 	}

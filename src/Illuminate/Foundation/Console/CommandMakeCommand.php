@@ -134,7 +134,8 @@ class CommandMakeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('name', InputArgument::REQUIRED, 'The name of the command.'),
@@ -146,7 +147,8 @@ class CommandMakeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('command', null, InputOption::VALUE_OPTIONAL, 'The terminal command that should be assigned.', null),

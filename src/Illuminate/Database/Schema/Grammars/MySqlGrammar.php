@@ -585,7 +585,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  string  $value
 	 * @return string
 	 */
-	protected function wrapValue($value)
+	#[\Override]
+    protected function wrapValue($value)
 	{
 		if ($value === '*') return $value;
 

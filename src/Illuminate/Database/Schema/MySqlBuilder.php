@@ -8,7 +8,8 @@ class MySqlBuilder extends Builder {
 	 * @param  string  $table
 	 * @return bool
 	 */
-	public function hasTable($table)
+	#[\Override]
+    public function hasTable($table)
 	{
 		$sql = $this->grammar->compileTableExists();
 
@@ -25,7 +26,8 @@ class MySqlBuilder extends Builder {
 	 * @param  string  $table
 	 * @return array
 	 */
-	public function getColumnListing($table)
+	#[\Override]
+    public function getColumnListing($table)
 	{
 		$sql = $this->grammar->compileColumnExists();
 

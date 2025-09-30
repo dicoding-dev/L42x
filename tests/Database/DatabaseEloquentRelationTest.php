@@ -85,7 +85,8 @@ class EloquentRelationResetModelStub extends Illuminate\Database\Eloquent\Model 
 
 class EloquentRelationResetStub extends Illuminate\Database\Eloquent\Builder {
 	public function __construct() { $this->query = new EloquentRelationQueryStub; }
-	public function getModel() { return new EloquentRelationResetModelStub; }
+	#[\Override]
+    public function getModel() { return new EloquentRelationResetModelStub; }
 }
 
 

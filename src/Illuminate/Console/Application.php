@@ -107,7 +107,8 @@ class Application extends \Symfony\Component\Console\Application {
 	 * @param  \Symfony\Component\Console\Command\Command  $command
 	 * @return \Symfony\Component\Console\Command\Command
 	 */
-	public function add(SymfonyCommand $command)
+	#[\Override]
+    public function add(SymfonyCommand $command)
 	{
 		if ($command instanceof Command)
 		{
@@ -160,7 +161,8 @@ class Application extends \Symfony\Component\Console\Application {
 	 *
 	 * @return \Symfony\Component\Console\Input\InputDefinition
 	 */
-	protected function getDefaultInputDefinition(): \Symfony\Component\Console\Input\InputDefinition
+	#[\Override]
+    protected function getDefaultInputDefinition(): \Symfony\Component\Console\Input\InputDefinition
     {
 		$definition = parent::getDefaultInputDefinition();
 
@@ -233,7 +235,8 @@ class Application extends \Symfony\Component\Console\Application {
 	 * @param  bool  $boolean
 	 * @return $this
 	 */
-	public function setAutoExit($boolean)
+	#[\Override]
+    public function setAutoExit($boolean)
 	{
 		parent::setAutoExit($boolean);
 

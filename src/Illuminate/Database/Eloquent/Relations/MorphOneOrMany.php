@@ -43,7 +43,8 @@ abstract class MorphOneOrMany extends HasOneOrMany {
 	 *
 	 * @return void
 	 */
-	public function addConstraints()
+	#[\Override]
+    public function addConstraints()
 	{
 		if (static::$constraints)
 		{
@@ -60,7 +61,8 @@ abstract class MorphOneOrMany extends HasOneOrMany {
 	 * @param  \Illuminate\Database\Eloquent\Builder  $parent
 	 * @return \Illuminate\Database\Eloquent\Builder
 	 */
-	public function getRelationCountQuery(Builder $query, Builder $parent)
+	#[\Override]
+    public function getRelationCountQuery(Builder $query, Builder $parent)
 	{
 		$query = parent::getRelationCountQuery($query, $parent);
 
@@ -73,7 +75,8 @@ abstract class MorphOneOrMany extends HasOneOrMany {
 	 * @param  array  $models
 	 * @return void
 	 */
-	public function addEagerConstraints(array $models)
+	#[\Override]
+    public function addEagerConstraints(array $models)
 	{
 		parent::addEagerConstraints($models);
 
@@ -86,7 +89,8 @@ abstract class MorphOneOrMany extends HasOneOrMany {
 	 * @param  \Illuminate\Database\Eloquent\Model  $model
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function save(Model $model)
+	#[\Override]
+    public function save(Model $model)
 	{
 		$model->setAttribute($this->getPlainMorphType(), $this->morphClass);
 
@@ -99,7 +103,8 @@ abstract class MorphOneOrMany extends HasOneOrMany {
 	 * @param  array  $attributes
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function create(array $attributes)
+	#[\Override]
+    public function create(array $attributes)
 	{
 		$instance = $this->related->newInstance($attributes);
 

@@ -109,7 +109,8 @@ class EloquentMorphResetModelStub extends Illuminate\Database\Eloquent\Model {}
 
 class EloquentMorphResetBuilderStub extends Illuminate\Database\Eloquent\Builder {
 	public function __construct() { $this->query = new EloquentRelationQueryStub; }
-	public function getModel() { return new EloquentMorphResetModelStub; }
+	#[\Override]
+    public function getModel() { return new EloquentMorphResetModelStub; }
 	public function isSoftDeleting() { return false; }
 }
 

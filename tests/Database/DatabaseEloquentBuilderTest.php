@@ -591,7 +591,8 @@ class EloquentBuilderTestScopeStub extends Illuminate\Database\Eloquent\Model {
 class EloquentBuilderTestWithTrashedStub extends Illuminate\Database\Eloquent\Model {
 	use Illuminate\Database\Eloquent\SoftDeletingTrait;
 	protected string $table = 'table';
-	public function getKeyName(): string { return 'foo'; }
+	#[\Override]
+    public function getKeyName(): string { return 'foo'; }
 }
 
 class EloquentBuilderTestNestedStub extends Illuminate\Database\Eloquent\Model {

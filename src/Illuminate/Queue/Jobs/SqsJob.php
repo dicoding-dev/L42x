@@ -64,7 +64,8 @@ class SqsJob extends Job {
 	 *
 	 * @return void
 	 */
-	public function delete()
+	#[\Override]
+    public function delete()
 	{
 		parent::delete();
 

@@ -104,7 +104,8 @@ class ChangesCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('version', InputArgument::OPTIONAL, 'The version to list changes for.'),

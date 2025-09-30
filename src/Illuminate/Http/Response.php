@@ -46,7 +46,8 @@ class Response extends SymfonyResponse
 	 * @param  mixed  $content
 	 * @return $this
 	 */
-	public function setContent($content): static
+	#[\Override]
+    public function setContent($content): static
     {
 		$this->original = $content;
 

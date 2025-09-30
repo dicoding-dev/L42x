@@ -22,7 +22,8 @@ class PostgresGrammar extends Grammar {
 	 * @param  bool|string  $value
 	 * @return string
 	 */
-	protected function compileLock(Builder $query, $value)
+	#[\Override]
+    protected function compileLock(Builder $query, $value)
 	{
 		if (is_string($value)) return $value;
 
@@ -36,7 +37,8 @@ class PostgresGrammar extends Grammar {
 	 * @param  array  $values
 	 * @return string
 	 */
-	public function compileUpdate(Builder $query, $values)
+	#[\Override]
+    public function compileUpdate(Builder $query, $values)
 	{
 		$table = $this->wrapTable($query->from);
 
@@ -153,7 +155,8 @@ class PostgresGrammar extends Grammar {
 	 * @param  string  $sequence
 	 * @return string
 	 */
-	public function compileInsertGetId(Builder $query, $values, $sequence)
+	#[\Override]
+    public function compileInsertGetId(Builder $query, $values, $sequence)
 	{
 		if (is_null($sequence)) $sequence = 'id';
 
@@ -166,7 +169,8 @@ class PostgresGrammar extends Grammar {
 	 * @param  \Illuminate\Database\Query\Builder  $query
 	 * @return array
 	 */
-	public function compileTruncate(Builder $query)
+	#[\Override]
+    public function compileTruncate(Builder $query)
 	{
 		return array('truncate '.$this->wrapTable($query->from).' restart identity' => array());
 	}

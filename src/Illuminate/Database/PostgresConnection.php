@@ -12,7 +12,8 @@ class PostgresConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Grammars\PostgresGrammar
 	 */
-	protected function getDefaultQueryGrammar()
+	#[\Override]
+    protected function getDefaultQueryGrammar()
 	{
 		return $this->withTablePrefix(new QueryGrammar);
 	}
@@ -32,7 +33,8 @@ class PostgresConnection extends Connection {
 	 *
 	 * @return \Illuminate\Database\Query\Processors\PostgresProcessor
 	 */
-	protected function getDefaultPostProcessor()
+	#[\Override]
+    protected function getDefaultPostProcessor()
 	{
 		return new PostgresProcessor;
 	}

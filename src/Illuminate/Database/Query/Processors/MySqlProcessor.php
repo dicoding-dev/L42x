@@ -8,7 +8,8 @@ class MySqlProcessor extends Processor {
 	 * @param  array  $results
 	 * @return array
 	 */
-	public function processColumnListing($results)
+	#[\Override]
+    public function processColumnListing($results)
 	{
 		return array_map(function($r) { $r = (object) $r; return $r->column_name; }, $results);
 	}

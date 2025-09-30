@@ -115,7 +115,8 @@ class ListenCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('connection', InputArgument::OPTIONAL, 'The name of connection'),
@@ -127,7 +128,8 @@ class ListenCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('queue', null, InputOption::VALUE_OPTIONAL, 'The queue to listen on', null),

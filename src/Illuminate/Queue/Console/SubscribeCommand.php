@@ -131,7 +131,8 @@ class SubscribeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('queue', InputArgument::REQUIRED, 'The name of Iron.io queue.'),
@@ -145,7 +146,8 @@ class SubscribeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('type', null, InputOption::VALUE_OPTIONAL, 'The push type for the queue.'),

@@ -283,7 +283,8 @@ abstract class HasOneOrMany extends Relation {
 	 *
 	 * @return string
 	 */
-	public function getQualifiedParentKeyName()
+	#[\Override]
+    public function getQualifiedParentKeyName()
 	{
 		return $this->parent->getTable().'.'.$this->localKey;
 	}

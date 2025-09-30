@@ -112,7 +112,8 @@ class OptimizeCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
             ['force', null, InputOption::VALUE_NONE, 'Force the compiled class file to be written.'],
