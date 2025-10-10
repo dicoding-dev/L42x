@@ -45,16 +45,16 @@ class LogWriterTest extends BackwardCompatibleTestCase
 	public function testMagicMethodsPassErrorAdditionsToMonolog()
 	{
 		$writer = new Writer($monolog = m::mock(Logger::class));
-		$monolog->shouldReceive('addError')->once()->with('foo')->andReturn('bar');
+		$monolog->shouldReceive('error')->once()->with('foo');
 
-		$this->assertEquals('bar', $writer->error('foo'));
+		$writer->error('foo');
 	}
 
 
 	public function testWriterFiresEventsDispatcher()
 	{
 		$writer = new Writer($monolog = m::mock(Logger::class), $events = new Illuminate\Events\Dispatcher);
-		$monolog->shouldReceive('addError')->once()->with('foo');
+		$monolog->shouldReceive('error')->once()->with('foo');
 
 		$events->listen('illuminate.log', function($level, $message, array $context = [])
 		{
