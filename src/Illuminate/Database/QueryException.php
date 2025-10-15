@@ -5,6 +5,11 @@ use PDOException;
 class QueryException extends PDOException {
 
 	/**
+     * @var \Exception
+     */
+    protected $previous;
+
+    /**
 	 * The SQL for the query.
 	 *
 	 * @var string

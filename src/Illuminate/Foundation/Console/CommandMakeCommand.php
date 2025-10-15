@@ -7,7 +7,9 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class CommandMakeCommand extends Command {
 
-	/**
+	protected Filesystem $files;
+
+    /**
 	 * The console command name.
 	 *
 	 * @var string

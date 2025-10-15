@@ -1786,13 +1786,11 @@ class Builder {
 	 * @param  array  $columns
 	 * @return \Illuminate\Pagination\Paginator
 	 */
-	public function simplePaginate($perPage = null, $columns = array('*'))
+	public function simplePaginate($perPage = 15, $columns = array('*'))
 	{
 		$paginator = $this->connection->getPaginator();
 
 		$page = $paginator->getCurrentPage();
-
-		$perPage = $perPage ?: $this->model->getPerPage();
 
 		$this->skip(($page - 1) * $perPage)->take($perPage + 1);
 

@@ -5,7 +5,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 class CookieSessionHandler implements \SessionHandlerInterface {
 
-	/**
+    /**
+     * The cookie lifetime in minutes.
+     */
+	protected int $minutes;
+
+    /**
 	 * The cookie jar instance.
 	 */
 	protected CookieJar $cookie;
@@ -22,7 +27,7 @@ class CookieSessionHandler implements \SessionHandlerInterface {
 	 * @param  int  $minutes
 	 * @return void
 	 */
-	public function __construct(CookieJar $cookie, $minutes)
+	public function __construct(CookieJar $cookie, int $minutes)
 	{
 		$this->cookie = $cookie;
 		$this->minutes = $minutes;

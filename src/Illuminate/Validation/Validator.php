@@ -14,7 +14,12 @@ use Illuminate\Support\Contracts\MessageProviderInterface;
 
 class Validator implements MessageProviderInterface {
 
-	/**
+    /**
+     * @var Container
+     */
+	protected $container;
+
+    /**
 	 * The Translator implementation.
 	 *
 	 * @var \Symfony\Contracts\Translation\TranslatorInterface

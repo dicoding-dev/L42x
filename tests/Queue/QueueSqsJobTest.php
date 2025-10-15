@@ -12,6 +12,32 @@ use Mockery as m;
 class QueueSqsJobTest extends BackwardCompatibleTestCase
 {
 
+    private string $key;
+    private string $secret;
+    private string $service;
+    private string $region;
+    private string $account;
+    private string $queueName;
+    private string $baseUrl;
+    private Credentials $credentials;
+    private SignatureV4 $signature;
+    private Collection $config;
+    private string $queueUrl;
+    private \PHPUnit\Framework\MockObject\MockObject $mockedSqsClient;
+    private $mockedContainer;
+    private string $mockedJob;
+    /**
+     * @var string[]
+     */
+    private array $mockedData;
+    /**
+     * @var bool|non-empty-string
+     */
+    private string|bool $mockedPayload;
+    private string $mockedMessageId;
+    private string $mockedReceiptHandle;
+    private array $mockedJobData;
+
     protected function setUp(): void
     {
         $this->markTestSkipped();

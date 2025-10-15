@@ -8,7 +8,9 @@ use Illuminate\Support\SerializableClosure;
 
 abstract class Queue {
 
-	/**
+	protected Encrypter $crypt;
+
+    /**
 	 * The IoC container instance.
 	 *
 	 * @var \Illuminate\Container\Container

@@ -11,6 +11,20 @@ use Mockery as m;
 class QueueSqsQueueTest extends BackwardCompatibleTestCase
 {
 
+    private $sqs;
+    private string $account;
+    private string $queueName;
+    private string $baseUrl;
+    private string $queueUrl;
+    private string $mockedJob;
+    private array $mockedData;
+    private string|false $mockedPayload;
+    private int $mockedDelay;
+    private string $mockedMessageId;
+    private string $mockedReceiptHandle;
+    private Model $mockedSendMessageResponseModel;
+    private Model $mockedReceiveMessageResponseModel;
+
     protected function tearDown(): void
     {
         m::close();
