@@ -840,9 +840,14 @@ class Connection implements ConnectionInterface {
 	{
 		$driver = $this->getDoctrineDriver();
 
-		$data = array('pdo' => $this->pdo, 'dbname' => $this->getConfig('database'));
-
-		return new DoctrineConnection($data, $driver);
+		return new DoctrineConnection([
+            'host' => $this->getConfig('host'),
+            'port' => $this->getConfig('port'),
+            'user' => $this->getConfig('username'),
+            'password' => $this->getConfig('password'),
+            'dbname' => $this->getDatabaseName(),
+            'charset' => $this->getConfig('charset'),
+        ], $driver);
 	}
 
 	/**
