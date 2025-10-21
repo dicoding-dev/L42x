@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Database;
 
 use Illuminate\Database\Schema\MySqlBuilder;
-use Doctrine\DBAL\Driver\PDOMySql\Driver as DoctrineDriver;
+use Doctrine\DBAL\Driver\PDO\MySQL\Driver as DoctrineDriver;
 use Illuminate\Database\Query\Grammars\MySqlGrammar as QueryGrammar;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar as SchemaGrammar;
 
@@ -52,7 +52,7 @@ class MySqlConnection extends Connection {
 	/**
 	 * Get the Doctrine DBAL driver.
 	 *
-	 * @return \Doctrine\DBAL\Driver\PDOMySql\Driver
+	 * @return \Doctrine\DBAL\Driver\PDO\MySQL\Driver
 	 */
 	protected function getDoctrineDriver()
 	{
