@@ -63,12 +63,21 @@ abstract class Grammar extends BaseGrammar {
 	 */
 	protected function setRenamedColumns(TableDiff $tableDiff, Fluent $command, Column $column)
 	{
-		$newColumn = new Column($command->to, $column->getType(), $column->toArray());
-
-		$tableDiff->renamedColumns = array($command->from => $newColumn);
+		$tableDiff->renamedColumns = array(
+            $command->from => new Column($command->to, $column->getType(), self::getWritableColumnOptions($column))
+        );
 
 		return $tableDiff;
 	}
+
+    private static function getWritableColumnOptions(Column $column): array
+    {
+        return array_filter(
+            $column->toArray(),
+            fn (string $name) => method_exists($column, 'set'.$name),
+            ARRAY_FILTER_USE_KEY
+        );
+    }
 
 	/**
 	 * Compile a foreign key command.

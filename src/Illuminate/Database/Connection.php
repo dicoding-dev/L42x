@@ -822,7 +822,13 @@ class Connection implements ConnectionInterface {
 	 */
 	public function getDoctrineSchemaManager()
 	{
-		return $this->getDoctrineDriver()->getSchemaManager($this->getDoctrineConnection());
+        $connection = $this->getDoctrineConnection();
+
+        // Doctrine v2 expects one parameter while v3 expects two. 2nd will be ignored on v2...
+        return $this->getDoctrineDriver()->getSchemaManager(
+            $connection,
+            $connection->getDatabasePlatform()
+        );
 	}
 
 	/**
@@ -834,9 +840,14 @@ class Connection implements ConnectionInterface {
 	{
 		$driver = $this->getDoctrineDriver();
 
-		$data = array('pdo' => $this->pdo, 'dbname' => $this->getConfig('database'));
-
-		return new DoctrineConnection($data, $driver);
+		return new DoctrineConnection([
+            'host' => $this->getConfig('host'),
+            'port' => $this->getConfig('port'),
+            'user' => $this->getConfig('username'),
+            'password' => $this->getConfig('password'),
+            'dbname' => $this->getDatabaseName(),
+            'charset' => $this->getConfig('charset'),
+        ], $driver);
 	}
 
 	/**
