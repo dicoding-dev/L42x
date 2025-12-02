@@ -149,7 +149,6 @@ class Guard {
 		// pull the user data on that cookie which serves as a remember cookie on
 		// the application. Once we have a user we can return it to the caller.
 		$recaller = $this->getRecaller();
-
 		if (is_null($user) && ! is_null($recaller))
 		{
 			$user = $this->getUserByRecaller($recaller);
@@ -210,15 +209,14 @@ class Guard {
 	/**
 	 * Get the user ID from the recaller cookie.
 	 *
-	 * @return string
+	 * @return int
 	 */
-	protected function getRecallerId()
-	{
-		if ($this->validRecaller($recaller = $this->getRecaller()))
-		{
-			return head(explode('|', $recaller));
-		}
-	}
+    protected function getRecallerId()
+    {
+        if ($this->validRecaller($recaller = $this->getRecaller())) {
+            return (int) head(explode('|', $recaller));
+        }
+    }
 
 	/**
 	 * Determine if the recaller cookie is in a valid format.
