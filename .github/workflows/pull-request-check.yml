@@ -9,6 +9,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, phpunit:9.6
+          coverage: none
+
       - name: Cache Composer dependencies
         uses: actions/cache@v3
         with:
@@ -16,13 +23,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
 
       - name: Installing dependencies
-        uses: php-actions/composer@v6
-        with:
-          php_version: 8.2
+        run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Running unit test
-        uses: php-actions/phpunit@v3
-        with:
-          version: 9.6
-          php_version: 8.2
-          configuration: phpunit.xml
+        run: phpunit --configuration phpunit.xml
