@@ -374,4 +374,27 @@ class AuthGuardTest extends BackwardCompatibleTestCase
 		$this->assertEquals($user->reveal(), $guard->user());
 		$this->assertTrue($guard->viaRemember());
 	}
+
+    public function testGetIdWhenRememberCookieExistsWillReturnIntegerIdFromCookieValue()
+    {
+        $request = Request::create('/', 'GET', [], [
+            'remember_82e5d2c56bdd0811318f0cf078b78bfc' => '123|recaller'
+        ]);
+        $user = $this->prophesize(UserInterface::class);
+        $user->getAuthIdentifier()->willReturn(123);
+
+        $this->userProvider
+            ->retrieveByToken(123, 'recaller')
+            ->willReturn($user->reveal());
+
+        $guard = new Guard(
+            $this->userProvider->reveal(),
+            $this->session->reveal(),
+            $request
+        );
+
+        $this->assertNotNull($guard->id());
+        $this->assertIsInt($guard->id());
+        $this->assertSame(123, $guard->id());
+    }
 }
