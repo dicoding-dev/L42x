@@ -380,10 +380,12 @@ class AuthGuardTest extends BackwardCompatibleTestCase
         $request = Request::create('/', 'GET', [], [
             'remember_82e5d2c56bdd0811318f0cf078b78bfc' => '123|recaller'
         ]);
+        $user = $this->prophesize(UserInterface::class);
+        $user->getAuthIdentifier()->willReturn(123);
 
-        $this->session->get('login_82e5d2c56bdd0811318f0cf078b78bfc', Argument::any())->will(function ($args) {
-            return $args[1];
-        });
+        $this->userProvider
+            ->retrieveByToken(123, 'recaller')
+            ->willReturn($user->reveal());
 
         $guard = new Guard(
             $this->userProvider->reveal(),
