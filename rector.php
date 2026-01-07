@@ -2,7 +2,13 @@
 
 declare(strict_types=1);
 
+use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\Config\RectorConfig;
+use Rector\Php83\Rector\BooleanAnd\JsonValidateRector;
+use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
+use Rector\Php83\Rector\FuncCall\CombineHostPortLdapUriRector;
+use Rector\Php83\Rector\FuncCall\DynamicClassConstFetchRector;
+use Rector\Php83\Rector\FuncCall\RemoveGetClassGetParentClassNoArgsRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -10,6 +16,10 @@ return RectorConfig::configure()
         __DIR__ . '/tests',
     ])
     ->withRules([
-        \Rector\Php83\Rector\ClassConst\AddTypeToConstRector::class,
-        \Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector::class,
+        CompleteDynamicPropertiesRector::class,
+        DynamicClassConstFetchRector::class,
+        CombineHostPortLdapUriRector::class,
+        RemoveGetClassGetParentClassNoArgsRector::class,
+        JsonValidateRector::class,
+        ReadOnlyAnonymousClassRector::class
     ]);
