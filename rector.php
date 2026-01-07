@@ -7,6 +7,7 @@ use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\BooleanAnd\JsonValidateRector;
 use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
 use Rector\Php83\Rector\ClassConst\AddTypeToConstRector;
+use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\Php83\Rector\FuncCall\CombineHostPortLdapUriRector;
 use Rector\Php83\Rector\FuncCall\DynamicClassConstFetchRector;
 use Rector\Php83\Rector\FuncCall\RemoveGetClassGetParentClassNoArgsRector;
@@ -23,5 +24,6 @@ return RectorConfig::configure()
         RemoveGetClassGetParentClassNoArgsRector::class,
         AddTypeToConstRector::class,
         JsonValidateRector::class,
-        ReadOnlyAnonymousClassRector::class
+        ReadOnlyAnonymousClassRector::class,
+        AddOverrideAttributeToOverriddenMethodsRector::class
     ]);
