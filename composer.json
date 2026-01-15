@@ -19,7 +19,7 @@
         "nesbot/carbon": "^2.71",
         "opis/closure": "~3.6",
         "pda/pheanstalk": "~4.0",
-        "predis/predis": "^1.1",
+        "predis/predis": "3.3",
         "symfony/browser-kit": "~6.4",
         "symfony/console": "~6.4",
         "symfony/css-selector": "~6.4",
@@ -35,7 +35,7 @@
         "symfony/routing": "~6.4",
         "symfony/security-core": "~6.4",
         "symfony/translation": "~6.4",
-        "voku/portable-ascii": "~1.5"
+        "voku/portable-ascii": "2.0.3"
     },
     "replace": {
         "illuminate/auth": "self.version",
