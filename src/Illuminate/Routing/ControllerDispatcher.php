@@ -28,7 +28,7 @@ class ControllerDispatcher {
 	 * @return void
 	 */
 	public function __construct(RouteFiltererInterface $filterer,
-								Container $container = null)
+								?Container $container = null)
 	{
 		$this->filterer = $filterer;
 		$this->container = $container;

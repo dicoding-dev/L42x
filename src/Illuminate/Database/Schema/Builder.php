@@ -176,7 +176,7 @@ class Builder {
 	 * @param  \Closure  $callback
 	 * @return \Illuminate\Database\Schema\Blueprint
 	 */
-	protected function createBlueprint($table, Closure $callback = null)
+	protected function createBlueprint($table, ?Closure $callback = null)
 	{
 		if (isset($this->resolver))
 		{

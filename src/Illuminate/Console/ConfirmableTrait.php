@@ -11,7 +11,7 @@ trait ConfirmableTrait {
 	 * @param  \Closure  $callback
 	 * @return bool
 	 */
-	public function confirmToProceed($warning = 'Application In Production!', Closure $callback = null)
+	public function confirmToProceed($warning = 'Application In Production!', ?Closure $callback = null)
 	{
 		$shouldConfirm = $callback ?: $this->getDefaultConfirmCallback();
 

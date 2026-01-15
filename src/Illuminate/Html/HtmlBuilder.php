@@ -20,7 +20,7 @@ class HtmlBuilder {
 	 * @param  \Illuminate\Routing\UrlGenerator  $url
 	 * @return void
 	 */
-	public function __construct(UrlGenerator $url = null)
+	public function __construct(?UrlGenerator $url = null)
 	{
 		$this->url = $url;
 	}

@@ -92,7 +92,7 @@ class RedirectResponse extends \Symfony\Component\HttpFoundation\RedirectRespons
 	 * @param  array  $input
 	 * @return $this
 	 */
-	public function withInput(array $input = null)
+	public function withInput(?array $input = null)
 	{
 		$input = $input ?: $this->request->input();
 

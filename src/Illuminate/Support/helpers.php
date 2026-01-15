@@ -893,7 +893,7 @@ if ( ! function_exists('str_replace_array'))
 	 * @param  string  $subject
 	 * @return string
 	 */
-	function str_replace_array($search, array $replace = null, string $subject = '')
+	function str_replace_array($search, ?array $replace = null, string $subject = '')
 	{
         if (empty($replace)) {
             return $subject;

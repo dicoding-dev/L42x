@@ -2670,7 +2670,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	 * @param  array  $except
 	 * @return Model
 	 */
-	public function replicate(array $except = null):Model
+	public function replicate(?array $except = null):Model
 	{
 		$except = $except ?: [
 			$this->getKeyName(),
