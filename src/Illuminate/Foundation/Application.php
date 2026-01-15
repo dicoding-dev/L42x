@@ -108,7 +108,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @param  \Illuminate\Http\Request  $request
 	 * @return void
 	 */
-	public function __construct(Request $request = null)
+	public function __construct(?Request $request = null)
 	{
 		$this->registerBaseBindings($request ?: $this->createNewRequest());
 
@@ -550,7 +550,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @param  callable  $callback
 	 * @return void
 	 */
-	public function shutdown(callable $callback = null)
+	public function shutdown(?callable $callback = null)
 	{
 		if (is_null($callback))
 		{
@@ -647,7 +647,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @param  \Symfony\Component\HttpFoundation\Request  $request
 	 * @return void
 	 */
-	public function run(SymfonyRequest $request = null)
+	public function run(?SymfonyRequest $request = null)
 	{
 		$request = $request ?: $this['request'];
 

@@ -49,7 +49,7 @@ class Writer {
 	 * @param  \Illuminate\Events\Dispatcher  $dispatcher
 	 * @return void
 	 */
-	public function __construct(MonologLogger $monolog, Dispatcher $dispatcher = null)
+	public function __construct(MonologLogger $monolog, ?Dispatcher $dispatcher = null)
 	{
 		$this->monolog = $monolog;
 

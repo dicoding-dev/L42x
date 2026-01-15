@@ -89,7 +89,7 @@ class Guard {
 	 */
 	public function __construct(UserProviderInterface $provider,
 								SessionStore $session,
-								Request $request = null)
+								?Request $request = null)
 	{
 		$this->session = $session;
 		$this->request = $request;
@@ -269,7 +269,7 @@ class Guard {
 	 * @param  \Symfony\Component\HttpFoundation\Request  $request
 	 * @return \Symfony\Component\HttpFoundation\Response|null
 	 */
-	public function basic($field = 'email', Request $request = null)
+	public function basic($field = 'email', ?Request $request = null)
 	{
 		if ($this->check()) return;
 
@@ -290,7 +290,7 @@ class Guard {
 	 * @param  \Symfony\Component\HttpFoundation\Request  $request
 	 * @return \Symfony\Component\HttpFoundation\Response|null
 	 */
-	public function onceBasic($field = 'email', Request $request = null)
+	public function onceBasic($field = 'email', ?Request $request = null)
 	{
 		$request = $request ?: $this->getRequest();
 

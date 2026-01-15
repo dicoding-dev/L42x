@@ -93,7 +93,7 @@ class PasswordBroker {
 	 * @param  \Closure  $callback
 	 * @return string
 	 */
-	public function remind(array $credentials, Closure $callback = null): string
+	public function remind(array $credentials, ?Closure $callback = null): string
 	{
 		// First we will check to see if we found a user at the given credentials and
 		// if we did not we will redirect back to this current URI with a piece of
@@ -123,7 +123,7 @@ class PasswordBroker {
 	 * @param  Closure  $callback
 	 * @return void
 	 */
-	public function sendReminder(RemindableInterface $user, string $token, Closure $callback = null): void
+	public function sendReminder(RemindableInterface $user, string $token, ?Closure $callback = null): void
 	{
 		// We will use the reminder view that was given to the broker to display the
 		// password reminder e-mail. We'll pass a "token" variable into the views
