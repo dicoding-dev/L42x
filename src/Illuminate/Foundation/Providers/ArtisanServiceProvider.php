@@ -26,11 +26,6 @@ class ArtisanServiceProvider extends ServiceProvider {
 			return new Artisan($app);
 		});
 
-		$this->app->bindShared('command.tail', function()
-		{
-			return new TailCommand;
-		});
-
 		$this->app->bindShared('command.changes', function()
 		{
 			return new ChangesCommand;
