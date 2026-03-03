@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Artisan;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Foundation\Console\TailCommand;
 use Illuminate\Foundation\Console\ChangesCommand;
 use Illuminate\Foundation\Console\EnvironmentCommand;
 
