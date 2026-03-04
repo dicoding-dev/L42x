@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Artisan;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Foundation\Console\TailCommand;
 use Illuminate\Foundation\Console\ChangesCommand;
 use Illuminate\Foundation\Console\EnvironmentCommand;
 
@@ -27,11 +26,6 @@ class ArtisanServiceProvider extends ServiceProvider {
 			return new Artisan($app);
 		});
 
-		$this->app->bindShared('command.tail', function()
-		{
-			return new TailCommand;
-		});
-
 		$this->app->bindShared('command.changes', function()
 		{
 			return new ChangesCommand;
@@ -42,7 +36,7 @@ class ArtisanServiceProvider extends ServiceProvider {
 			return new EnvironmentCommand;
 		});
 
-		$this->commands('command.tail', 'command.changes', 'command.environment');
+		$this->commands( 'command.changes', 'command.environment');
 	}
 
 	/**
