@@ -36,7 +36,7 @@ class ArtisanServiceProvider extends ServiceProvider {
 			return new EnvironmentCommand;
 		});
 
-		$this->commands('command.tail', 'command.changes', 'command.environment');
+		$this->commands( 'command.changes', 'command.environment');
 	}
 
 	/**
