@@ -148,7 +148,8 @@ class AssetPublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
+	#[\Override]
+    protected function getArguments()
 	{
 		return array(
 			array('package', InputArgument::OPTIONAL, 'The name of package being published.'),
@@ -160,7 +161,8 @@ class AssetPublishCommand extends Command {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
+	#[\Override]
+    protected function getOptions()
 	{
 		return array(
 			array('bench', null, InputOption::VALUE_OPTIONAL, 'The name of the workbench to publish.', null),

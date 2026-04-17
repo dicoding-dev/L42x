@@ -2,7 +2,15 @@
 
 declare(strict_types=1);
 
+use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\Config\RectorConfig;
+use Rector\Php83\Rector\BooleanAnd\JsonValidateRector;
+use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
+use Rector\Php83\Rector\ClassConst\AddTypeToConstRector;
+use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
+use Rector\Php83\Rector\FuncCall\CombineHostPortLdapUriRector;
+use Rector\Php83\Rector\FuncCall\DynamicClassConstFetchRector;
+use Rector\Php83\Rector\FuncCall\RemoveGetClassGetParentClassNoArgsRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -10,9 +18,12 @@ return RectorConfig::configure()
         __DIR__ . '/tests',
     ])
     ->withRules([
-        \Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector::class,
-        \Rector\Php82\Rector\FuncCall\Utf8DecodeEncodeToMbConvertEncodingRector::class,
-        \Rector\Php82\Rector\New_\FilesystemIteratorSkipDotsRector::class,
-        \Rector\Php82\Rector\Class_\ReadOnlyClassRector::class,
-        \Rector\Php82\Rector\Encapsed\VariableInStringInterpolationFixerRector::class,
+        CompleteDynamicPropertiesRector::class,
+        DynamicClassConstFetchRector::class,
+        CombineHostPortLdapUriRector::class,
+        RemoveGetClassGetParentClassNoArgsRector::class,
+        AddTypeToConstRector::class,
+        JsonValidateRector::class,
+        ReadOnlyAnonymousClassRector::class,
+        AddOverrideAttributeToOverriddenMethodsRector::class
     ]);

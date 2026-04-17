@@ -228,7 +228,8 @@ abstract class Grammar extends BaseGrammar {
 	 * @param  mixed   $table
 	 * @return string
 	 */
-	public function wrapTable($table)
+	#[\Override]
+    public function wrapTable($table)
 	{
 		if ($table instanceof Blueprint) $table = $table->getTable();
 
@@ -241,7 +242,8 @@ abstract class Grammar extends BaseGrammar {
 	 * @param  string  $value
 	 * @return string
 	 */
-	public function wrap($value)
+	#[\Override]
+    public function wrap($value)
 	{
 		if ($value instanceof Fluent) $value = $value->name;
 

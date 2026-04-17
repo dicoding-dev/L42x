@@ -29,7 +29,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  \Illuminate\Database\Query\Builder
 	 * @return string
 	 */
-	public function compileSelect(Builder $query)
+	#[\Override]
+    public function compileSelect(Builder $query)
 	{
 		$sql = parent::compileSelect($query);
 
@@ -47,7 +48,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  array  $union
 	 * @return string
 	 */
-	protected function compileUnion(array $union)
+	#[\Override]
+    protected function compileUnion(array $union)
 	{
 		$joiner = $union['all'] ? ' union all ' : ' union ';
 
@@ -61,7 +63,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  bool|string  $value
 	 * @return string
 	 */
-	protected function compileLock(Builder $query, $value)
+	#[\Override]
+    protected function compileLock(Builder $query, $value)
 	{
 		if (is_string($value)) return $value;
 
@@ -75,7 +78,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  array  $values
 	 * @return string
 	 */
-	public function compileUpdate(Builder $query, $values)
+	#[\Override]
+    public function compileUpdate(Builder $query, $values)
 	{
 		$sql = parent::compileUpdate($query, $values);
 
@@ -98,7 +102,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  \Illuminate\Database\Query\Builder  $query
 	 * @return string
 	 */
-	public function compileDelete(Builder $query)
+	#[\Override]
+    public function compileDelete(Builder $query)
 	{
 		$table = $this->wrapTable($query->from);
 
@@ -120,7 +125,8 @@ class MySqlGrammar extends Grammar {
 	 * @param  string  $value
 	 * @return string
 	 */
-	protected function wrapValue($value)
+	#[\Override]
+    protected function wrapValue($value)
 	{
 		if ($value === '*') return $value;
 

@@ -204,7 +204,8 @@ class MigrationServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	#[\Override]
+    public function provides()
 	{
 		return array(
 			'migrator', 'migration.repository', 'command.migrate',

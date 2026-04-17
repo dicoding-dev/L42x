@@ -249,7 +249,8 @@ class Translator extends NamespacedItemResolver implements TranslatorInterface {
 	 * @param  string  $key
 	 * @return array
 	 */
-	public function parseKey($key)
+	#[\Override]
+    public function parseKey($key)
 	{
 		$segments = parent::parseKey($key);
 

@@ -11,7 +11,8 @@ class Client extends HttpKernelBrowser {
 	 *
 	 * @param  \Symfony\Component\BrowserKit\Request  $request
 	 */
-	protected function filterRequest(DomRequest $request): \Symfony\Component\HttpFoundation\Request
+	#[\Override]
+    protected function filterRequest(DomRequest $request): \Symfony\Component\HttpFoundation\Request
     {
 		$httpRequest = Application::onRequest('create', $this->getRequestParameters($request));
 

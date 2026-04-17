@@ -65,7 +65,8 @@ class Pivot extends Model {
 	 *
 	 * @return Builder
 	 */
-	protected function setKeysForSaveQuery(Builder $query): Builder
+	#[\Override]
+    protected function setKeysForSaveQuery(Builder $query): Builder
 	{
 		$query->where($this->foreignKey, $this->getAttribute($this->foreignKey));
 
@@ -77,7 +78,8 @@ class Pivot extends Model {
 	 *
 	 * @return int
 	 */
-	public function delete(): ?bool
+	#[\Override]
+    public function delete(): ?bool
 	{
 		return $this->getDeleteQuery()->delete();
 	}
@@ -101,7 +103,8 @@ class Pivot extends Model {
 	 *
 	 * @return string
 	 */
-	public function getForeignKey(): string
+	#[\Override]
+    public function getForeignKey(): string
 	{
 		return $this->foreignKey;
 	}
@@ -147,7 +150,8 @@ class Pivot extends Model {
 	 *
 	 * @return string
 	 */
-	public function getCreatedAtColumn(): string
+	#[\Override]
+    public function getCreatedAtColumn(): string
 	{
 		return $this->parent->getCreatedAtColumn();
 	}
@@ -157,7 +161,8 @@ class Pivot extends Model {
 	 *
 	 * @return string
 	 */
-	public function getUpdatedAtColumn(): string
+	#[\Override]
+    public function getUpdatedAtColumn(): string
 	{
 		return $this->parent->getUpdatedAtColumn();
 	}

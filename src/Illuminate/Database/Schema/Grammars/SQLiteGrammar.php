@@ -197,7 +197,8 @@ class SQLiteGrammar extends Grammar {
 	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
-	public function compileForeign(Blueprint $blueprint, Fluent $command)
+	#[\Override]
+    public function compileForeign(Blueprint $blueprint, Fluent $command)
 	{
 		// Handled on table creation...
 	}
