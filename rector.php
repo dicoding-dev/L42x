@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\Config\RectorConfig;
+use Rector\Php84\Rector\FuncCall\AddEscapeArgumentRector;
 use Rector\ValueObject\PhpVersion;
 use Rector\Php83\Rector\BooleanAnd\JsonValidateRector;
 use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
@@ -27,5 +28,6 @@ return RectorConfig::configure()
         AddTypeToConstRector::class,
         JsonValidateRector::class,
         ReadOnlyAnonymousClassRector::class,
-        AddOverrideAttributeToOverriddenMethodsRector::class
+        AddOverrideAttributeToOverriddenMethodsRector::class,
+        AddEscapeArgumentRector::class
     ]);

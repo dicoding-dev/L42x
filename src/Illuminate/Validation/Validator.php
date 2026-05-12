@@ -2082,7 +2082,7 @@ class Validator implements MessageProviderInterface {
 	{
 		if (strtolower($rule) == 'regex') return array($parameter);
 
-		return str_getcsv($parameter);
+		return str_getcsv($parameter, escape: '\\');
 	}
 
 	/**
