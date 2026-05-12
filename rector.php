@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\Config\RectorConfig;
 use Rector\Php84\Rector\Param\ExplicitNullableParamTypeRector;
+use Rector\Php84\Rector\FuncCall\AddEscapeArgumentRector;
 use Rector\ValueObject\PhpVersion;
 use Rector\Php83\Rector\BooleanAnd\JsonValidateRector;
 use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
@@ -29,5 +30,6 @@ return RectorConfig::configure()
         JsonValidateRector::class,
         ReadOnlyAnonymousClassRector::class,
         AddOverrideAttributeToOverriddenMethodsRector::class,
-        ExplicitNullableParamTypeRector::class
+        ExplicitNullableParamTypeRector::class,
+        AddEscapeArgumentRector::class
     ]);
