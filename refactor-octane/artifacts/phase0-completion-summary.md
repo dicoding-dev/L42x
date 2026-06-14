@@ -1,12 +1,21 @@
-# Phase 0 Octane Sandbox Refactor Summary
+# Phase 0/1 Octane Sandbox Refactor Summary
 
 ## Verdict
 
-**GO** means the in-process feasibility spike passed the Phase 0 gate. The L42x clone-per-request sandbox model booted, cloned, re-pointed shared services, ran through the stacked kernel, and completed the cross-request leak probes without a blocking failure.
+**GO** means the in-process feasibility spike passed the Phase 0 gate after the required Phase 1 L42x framework refactor was landed. The L42x clone-per-request sandbox model booted, cloned, re-pointed shared services, ran through the stacked kernel, and completed the cross-request leak probes without a blocking failure.
 
 This is not a production-ready verdict. It means the framework-side prerequisites are viable enough for the package-side worker and sandbox preparer work to proceed. Remaining runtime concerns are documented as residual risk in `refactor-octane/artifacts/spike/RESULT.md`.
 
 ## Completed Jobs
+
+The PLAN's Phase 1 section maps to these completed L42x jobs:
+
+- PLAN 1.1 -> Job 10: `Container::bindShared()` clone-isolation fix.
+- PLAN 1.2 -> Job 11: `Application::__clone()` self-reference fix.
+- PLAN 1.3 -> Job 12: re-point setters for managers, router, validator, and cookies.
+- PLAN 1.4 -> Job 13: worker-safety hooks, reachable stacked kernel, and `Str::flushCache()`.
+
+The only PLAN 1.4 item not implemented in L42x is the event-dispatch shim. Job 13 explicitly ruled that out for this repository because D4 belongs package-side; L42x already has string-keyed `Dispatcher::fire()`.
 
 ### Job 00 - runtime hygiene
 
@@ -167,6 +176,6 @@ Residual risks:
 
 ## Current State
 
-Framework-side Phase 0 jobs are complete. Code changes are committed through Job 13. Job 01 and Job 20 artifacts remain uncommitted because their job specs forbade git operations during those jobs.
+Framework-side Phase 0 and Phase 1 work for this L42x repository is complete. Code changes are committed through Job 13. Job 01 and Job 20 artifacts remain uncommitted because their job specs forbade git operations during those jobs.
 
 Remaining package-side work should consume the GO result and implement the production worker/sandbox preparer outside this repository.
