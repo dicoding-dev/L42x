@@ -1764,6 +1764,24 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 	}
 
 	/**
+	 * Set the container instance on the router and invalidate the cached ControllerDispatcher.
+	 *
+	 * The dispatcher is rebuilt lazily on the next getControllerDispatcher() call,
+	 * so after this setter the next controller dispatch resolves from $container,
+	 * not from the base container that was current when the router was booted.
+	 *
+	 * @param  \Illuminate\Container\Container  $container
+	 * @return $this
+	 */
+	public function setContainer(Container $container)
+	{
+		$this->container = $container;
+		$this->controllerDispatcher = null;
+
+		return $this;
+	}
+
+	/**
 	 * Get a controller inspector instance.
 	 *
 	 * @return ControllerInspector

@@ -129,6 +129,21 @@ class CookieJar {
 	}
 
 	/**
+	 * Flush all queued cookies for the current request cycle.
+	 *
+	 * Clears in place because Guards hold a reference to this instance via
+	 * setCookieJar(), and those references must remain valid.
+	 *
+	 * @return $this
+	 */
+	public function flushQueuedCookies()
+	{
+		$this->queued = array();
+
+		return $this;
+	}
+
+	/**
 	 * Get the path and domain, or the default values.
 	 *
 	 * @param  string  $path
