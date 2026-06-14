@@ -75,6 +75,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $middlewares = array();
 
 	/**
+	 * Indicates whether the application is running inside a long-lived Octane worker.
+	 *
+	 * @var bool
+	 */
+	protected $inOctane = false;
+
+	/**
 	 * All of the registered service providers.
 	 *
 	 * @var array
@@ -675,6 +682,49 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->mergeCustomMiddlewares($client);
 
 		return $client->resolve($this);
+	}
+
+	/**
+	 * Handle the given request through the full stacked HTTP kernel and return the
+	 * response without sending it.
+	 *
+	 * For long-lived workers that capture output themselves and own the try/catch
+	 * plus terminate lifecycle. Mirrors run() minus send() and terminate().
+	 *
+	 * @param  \Symfony\Component\HttpFoundation\Request  $request
+	 * @param  bool  $catch
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 *
+	 * @throws \Throwable
+	 */
+	public function handleOctaneRequest(SymfonyRequest $request, $catch = false): SymfonyResponse
+	{
+		$stack = $this->getStackedClient();
+
+		return $stack->handle($request, HttpKernelInterface::MAIN_REQUEST, $catch);
+	}
+
+	/**
+	 * Determine if the application is running inside an Octane worker.
+	 *
+	 * @return bool
+	 */
+	public function runningInOctane()
+	{
+		return $this->inOctane;
+	}
+
+	/**
+	 * Flag the application as running inside an Octane worker, or clear the flag.
+	 *
+	 * @param  bool  $value
+	 * @return $this
+	 */
+	public function setRunningInOctane($value = true)
+	{
+		$this->inOctane = $value;
+
+		return $this;
 	}
 
     /**

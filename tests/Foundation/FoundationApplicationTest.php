@@ -5,6 +5,7 @@ use Illuminate\Http\FrameGuard;
 use Illuminate\Support\ServiceProvider;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 class FoundationApplicationTest extends BackwardCompatibleTestCase
@@ -206,6 +207,95 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 		$this->assertNull($exception,
 			'clone $app must not throw when $tags has never been initialized; got: '
 			. ($exception ? $exception->getMessage() : ''));
+	}
+
+	public function testHandleOctaneRequestRunsStackAndReturnsUnsentResponse()
+	{
+		$app = $this->newOctaneApplication($jar);
+		$expected = new Response('octane');
+		$app['router']->shouldReceive('dispatch')->once()->andReturn($expected);
+
+		$jar->queue($jar->make('octane_probe', 'v'));
+
+		$response = $app->handleOctaneRequest(SymfonyRequest::create('/octane', 'GET'));
+
+		$this->assertInstanceOf(Response::class, $response);
+		$this->assertSame($expected, $response);
+		$this->assertTrue($this->responseHasCookie($response, 'octane_probe'));
+	}
+
+	public function testBareHandleDoesNotRunQueuedCookieStack()
+	{
+		$app = $this->newOctaneApplication($jar);
+		$expected = new Response('bare');
+		$app['router']->shouldReceive('dispatch')->once()->andReturn($expected);
+
+		$jar->queue($jar->make('octane_probe', 'v'));
+
+		$response = $app->handle(SymfonyRequest::create('/octane', 'GET'));
+
+		$this->assertSame($expected, $response);
+		$this->assertFalse($this->responseHasCookie($response, 'octane_probe'));
+	}
+
+	public function testRunningInOctaneDefaultsFalseAndClonesByValue()
+	{
+		$app = new Application;
+
+		$this->assertFalse($app->runningInOctane());
+
+		$cloneBefore = clone $app;
+
+		$this->assertSame($app, $app->setRunningInOctane());
+		$this->assertTrue($app->runningInOctane());
+		$this->assertFalse($cloneBefore->runningInOctane());
+
+		$cloneAfter = clone $app;
+		$this->assertTrue($cloneAfter->runningInOctane());
+
+		$app->setRunningInOctane(false);
+		$this->assertFalse($app->runningInOctane());
+		$this->assertTrue($cloneAfter->runningInOctane());
+	}
+
+	private function newOctaneApplication(&$jar)
+	{
+		$app = new Application;
+		$jar = new Illuminate\Cookie\CookieJar;
+
+		$app['env'] = 'temporarilynottesting';
+		$app['config'] = array(
+			'app.manifest' => sys_get_temp_dir(),
+			'session.driver' => null,
+			'session' => array(
+				'driver' => null,
+				'cookie' => 'laravel_session',
+				'lottery' => array(0, 100),
+				'path' => '/',
+				'domain' => null,
+				'lifetime' => 120,
+				'expire_on_close' => false,
+			),
+		);
+		$app['encrypter'] = new Illuminate\Encryption\Encrypter(str_repeat('a', 32));
+		$app['cookie'] = $jar;
+		$app['session'] = new Illuminate\Session\SessionManager($app);
+		$app['router'] = m::mock('StdClass');
+
+		return $app;
+	}
+
+	private function responseHasCookie(Response $response, $name)
+	{
+		foreach ($response->headers->getCookies() as $cookie)
+		{
+			if ($cookie->getName() === $name)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
 
