@@ -17,6 +17,69 @@ The PLAN's Phase 1 section maps to these completed L42x jobs:
 
 The only PLAN 1.4 item not implemented in L42x is the event-dispatch shim. Job 13 explicitly ruled that out for this repository because D4 belongs package-side; L42x already has string-keyed `Dispatcher::fire()`.
 
+## Running The Container
+
+This branch uses a repo-local PHP 8.3 Docker runner so it does not depend on the older root `Dockerfile` flow from the package repo.
+
+Files:
+
+- `Dockerfile.octane-sandbox`
+- `execute-octane-sandbox`
+
+Docker names:
+
+- Image: `l42x-octane-sandbox`
+- Container: `l42x-octane-sandbox-dev`
+
+Common commands:
+
+```sh
+make composer-test
+```
+
+Runs the full PHPUnit suite through:
+
+```sh
+./execute-octane-sandbox composer-test
+```
+
+Run a targeted PHPUnit file:
+
+```sh
+./execute-octane-sandbox ai:test tests/Container/ContainerBindSharedTest.php
+```
+
+Run arbitrary PHP inside the same container:
+
+```sh
+./execute-octane-sandbox php -v
+```
+
+Open a shell in the container:
+
+```sh
+./execute-octane-sandbox bash
+```
+
+Run the feasibility spike:
+
+```sh
+./execute-octane-sandbox php refactor-octane/artifacts/spike/spike.php
+```
+
+Expected spike result:
+
+```text
+RESULT.md written: GO
+```
+
+Notes:
+
+- The wrapper builds the image if needed.
+- The repository is mounted at `/app`.
+- Composer may print a harmless "dubious ownership" warning from inside Docker; PHPUnit still exits green.
+- The root `Dockerfile` was intentionally left untouched.
+
 ### Job 00 - runtime hygiene
 
 Committed:
