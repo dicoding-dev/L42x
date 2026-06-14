@@ -1156,4 +1156,26 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		}
 	}
 
+	/**
+	 * Re-point the container's self-reference bindings at the clone.
+	 *
+	 * After a shallow clone the $instances array is copied by value (independent),
+	 * but the two self-reference handles still point at the base app.  Fix them here
+	 * so that clone $app produces a fully self-referential sandbox.
+	 *
+	 * IMPORTANT: do NOT touch $this->tags - it is an uninitialized typed property
+	 * (Container::$tags, declared as `private array $tags;` with no default) and
+	 * accessing it before tag() is called fatals under PHP 8.3.
+	 *
+	 * Do NOT call Facade::setFacadeApplication() or Container::setInstance() here -
+	 * those static swaps belong in the worker swap protocol (spec section 10), not in
+	 * __clone, so that a bare `clone $app` expression stays side-effect-free.
+	 */
+	public function __clone()
+	{
+		// Re-point the container's self-bindings at the clone (they pointed at the base app).
+		$this->instances['app'] = $this;
+		$this->instances['Illuminate\Container\Container'] = $this;
+	}
+
 }

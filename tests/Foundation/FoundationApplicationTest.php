@@ -159,6 +159,54 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
         $this->assertFalse($app->environment('qux', 'bar'));
         $this->assertFalse($app->environment(['qux', 'bar']));
     }
+
+	public function testCloneSelfReferenceAppKey()
+	{
+		$base = new Application;
+		$base->instance('app', $base);
+
+		$clone = clone $base;
+
+		$this->assertSame($clone, $clone['app'],
+			'clone[\'app\'] must resolve to the clone, not the base');
+		$this->assertSame($base, $base['app'],
+			'base[\'app\'] must still resolve to the base after cloning');
+		$this->assertNotSame($base, $clone['app'],
+			'clone[\'app\'] must not point at the base app');
+	}
+
+	public function testCloneSelfReferenceContainerKey()
+	{
+		$base = new Application;
+		$base->instance('Illuminate\Container\Container', $base);
+
+		$clone = clone $base;
+
+		$this->assertSame($clone, $clone['Illuminate\Container\Container'],
+			'clone[Container] must resolve to the clone');
+		$this->assertSame($base, $base['Illuminate\Container\Container'],
+			'base[Container] must still resolve to the base after cloning');
+	}
+
+	public function testCloneDoesNotFatalOnUninitializedTags()
+	{
+		// An Application that has never called tag() has an uninitialized
+		// $tags typed property (Container.php:108).  Cloning must not read
+		// or write it, otherwise PHP 8.3 throws a fatal.
+		$base = new Application;
+		// Do NOT call $base->tag() - leave $tags uninitialized.
+
+		$exception = null;
+		try {
+			$clone = clone $base;
+		} catch (\Throwable $e) {
+			$exception = $e;
+		}
+
+		$this->assertNull($exception,
+			'clone $app must not throw when $tags has never been initialized; got: '
+			. ($exception ? $exception->getMessage() : ''));
+	}
 }
 
 class ApplicationCustomExceptionHandlerStub extends Illuminate\Foundation\Application {
