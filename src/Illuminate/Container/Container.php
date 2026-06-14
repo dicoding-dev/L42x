@@ -408,7 +408,7 @@ class Container implements ArrayAccess, ContainerInterface {
 	 */
 	public function bindShared($abstract, Closure $closure): void
     {
-		$this->bind($abstract, $this->share($closure), true);
+		$this->bind($abstract, $closure, true);
 	}
 
     /**
