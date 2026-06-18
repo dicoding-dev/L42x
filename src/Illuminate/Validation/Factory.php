@@ -69,7 +69,7 @@ class Factory {
 	 * @param  \Illuminate\Container\Container  $container
 	 * @return void
 	 */
-	public function __construct(TranslatorInterface $translator, Container $container = null)
+	public function __construct(TranslatorInterface $translator, ?Container $container = null)
 	{
 		$this->container = $container;
 		$this->translator = $translator;

@@ -13,7 +13,7 @@ class Starter {
 	 * @param  \Illuminate\Filesystem\Filesystem  $files
 	 * @return void
 	 */
-	public static function start($path, Finder $finder = null, Filesystem $files = null)
+	public static function start($path, ?Finder $finder = null, ?Filesystem $files = null)
 	{
 		$finder = $finder ?: new Finder;
 

@@ -38,7 +38,7 @@ class Middleware implements HttpKernelInterface {
 	 * @param  \Closure|null  $reject
 	 * @return void
 	 */
-	public function __construct(HttpKernelInterface $app, SessionManager $manager, Closure $reject = null)
+	public function __construct(HttpKernelInterface $app, SessionManager $manager, ?Closure $reject = null)
 	{
 		$this->app = $app;
 		$this->reject = $reject;
@@ -238,7 +238,7 @@ class Middleware implements HttpKernelInterface {
 	 * @param  array|null  $config
 	 * @return bool
 	 */
-	protected function sessionIsPersistent(array $config = null)
+	protected function sessionIsPersistent(?array $config = null)
 	{
 		// Some session drivers are not persistent, such as the test array driver or even
 		// when the developer don't have a session driver configured at all, which the

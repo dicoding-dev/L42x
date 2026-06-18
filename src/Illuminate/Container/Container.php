@@ -126,7 +126,7 @@ class Container implements ArrayAccess, ContainerInterface {
      *
      * @param  Container|null  $container
      */
-    public static function setInstance(Container $container = null): ?Container
+    public static function setInstance(?Container $container = null): ?Container
     {
         return static::$instance = $container;
     }
@@ -1169,7 +1169,7 @@ class Container implements ArrayAccess, ContainerInterface {
      * @param  \Closure|null  $callback
      * @return void
      */
-    public function beforeResolving($abstract, Closure $callback = null)
+    public function beforeResolving($abstract, ?Closure $callback = null)
     {
         if (is_string($abstract)) {
             $abstract = $this->getAlias($abstract);
@@ -1189,7 +1189,7 @@ class Container implements ArrayAccess, ContainerInterface {
 	 * @param  \Closure  $callback
 	 * @return void
 	 */
-	public function resolving($abstract, Closure $callback = null): void
+	public function resolving($abstract, ?Closure $callback = null): void
     {
         if (is_string($abstract)) {
             $abstract = $this->getAlias($abstract);
@@ -1212,7 +1212,7 @@ class Container implements ArrayAccess, ContainerInterface {
      * @param  \Closure|null  $callback
      * @return void
      */
-    public function afterResolving($abstract, Closure $callback = null)
+    public function afterResolving($abstract, ?Closure $callback = null)
     {
         if (is_string($abstract)) {
             $abstract = $this->getAlias($abstract);

@@ -72,7 +72,7 @@ class View implements ArrayAccess, Renderable
      * @param  \Closure  $callback
      * @return string
      */
-    public function render(Closure $callback = null)
+    public function render(?Closure $callback = null)
     {
         try {
             $contents = $this->renderContents();

@@ -88,7 +88,7 @@ class IronQueue extends Queue implements QueueInterface {
 	 * @param  int     $delay
 	 * @return mixed
 	 */
-	public function recreate($payload, $queue = null, $delay)
+	public function recreate($payload, $queue = null, $delay = 0)
 	{
 		$options = array('delay' => $this->getSeconds($delay));
 

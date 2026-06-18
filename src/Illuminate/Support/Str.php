@@ -67,7 +67,7 @@ class Str
      *
      * @return bool
      */
-	public static function contains(?string $haystack = null, array|string $needles = null): bool
+	public static function contains(?string $haystack = null, array|string|null $needles = null): bool
     {
         if (empty($haystack) || empty($needles)) {
             return false;

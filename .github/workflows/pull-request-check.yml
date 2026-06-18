@@ -29,3 +29,41 @@ jobs:
 
       - name: Running unit test
         run: vendor/bin/phpunit --configuration phpunit.xml
+
+  php84-syntax-check:
+    name: PHP 8.4 syntax compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Install dependencies
+        env:
+          COMPOSER_CACHE_DIR: /tmp/composer-cache
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run Rector dry-run on changed PHP files
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.php')
+          if [ -z "$CHANGED" ]; then
+            echo "No PHP files changed."
+            exit 0
+          fi
+          echo "Changed PHP files:"
+          echo "$CHANGED"
+          vendor/bin/rector process --dry-run --no-progress-bar $CHANGED

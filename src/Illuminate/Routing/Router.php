@@ -118,7 +118,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 	 *
 	 * @return void
 	 */
-	public function __construct(Dispatcher $events, Container $container = null)
+	public function __construct(Dispatcher $events, ?Container $container = null)
 	{
 		$this->events = $events;
 		$this->routes = new RouteCollection;
@@ -1241,7 +1241,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 	 *
 	 * @throws NotFoundHttpException
 	 */
-	public function model($key, $class, Closure $callback = null)
+	public function model($key, $class, ?Closure $callback = null)
 	{
 		$this->bind($key, function($value) use ($class, $callback)
 		{
