@@ -99,6 +99,39 @@ class DatabaseManager implements ConnectionResolverInterface {
 	}
 
 	/**
+	 * Set the application instance used by the database manager.
+	 *
+	 * Called by the Octane worker to re-point the shared manager at the per-request sandbox.
+	 *
+	 * @param  \Illuminate\Foundation\Application  $app
+	 * @return $this
+	 */
+	public function setApplication($app)
+	{
+		$this->app = $app;
+
+		return $this;
+	}
+
+	/**
+	 * Disconnect and forget all resolved database connections.
+	 *
+	 * Delegates to the existing purge() method, which calls disconnect() and unset.
+	 * Preserves $factory and $extensions (both are app-lifetime, not per-request).
+	 *
+	 * @return $this
+	 */
+	public function forgetConnections()
+	{
+		foreach (array_keys($this->connections) as $name)
+		{
+			$this->purge($name);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Disconnect from the given database.
 	 *
 	 * @param  string  $name
