@@ -1,4 +1,4 @@
-<?php namespace MaartenStaa\Routing;
+<?php
 
 /**
  * Copyright (c) 2015 by Maarten Staa.
@@ -34,26 +34,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use Illuminate\CachedRouting\Router;
+use Illuminate\CachedRouting\RoutingServiceProvider;
 use Illuminate\Foundation\Application;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \MaartenStaa\Routing\RoutingServiceProvider
+ * @coversDefaultClass \Illuminate\CachedRouting\RoutingServiceProvider
  */
-class RoutingServiceProviderTest extends \PHPUnit_Framework_TestCase
+class RoutingServiceProviderTest extends TestCase
 {
     /**
      * The Illuminate application instance.
-     *
-     * @var \Illuminate\Foundation\Application
      */
-    protected $app;
+    protected ?Application $app = null;
 
     /**
      * Setup the test environment.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp(): void
     {
         if ($this->app === null) {
             $this->refreshApplication();
@@ -65,7 +66,7 @@ class RoutingServiceProviderTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    protected function refreshApplication()
+    protected function refreshApplication(): void
     {
         $this->app = $this->createApplication();
 
@@ -76,23 +77,21 @@ class RoutingServiceProviderTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Creates the application.
-     *
-     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
      */
-    public function createApplication()
+    public function createApplication(): Application
     {
-        return new Application;
+        return new Application();
     }
 
     /**
      * @covers ::register
      * @covers ::registerRouter
      */
-    public function testRegister()
+    public function testRegister(): void
     {
         $provider = new RoutingServiceProvider($this->app);
         $provider->register();
 
-        $this->assertInstanceOf('MaartenStaa\Routing\Router', $this->app->router);
+        static::assertInstanceOf(Router::class, $this->app->router);
     }
 }

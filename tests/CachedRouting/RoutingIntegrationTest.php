@@ -1,4 +1,4 @@
-<?php namespace MaartenStaa\Routing;
+<?php
 
 /**
  * Copyright (c) 2015 by Maarten Staa.
@@ -35,27 +35,26 @@
  */
 
 use Illuminate\Cache\CacheManager;
+use Illuminate\CachedRouting\Router;
 use Illuminate\Config\Repository;
 use Illuminate\Foundation\Application;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Facade;
-use Symfony\Component\HttpKernel\Client;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\HttpKernelBrowser;
 
-class IntegrationTest extends \PHPUnit_Framework_TestCase
+class RoutingIntegrationTest extends TestCase
 {
     /**
      * The Illuminate application instance.
-     *
-     * @var \Illuminate\Foundation\Application
      */
-    protected $app;
+    protected ?Application $app = null;
 
     /**
      * Setup the test environment.
-     *
-     * @return void
      */
-    public function setUp()
+    protected function setUp(): void
     {
         if ($this->app === null) {
             $this->refreshApplication();
@@ -64,10 +63,8 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Refresh the application instance.
-     *
-     * @return void
      */
-    protected function refreshApplication()
+    protected function refreshApplication(): void
     {
         $this->app = $this->createApplication();
 
@@ -77,21 +74,12 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
         $this->app['path.storage'] = __DIR__;
 
-        $loader = $this->getMockBuilder('Illuminate\Config\LoaderInterface')
-            ->setMethods(array('load', 'exists', 'getNamespaces', 'cascadePackage'))
-            ->getMockForAbstractClass();
+        $loader = $this->createMock('Illuminate\Config\LoaderInterface');
 
-        $loader->method('load')
-            ->will($this->returnValue(array()));
-
-        $loader->method('exists')
-            ->will($this->returnValue(true));
-
-        $loader->method('getNamespaces')
-            ->will($this->returnValue(array()));
-
-        $loader->method('cascadePackage')
-            ->will($this->returnValue(array()));
+        $loader->method('load')->willReturn([]);
+        $loader->method('exists')->willReturn(true);
+        $loader->method('getNamespaces')->willReturn([]);
+        $loader->method('cascadePackage')->willReturn([]);
 
         $this->app['config'] = new Repository($loader, $this->app['env']);
 
@@ -107,36 +95,29 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Creates the application.
-     *
-     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
      */
-    protected function createApplication()
+    protected function createApplication(): Application
     {
-        return new Application;
+        return new Application();
     }
 
     /**
      * Create a router.
-     *
-     * @return Router
      */
-    protected function getRouter()
+    protected function getRouter(): Router
     {
         return new Router($this->app['events'], $this->app);
     }
 
     /**
      * Create a new HttpKernel client instance.
-     *
-     * @param  array  $server
-     * @return \Symfony\Component\HttpKernel\Client
      */
-    protected function createClient(array $server = array())
+    protected function createClient(array $server = array()): HttpKernelBrowser
     {
-        return new Client($this->app, $server);
+        return new HttpKernelBrowser($this->app, $server);
     }
 
-    public function testCacheRoutes()
+    public function testCacheRoutes(): void
     {
         $router = $this->getRouter();
 
@@ -144,23 +125,23 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
             $router->get('/', 'HomeController@actionIndex');
         });
 
-        $this->assertTrue($this->app->cache->has($key), 'Routes must be in cache');
-        $this->assertEquals(1, $router->getRoutes()->count(), 'Routes must be in collection');
+        static::assertTrue($this->app->cache->has($key), 'Routes must be in cache');
+        static::assertEquals(1, $router->getRoutes()->count(), 'Routes must be in collection');
 
         $cachedRoutes = unserialize($this->app->cache->get($key));
-        $this->assertArrayHasKey('routes', $cachedRoutes);
-        $this->assertArrayHasKey('GET', $cachedRoutes['routes']);
-        $this->assertCount(1, $cachedRoutes['routes']['GET']);
+        static::assertArrayHasKey('routes', $cachedRoutes);
+        static::assertArrayHasKey('GET', $cachedRoutes['routes']);
+        static::assertCount(1, $cachedRoutes['routes']['GET']);
 
         // Next request should not call the callback.
         $router = $this->getRouter();
         $router->cache(__FILE__, function () use ($router) {
-            throw new Exception('This should not be called');
+            throw new RuntimeException('This should not be called');
         });
-        $this->assertEquals(1, $router->getRoutes()->count(), 'Routes must be obtained from cache');
+        static::assertEquals(1, $router->getRoutes()->count(), 'Routes must be obtained from cache');
     }
 
-    public function testCacheRoutesNoTtl()
+    public function testCacheRoutesNoTtl(): void
     {
         $router = $this->getRouter();
 
@@ -168,14 +149,14 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
             $router->get('/', 'HomeController@actionIndex');
         }, 0);
 
-        $this->assertNull($key, 'Cache key should be null with TTL=0');
-        $this->assertFalse($this->app->cache->has($key), 'Key should not be stored in cache');
-        $this->assertEquals(1, $router->getRoutes()->count(), 'Route must be added to router');
+        static::assertNull($key, 'Cache key should be null with TTL=0');
+        static::assertFalse($this->app->cache->has($key), 'Key should not be stored in cache');
+        static::assertEquals(1, $router->getRoutes()->count(), 'Route must be added to router');
     }
 
-    public function testAllMethodsWorks()
+    public function testAllMethodsWorks(): void
     {
-        $methods = array('get', 'post', 'put', 'patch', 'delete');
+        $methods = ['get', 'post', 'put', 'patch', 'delete'];
 
         $router = $this->getRouter();
 
@@ -185,26 +166,26 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
             }
         });
 
-        $this->assertTrue($this->app->cache->has($key), 'Routes must be in cache');
-        $this->assertEquals(count($methods), $router->getRoutes()->count(), 'Routes must be in collection');
+        static::assertTrue($this->app->cache->has($key), 'Routes must be in cache');
+        static::assertEquals(count($methods), $router->getRoutes()->count(), 'Routes must be in collection');
 
         $cachedRoutes = unserialize($this->app->cache->get($key));
-        $this->assertArrayHasKey('routes', $cachedRoutes);
+        static::assertArrayHasKey('routes', $cachedRoutes);
 
         foreach ($methods as $method) {
-            $this->assertArrayHasKey(strtoupper($method), $cachedRoutes['routes']);
-            $this->assertCount(1, $cachedRoutes['routes'][strtoupper($method)]);
+            static::assertArrayHasKey(strtoupper($method), $cachedRoutes['routes']);
+            static::assertCount(1, $cachedRoutes['routes'][strtoupper($method)]);
         }
 
         // Next request should not call the callback.
         $router = $this->getRouter();
         $router->cache(__FILE__, function () use ($router) {
-            throw new Exception('This should not be called');
+            throw new RuntimeException('This should not be called');
         });
-        $this->assertEquals(count($methods), $router->getRoutes()->count(), 'Routes must be obtained from cache');
+        static::assertEquals(count($methods), $router->getRoutes()->count(), 'Routes must be obtained from cache');
     }
 
-    public function testControllerRouting()
+    public function testControllerRouting(): void
     {
         $router = $this->getRouter();
 
@@ -217,19 +198,19 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
             $router->controller('/', $controllerName);
         });
 
-        $this->assertTrue($this->app->cache->has($key), 'Routes must be in cache');
+        static::assertTrue($this->app->cache->has($key), 'Routes must be in cache');
         // 2 because controller adds missingMethod
-        $this->assertEquals(2, $router->getRoutes()->count(), 'Routes must be in collection');
+        static::assertEquals(2, $router->getRoutes()->count(), 'Routes must be in collection');
 
         // Next request should not call the callback.
         $router = $this->getRouter();
         $router->cache(__FILE__, function () use ($router) {
             throw new Exception('This should not be called');
         });
-        $this->assertEquals(2, $router->getRoutes()->count(), 'Routes must be obtained from cache');
+        static::assertEquals(2, $router->getRoutes()->count(), 'Routes must be obtained from cache');
     }
 
-    public function testCanDispatchRequest()
+    public function testCanDispatchRequest(): void
     {
         // Create a controller class.
         $controllerName = str_shuffle('abcdefghijklmnopqrstuvwxyz');
@@ -248,34 +229,32 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         // Create a new router, set it on the app, and simulate a request.
         $this->app['router'] = $this->getRouter();
         $this->app['router']->cache(__FILE__, function () use ($router) {
-            throw new Exception('This should not be called');
+            throw new RuntimeException('This should not be called');
         });
 
         $client = $this->createClient();
         $client->request('get', '/');
 
         $response = $client->getResponse();
-        $this->assertInstanceOf('Symfony\Component\HttpFoundation\Response', $response);
-        $this->assertEquals(1, $response->getContent());
+        static::assertInstanceOf('Symfony\Component\HttpFoundation\Response', $response);
+        static::assertEquals(1, $response->getContent());
     }
 
-    public function testCanRouteToClosure()
+    public function testCanRouteToClosure(): void
     {
         // Create a new router, set it on the app, and simulate a request.
         $this->app['router'] = $this->getRouter();
-        $this->app['router']->get('/', function () {
-            return 1;
-        });
+        $this->app['router']->get('/', fn() => 1);
 
         $client = $this->createClient();
         $client->request('get', '/');
 
         $response = $client->getResponse();
-        $this->assertInstanceOf('Symfony\Component\HttpFoundation\Response', $response);
-        $this->assertEquals(1, $response->getContent());
+        static::assertInstanceOf('Symfony\Component\HttpFoundation\Response', $response);
+        static::assertEquals(1, $response->getContent());
     }
 
-    public function testCanGroupRoutes()
+    public function testCanGroupRoutes(): void
     {
         $router = $this->getRouter();
 
@@ -290,7 +269,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
         $router->cache(__FILE__, function () use ($controllerName, $router) {
             $router->group(
-                array('prefix' => 'grouped'),
+                ['prefix' => 'grouped'],
                 function () use ($router, $controllerName) {
                     $router->get('/', $controllerName . '@getHomePage');
                     $router->get('/dashboard', $controllerName . '@getHomePage');
@@ -299,42 +278,41 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         });
 
         // 2 routes originating from group closure
-        $this->assertEquals(2, $router->getRoutes()->count(), 'Routes must be in collection');
+        static::assertEquals(2, $router->getRoutes()->count(), 'Routes must be in collection');
 
         // Create a new router, set it on the app, and simulate a request.
         $this->app['router'] = $this->getRouter();
-        $this->app['router']->cache(__FILE__, function () use ($router) {
-            throw new Exception('This should not be called');
+        $this->app['router']->cache(__FILE__, callback: function () use ($router) {
+            throw new RuntimeException('This should not be called');
         });
 
         $client = $this->createClient();
         $client->request('GET', '/grouped/dashboard');
 
         $response = $client->getResponse();
-        $this->assertInstanceOf('Symfony\Component\HttpFoundation\Response', $response);
-        $this->assertEquals(1, $response->getContent());
+        static::assertInstanceOf('Symfony\Component\HttpFoundation\Response', $response);
+        static::assertEquals(1, $response->getContent());
     }
 
-    /**
-     * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-     */
-    public function testCanChainWheres()
+    public function testCanChainWheres(): void
     {
+        $this->expectException(NotFoundHttpException::class);
+
         $this->app['router'] = $this->getRouter();
-        $this->app['router']->get('/{foo}/{bar}', function () {
-            return 'baz';
-        })->where('foo', '\w+')->where('bar', '\d+');
+        $this->app['router']->get('/{foo}/{bar}', fn() => 'baz')
+            ->where('foo', '\w+')
+            ->where('bar', '\d+');
 
         // /herp/derp should not match above route.
         $client = $this->createClient();
+        $client->catchExceptions(false);
         $client->request('GET', '/herp/derp');
     }
 
-    /**
-     * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-     */
-    public function testWheresRetainedInCache()
+    public function testWheresRetainedInCache(): void
     {
+        $this->expectException(NotFoundHttpException::class);
+
         // Create a controller class.
         $controllerName = str_shuffle('abcdefghijklmnopqrstuvwxyz');
         eval('class ' . $controllerName . ' extends Illuminate\Routing\Controller {
@@ -351,16 +329,17 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
         // Create a new router, set it on the app, and simulate a request.
         $this->app['router'] = $this->getRouter();
-        $this->app['router']->cache(__FILE__, function () use ($router) {
-            throw new Exception('This should not be called');
+        $this->app['router']->cache(__FILE__, callback: function () use ($router) {
+            throw new RuntimeException('This should not be called');
         });
 
         // /herp/derp should not match above route.
         $client = $this->createClient();
+        $client->catchExceptions(false);
         $client->request('GET', '/herp/derp');
     }
 
-    public function testCanUseResource()
+    public function testCanUseResource(): void
     {
         // Create a controller class.
         $controllerName = str_shuffle('abcdefghijklmnopqrstuvwxyz');
@@ -372,18 +351,18 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
             $router->resource('item', $controllerName);
         });
 
-        $this->assertTrue($this->app->cache->has($key), 'Routes must be in cache');
-        $this->assertEquals(8, $router->getRoutes()->count(), 'Routes must be in collection');
+        static::assertTrue($this->app->cache->has($key), 'Routes must be in cache');
+        static::assertEquals(8, $router->getRoutes()->count(), 'Routes must be in collection');
 
         // Next request should not call the callback.
         $router = $this->getRouter();
         $router->cache(__FILE__, function () use ($router) {
-            throw new Exception('This should not be called');
+            throw new RuntimeException('This should not be called');
         });
-        $this->assertEquals(8, $router->getRoutes()->count(), 'Routes must be obtained from cache');
+        static::assertEquals(8, $router->getRoutes()->count(), 'Routes must be obtained from cache');
     }
 
-    public function testCanClearCache()
+    public function testCanClearCache(): void
     {
         // Create a controller class.
         $controllerName = str_shuffle('abcdefghijklmnopqrstuvwxyz');
@@ -394,10 +373,10 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $key = $router->cache(__FILE__, function () use ($router, $controllerName) {
             $router->get('/{foo}/{bar}', $controllerName . '@getIndex')->where('foo', '\w+')->where('bar', '\d+');
         });
-        $this->assertTrue($this->app->cache->has($key), 'Routes must be in cache');
+        static::assertTrue($this->app->cache->has($key), 'Routes must be in cache');
 
         // Next, clear it.
         $router->clearCache(__FILE__);
-        $this->assertFalse($this->app->cache->has($key), 'Routes must no longer be cached');
+        static::assertFalse($this->app->cache->has($key), 'Routes must no longer be cached');
     }
 }
