@@ -51,6 +51,7 @@ class Route extends LaravelRoute
      *
      * @return mixed
      */
+    #[\Override]
     public function run()
     {
         $app = app();
@@ -81,6 +82,7 @@ class Route extends LaravelRoute
     /**
      * Compile the route into a Symfony CompiledRoute instance.
      */
+    #[\Override]
     protected function compileRoute()
     {
         if ($this->shouldCompile() === true && $this->compiled === null) {

@@ -55,7 +55,7 @@ class Router extends LaravelRouter
      * @param \Illuminate\Events\Dispatcher        $events
      * @param \Illuminate\Container\Container|null $container
      */
-    public function __construct(Dispatcher $events, Container $container = null)
+    public function __construct(Dispatcher $events, ?Container $container = null)
     {
         parent::__construct($events, $container);
 
@@ -135,6 +135,7 @@ class Router extends LaravelRouter
      * @param  array  $action
      * @return bool
      */
+    #[\Override]
     public function routingToController($action)
     {
         return parent::routingToController($action);
@@ -146,6 +147,7 @@ class Router extends LaravelRouter
      * @param  array|string  $action
      * @return array
      */
+    #[\Override]
     protected function getControllerAction($action)
     {
         if (is_string($action) === true) {
@@ -190,6 +192,7 @@ class Router extends LaravelRouter
      * @param  mixed   $action
      * @return \Illuminate\Routing\Route
      */
+    #[\Override]
     protected function createRoute($methods, $uri, $action)
     {
         // If the route is routing to a controller we will parse the route action into
@@ -225,6 +228,7 @@ class Router extends LaravelRouter
      * @param  mixed                     $action
      * @return \Illuminate\Routing\Route
      */
+    #[\Override]
     protected function newRoute($methods, $uri, $action)
     {
         return new Route($methods, $uri, $action);
@@ -236,6 +240,7 @@ class Router extends LaravelRouter
      * @param  \Illuminate\Routing\Route  $route
      * @return \Illuminate\Routing\Route
      */
+    #[\Override]
     protected function addWhereClausesToRoute($route)
     {
         $route->where(
