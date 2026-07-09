@@ -7,3 +7,4 @@ Thumbs.db
 .phpunit.result.cache
 .direnv
 .envrc
+.devenv
