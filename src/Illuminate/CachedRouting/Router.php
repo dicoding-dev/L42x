@@ -47,7 +47,7 @@ class Router extends LaravelRouter
      *
      * @var string
      */
-    protected $cacheVersion = 'v1';
+    protected $cacheVersion = 'v2';
 
     /**
      * Create a new Router instance.
