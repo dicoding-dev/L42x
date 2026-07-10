@@ -234,4 +234,20 @@ class Factory {
 		$this->verifier = $presenceVerifier;
 	}
 
+	/**
+	 * Set the IoC container instance.
+	 *
+	 * Required when re-pointing the shared validator factory at the per-request sandbox,
+	 * so class-based rule extensions resolve from the current sandbox's container.
+	 *
+	 * @param  \Illuminate\Container\Container  $container
+	 * @return $this
+	 */
+	public function setContainer(Container $container)
+	{
+		$this->container = $container;
+
+		return $this;
+	}
+
 }
