@@ -154,7 +154,7 @@ class Repository extends NamespacedItemResolver implements ArrayAccess {
 		// If we've already loaded this collection, we will just bail out since we do
 		// not want to load it again. Once items are loaded a first time they will
 		// stay kept in memory within this class and not loaded from disk again.
-		if (isset($this->afterLoad[$namespace]))
+		if ( ! is_null($namespace) && isset($this->afterLoad[$namespace]))
 		{
 			$items = $this->callAfterLoad($namespace, $group, $items);
 		}
