@@ -149,7 +149,7 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 			return count($this->items) > 0 ? reset($this->items) : null;
 		}
 
-		return array_first($this->items, $callback, $default);
+		return Arr::first($this->items, $callback, $default);
 	}
 
 	/**
@@ -212,7 +212,7 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
 
 		foreach ($this->items as $key => $value)
 		{
-			$results[$this->getGroupByKey($groupBy, $key, $value)][] = $value;
+			$results[$this->getGroupByKey($groupBy, $key, $value) ?? ''][] = $value;
 		}
 
 		return new static($results);

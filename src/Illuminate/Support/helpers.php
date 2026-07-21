@@ -177,6 +177,8 @@ if ( ! function_exists('array_first'))
 	 * @param  \Closure  $callback
 	 * @param  mixed     $default
 	 * @return mixed
+	 *
+	 * @deprecated Use \Illuminate\Support\Arr::first() instead.
 	 */
 	function array_first($array, $callback, $default = null)
 	{
@@ -193,6 +195,8 @@ if ( ! function_exists('array_last'))
 	 * @param  \Closure  $callback
 	 * @param  mixed     $default
 	 * @return mixed
+	 *
+	 * @deprecated Use \Illuminate\Support\Arr::last() instead.
 	 */
 	function array_last($array, $callback, $default = null)
 	{
