@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Routing;
 
+use Illuminate\Support\Arr;
 use Countable;
 use ArrayIterator;
 use IteratorAggregate;
@@ -221,7 +222,7 @@ class RouteCollection implements Countable, IteratorAggregate {
 	 */
 	protected function check(array $routes, $request, $includingMethod = true)
 	{
-		return array_first($routes, function($value, $key) use ($request, $includingMethod)
+		return Arr::first($routes, function($value, $key) use ($request, $includingMethod)
 		{
 			return $value->matches($request, $includingMethod);
 		});

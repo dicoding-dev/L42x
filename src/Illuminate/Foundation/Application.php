@@ -1,6 +1,7 @@
 <?php namespace Illuminate\Foundation;
 
 use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Container\BindingResolutionException;
 use Illuminate\Foundation\Http\MiddlewareBuilder;
 use ReflectionException;
@@ -350,7 +351,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		if (array_key_exists($name, $this->loadedProviders))
 		{
-			return array_first($this->serviceProviders, function($value, $key) use ($name)
+			return Arr::first($this->serviceProviders, function($value, $key) use ($name)
 			{
 				return get_class($value) == $name;
 			});
