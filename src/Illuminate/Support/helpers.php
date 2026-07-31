@@ -168,42 +168,6 @@ if ( ! function_exists('array_fetch'))
 	}
 }
 
-if ( ! function_exists('array_first'))
-{
-	/**
-	 * Return the first element in an array passing a given truth test.
-	 *
-	 * @param  array     $array
-	 * @param  \Closure  $callback
-	 * @param  mixed     $default
-	 * @return mixed
-	 *
-	 * @deprecated Use \Illuminate\Support\Arr::first() instead.
-	 */
-	function array_first($array, $callback, $default = null)
-	{
-		return Arr::first($array, $callback, $default);
-	}
-}
-
-if ( ! function_exists('array_last'))
-{
-	/**
-	 * Return the last element in an array passing a given truth test.
-	 *
-	 * @param  array     $array
-	 * @param  \Closure  $callback
-	 * @param  mixed     $default
-	 * @return mixed
-	 *
-	 * @deprecated Use \Illuminate\Support\Arr::last() instead.
-	 */
-	function array_last($array, $callback, $default = null)
-	{
-		return Arr::last($array, $callback, $default);
-	}
-}
-
 if ( ! function_exists('array_flatten'))
 {
 	/**
