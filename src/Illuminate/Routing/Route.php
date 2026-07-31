@@ -5,6 +5,7 @@ use Illuminate\Routing\Matching\UriValidator;
 use Illuminate\Routing\Matching\HostValidator;
 use Illuminate\Routing\Matching\MethodValidator;
 use Illuminate\Routing\Matching\SchemeValidator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Symfony\Component\Routing\CompiledRoute;
 use Symfony\Component\Routing\Route as SymfonyRoute;
@@ -503,7 +504,7 @@ class Route {
 	 */
 	protected function findClosure(array $action)
 	{
-		return array_first($action, function($value, $key)
+		return Arr::first($action, function($value, $key)
 		{
 			return is_callable($value);
 		});

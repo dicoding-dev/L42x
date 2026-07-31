@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Foundation;
 
+use Illuminate\Support\Arr;
 use Closure;
 
 class EnvironmentDetector {
@@ -79,7 +80,7 @@ class EnvironmentDetector {
 	 */
 	protected function getEnvironmentArgument(array $args): ?string
     {
-		return array_first($args, function($value, $key)
+		return Arr::first($args, function($value, $key)
 		{
 			return starts_with($value, '--env');
 		});

@@ -3,6 +3,7 @@
 use Closure;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Container\Container;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\Support\Contracts\ArrayableInterface as Arrayable;
@@ -272,7 +273,7 @@ class Factory {
 	{
 		$extensions = array_keys($this->extensions);
 
-		return array_first($extensions, function($value, $key) use ($path)
+		return Arr::first($extensions, function($value, $key) use ($path)
 		{
 			return ends_with($path, $value);
 		});

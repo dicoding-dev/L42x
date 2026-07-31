@@ -6,6 +6,7 @@ use ArrayAccess;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use LogicException;
 use JsonSerializable;
@@ -294,7 +295,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	 */
 	public static function getGlobalScope($scope): ?ScopeInterface
     {
-		return array_first(static::$globalScopes[get_called_class()], function($value, $key) use ($scope)
+		return Arr::first(static::$globalScopes[get_called_class()], function($value, $key) use ($scope)
 		{
 			return $scope instanceof $value;
 		});
@@ -991,7 +992,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	{
 		$self = __FUNCTION__;
 
-		$caller = array_first(debug_backtrace(false), function($trace, $key) use ($self)
+		$caller = Arr::first(debug_backtrace(false), function($trace, $key) use ($self)
 		{
 			$caller = $trace['function'];
 
