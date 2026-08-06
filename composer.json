@@ -67,6 +67,7 @@
         "illuminate/workbench": "self.version"
     },
     "require-dev": {
+        "aws/aws-sdk-php": "^3.322.9",
         "mockery/mockery": "~1.3",
         "phpspec/prophecy-phpunit": "~2.0",
         "phpunit/phpunit": "~9.6",
