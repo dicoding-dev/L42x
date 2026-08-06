@@ -20,16 +20,25 @@ class SqsQueue extends Queue implements QueueInterface {
 	protected $default;
 
 	/**
+	 * The queue URL prefix (account base URL).
+	 *
+	 * @var string
+	 */
+	protected $prefix;
+
+	/**
 	 * Create a new Amazon SQS queue instance.
 	 *
 	 * @param  \Aws\Sqs\SqsClient  $sqs
 	 * @param  string  $default
+	 * @param  string  $prefix
 	 * @return void
 	 */
-	public function __construct(SqsClient $sqs, $default)
+	public function __construct(SqsClient $sqs, $default, $prefix = '')
 	{
 		$this->sqs = $sqs;
 		$this->default = $default;
+		$this->prefix = $prefix;
 	}
 
 	/**
@@ -105,12 +114,24 @@ class SqsQueue extends Queue implements QueueInterface {
 	/**
 	 * Get the queue or return the default.
 	 *
+	 * A bare queue name is resolved into a full URL using the configured
+	 * prefix (the account base URL); full URLs are returned untouched.
+	 *
 	 * @param  string|null  $queue
 	 * @return string
 	 */
 	public function getQueue($queue)
 	{
-		return $queue ?: $this->default;
+		$queue = $queue ?: $this->default;
+
+		if (filter_var($queue, FILTER_VALIDATE_URL) !== false)
+		{
+			return $queue;
+		}
+
+		return $this->prefix !== ''
+			? rtrim($this->prefix, '/') . '/' . $queue
+			: $queue;
 	}
 
 	/**
