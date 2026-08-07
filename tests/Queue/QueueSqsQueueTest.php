@@ -81,6 +81,15 @@ class QueueSqsQueueTest extends BackwardCompatibleTestCase
         $this->assertInstanceOf(SqsJob::class, $result);
     }
 
+    public function testPopReturnsNullWhenQueueIsEmpty()
+    {
+        $queue = $this->getMockBuilder(SqsQueue::class)->onlyMethods(['getQueue'])->setConstructorArgs([$this->sqs, $this->queueName, $this->account])->getMock();
+        $queue->setContainer(m::mock(Container::class));
+        $queue->expects($this->once())->method('getQueue')->with($this->queueName)->willReturn($this->queueUrl);
+        $this->sqs->shouldReceive('receiveMessage')->once()->with(['QueueUrl' => $this->queueUrl, 'AttributeNames' => ['ApproximateReceiveCount']])->andReturn(new Result([]));
+        $this->assertNull($queue->pop($this->queueName));
+    }
+
     public function testDelayedPushWithDateTimeProperlyPushesJobOntoSqs()
     {
         $now = Carbon::now();
