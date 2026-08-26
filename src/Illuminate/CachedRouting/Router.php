@@ -82,7 +82,7 @@ class Router extends LaravelRouter
             return null;
         }
 
-        $cacher = $this->container['cache'];
+        $cacher = $this->getRouteCacher();
         $cacheKey = $this->getCacheKey($filename);
 
         // Check if the current route group is cached.
@@ -113,9 +113,20 @@ class Router extends LaravelRouter
      */
     public function clearCache($filename)
     {
-        $cacher = $this->container['cache'];
+        $this->getRouteCacher()->forget($this->getCacheKey($filename));
+    }
 
-        $cacher->forget($this->getCacheKey($filename));
+    /**
+     * Get the cache store used to persist compiled routes.
+     *
+     * Always the local "file" store so that booting the application (web or
+     * artisan) never depends on a networked cache such as Redis.
+     *
+     * @return \Illuminate\Cache\Repository
+     */
+    protected function getRouteCacher()
+    {
+        return $this->container['cache']->driver('file');
     }
 
     /**
