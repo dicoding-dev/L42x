@@ -79,20 +79,7 @@ class FileStore implements StoreInterface {
 			return array('data' => null, 'time' => null);
 		}
 
-		// A corrupt or partially-written file (e.g. a torn write from concurrent
-		// processes) would make unserialize emit a warning that the error handler
-		// promotes to an exception. Treat such an entry as a miss and forget it so
-		// the caller rebuilds rather than failing.
-		try
-		{
-			$data = unserialize(substr($contents, 10));
-		}
-		catch (\Throwable $e)
-		{
-			$this->forget($key);
-
-			return array('data' => null, 'time' => null);
-		}
+		$data = unserialize(substr($contents, 10));
 
 		// Next, we'll extract the number of minutes that are remaining for a cache
 		// so that we can properly retain the time for things like the increment

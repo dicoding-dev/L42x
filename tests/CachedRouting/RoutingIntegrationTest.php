@@ -414,4 +414,24 @@ class RoutingIntegrationTest extends TestCase
         static::assertTrue($rebuilt, 'Corrupt cache must trigger a rebuild, not a failure');
         static::assertEquals(1, $router->getRoutes()->count(), 'Routes must be rebuilt from the callback');
     }
+
+    public function testBootStillWorksWhenCacheIsUnwritable(): void
+    {
+        // Point the cache at a path that cannot be created (a file where a
+        // directory is expected), so the underlying write fails — mirroring an
+        // unwritable cache directory on a production node.
+        $files = new Filesystem;
+        $files->makeDirectory(self::$cachePath, 0777, true, true);
+        $blocker = self::$cachePath . '/blocker';
+        file_put_contents($blocker, 'x');
+        $this->app['config']['cache.path'] = $blocker . '/nested';
+
+        $router = $this->getRouter();
+        $key = $router->cache(__FILE__, function () use ($router) {
+            $router->get('/', 'HomeController@actionIndex');
+        });
+
+        static::assertNotNull($key, 'cache() must return normally despite the write failure');
+        static::assertEquals(1, $router->getRoutes()->count(), 'Routes must still be defined when caching fails');
+    }
 }
