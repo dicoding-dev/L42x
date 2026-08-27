@@ -390,4 +390,28 @@ class RoutingIntegrationTest extends TestCase
         $router->clearCache(__FILE__);
         static::assertFalse($this->app->cache->has($key), 'Routes must no longer be cached');
     }
+
+    public function testRebuildsWhenCachedFileIsCorrupt(): void
+    {
+        $router = $this->getRouter();
+        $router->cache(__FILE__, function () use ($router) {
+            $router->get('/', 'HomeController@actionIndex');
+        });
+
+        // Simulate a torn/partial write: keep a far-future expiry prefix so the
+        // entry is not treated as expired, but leave an unserializable body.
+        foreach (glob(self::$cachePath . '/*/*/*') as $file) {
+            file_put_contents($file, '9999999999corrupt-payload');
+        }
+
+        $rebuilt = false;
+        $router = $this->getRouter();
+        $router->cache(__FILE__, function () use ($router, &$rebuilt) {
+            $rebuilt = true;
+            $router->get('/', 'HomeController@actionIndex');
+        });
+
+        static::assertTrue($rebuilt, 'Corrupt cache must trigger a rebuild, not a failure');
+        static::assertEquals(1, $router->getRoutes()->count(), 'Routes must be rebuilt from the callback');
+    }
 }
