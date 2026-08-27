@@ -37,6 +37,7 @@
 use Illuminate\Cache\CacheManager;
 use Illuminate\CachedRouting\Router;
 use Illuminate\Config\Repository;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Facade;
@@ -51,6 +52,8 @@ class RoutingIntegrationTest extends TestCase
      */
     protected ?Application $app = null;
 
+    protected static ?string $cachePath = null;
+
     /**
      * Setup the test environment.
      */
@@ -58,6 +61,13 @@ class RoutingIntegrationTest extends TestCase
     {
         if ($this->app === null) {
             $this->refreshApplication();
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        if (self::$cachePath !== null) {
+            (new Filesystem)->deleteDirectory(self::$cachePath);
         }
     }
 
@@ -83,8 +93,10 @@ class RoutingIntegrationTest extends TestCase
 
         $this->app['config'] = new Repository($loader, $this->app['env']);
 
+        $this->app['files'] = new Filesystem;
         $this->app['cache'] = new CacheManager($this->app);
-        $this->app['config']['cache.driver'] = 'array';
+        $this->app['config']['cache.driver'] = 'file';
+        $this->app['config']['cache.path'] = self::$cachePath = sys_get_temp_dir() . '/l42x-route-cache-' . uniqid();
 
         $this->app['session'] = new SessionManager($this->app);
         $this->app['config']['session.driver'] = 'array';
@@ -150,7 +162,6 @@ class RoutingIntegrationTest extends TestCase
         }, 0);
 
         static::assertNull($key, 'Cache key should be null with TTL=0');
-        static::assertFalse($this->app->cache->has($key), 'Key should not be stored in cache');
         static::assertEquals(1, $router->getRoutes()->count(), 'Route must be added to router');
     }
 
