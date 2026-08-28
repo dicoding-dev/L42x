@@ -85,8 +85,18 @@ class Router extends LaravelRouter
         $cacher = $this->getRouteCacher();
         $cacheKey = $this->getCacheKey($filename);
 
-        // Check if the current route group is cached.
-        if (($cache = $cacher->get($cacheKey)) !== null) {
+        // Route caching is best-effort: an unreadable/corrupt entry or an
+        // unwritable cache directory (e.g. permissions, or a torn write from
+        // concurrent boots after a deploy) must never break application boot.
+        // On any cache I/O failure we fall back to defining the routes directly.
+        $cache = null;
+        try {
+            $cache = $cacher->get($cacheKey);
+        } catch (\Throwable $e) {
+            // Treat an unreadable cache as a miss and rebuild below.
+        }
+
+        if ($cache !== null) {
             $this->routes->restoreRouteCache($cache);
         } else {
             // Back up current RouteCollection contents.
@@ -95,9 +105,13 @@ class Router extends LaravelRouter
             // Call closure to define routes that should be cached.
             call_user_func($callback, $this);
 
-            // Put routes in cache.
-            $cache = $this->routes->getCacheableRoutes();
-            $cacher->put($cacheKey, $cache, $cacheMinutes);
+            // Persist the routes, ignoring failures so a broken cache store
+            // never propagates out of boot (routes stay defined in memory).
+            try {
+                $cacher->put($cacheKey, $this->routes->getCacheableRoutes(), $cacheMinutes);
+            } catch (\Throwable $e) {
+                // Best-effort cache; a write failure is non-fatal.
+            }
 
             // And restore the routes that shouldn't be cached.
             $this->routes->restoreRouteCollection();
