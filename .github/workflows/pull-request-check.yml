@@ -67,3 +67,13 @@ jobs:
           echo "Changed PHP files:"
           echo "$CHANGED"
           vendor/bin/rector process --dry-run --no-progress-bar $CHANGED
+
+  convergence-ratchet:
+    name: Convergence ratchet (no new 4.2-only patterns)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Guard against new Laravel-4.2-only patterns
+        run: bash ci/convergence-ratchet.sh src
