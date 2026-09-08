@@ -1,0 +1,28 @@
+digraph L42x_condensed {
+  rankdir=BT; splines=ortho; nodesep=0.35; ranksep=0.9;
+  node [shape=box, style="rounded,filled", fontname="sans-serif", fontsize=11];
+  edge [color="#888", arrowsize=0.8];
+
+  SCC1 [label="🔴 SCC-1 · CORE (11, cyclic)\nsupport container http session cache\ndatabase cookie encryption events\nfilesystem redis", fillcolor="#f4cccc", color="#990000", penwidth=2];
+  SCC2 [label="🔴 SCC-2 (3, cyclic)\nfoundation · mail · auth", fillcolor="#f4cccc", color="#990000", penwidth=2];
+
+  console [fillcolor="#d9d9d9"];
+  hashing [fillcolor="#b7e1cd"];  config [fillcolor="#ffe599"];  exception [fillcolor="#d9d9d9"];
+  translation [fillcolor="#ea9999"]; log [fillcolor="#ffe599"]; view [fillcolor="#ea9999"];
+  workbench [fillcolor="#d9d9d9"]; routing [fillcolor="#ffe599"]; validation [fillcolor="#ea9999"]; queue [fillcolor="#ea9999"];
+  cachedrouting [fillcolor="#d9d9d9"]; html [fillcolor="#d5a6bd"]; pagination [fillcolor="#ffe599"];
+
+  { rank=min; console; }
+  { rank=same; SCC1; }
+  { rank=same; hashing; config; exception; translation; log; view; workbench; routing; validation; queue; }
+  { rank=max; SCC2; cachedrouting; html; pagination; }
+
+  SCC1 -> console;
+  hashing -> SCC1; config -> SCC1; exception -> SCC1; translation -> SCC1; log -> SCC1;
+  view -> SCC1; workbench -> SCC1; routing -> SCC1; validation -> SCC1; queue -> SCC1;
+  SCC2 -> SCC1; SCC2 -> routing; SCC2 -> hashing; SCC2 -> queue; SCC2 -> view;
+  cachedrouting -> routing; html -> routing; pagination -> view;
+
+  label="L42x→L13 dependency graph (condensed) · panah X→Y = X butuh Y dulu · warna=migrationClass\n🟩done 🟦shim 🟨reshape 🟥flip-only ⬜evaporate 🟪app-extract";
+  fontsize=12; labelloc=b;
+}
