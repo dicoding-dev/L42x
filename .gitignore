@@ -7,4 +7,5 @@ Thumbs.db
 .phpunit.result.cache
 .direnv
 .envrc
-.devenv.serena/
+.devenv
+.serena/
