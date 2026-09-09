@@ -73,7 +73,10 @@ class Router extends LaravelRouter
      */
     public function cache($filename, Closure $callback, $cacheMinutes = 1440)
     {
-        $cacheKey = $cacheMinutes > 0 ? $this->getCacheKey($filename) : null;
+        $cacheKey = null;
+        if ($cacheMinutes > 0) {
+            $cacheKey = $this->getCacheKey($filename);
+        }
 
         // No cache key — either caching is disabled, or the route file cannot be
         // stat'd (e.g. removed in a deploy while a worker still serves its stale
