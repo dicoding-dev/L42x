@@ -442,15 +442,15 @@ class RoutingIntegrationTest extends TestCase
         // fall back to a rebuild, not escalate to a fatal boot error.
         $missing = sys_get_temp_dir() . '/route-deleted-mid-deploy-' . uniqid() . '.php';
 
-        $rebuilt = false;
+        $defined = false;
         $router = $this->getRouter();
-        $key = $router->cache($missing, function () use ($router, &$rebuilt) {
-            $rebuilt = true;
+        $key = $router->cache($missing, function () use ($router, &$defined) {
+            $defined = true;
             $router->get('/', 'HomeController@actionIndex');
         });
 
-        static::assertNotNull($key, 'cache() must return normally when the route file is gone');
-        static::assertTrue($rebuilt, 'A missing route file must trigger a rebuild, not a failure');
+        static::assertNull($key, 'An unstattable route file must not be cached');
+        static::assertTrue($defined, 'A missing route file must still define its routes directly');
         static::assertEquals(1, $router->getRoutes()->count(), 'Routes must still be defined');
     }
 }

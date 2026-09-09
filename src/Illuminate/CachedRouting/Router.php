@@ -69,21 +69,24 @@ class Router extends LaravelRouter
      * @param  string  $filename
      * @param  Closure $callback
      * @param  int     $cacheMinutes
-     * @return string
+     * @return string|null
      */
     public function cache($filename, Closure $callback, $cacheMinutes = 1440)
     {
-        // If $cacheMinutes is 0 or lower, there is no need to cache anything.
-        if ($cacheMinutes <= 0) {
-            // Call closure to define routes that should be cached.
+        $cacheKey = $cacheMinutes > 0 ? $this->getCacheKey($filename) : null;
+
+        // No cache key — either caching is disabled, or the route file cannot be
+        // stat'd (e.g. removed in a deploy while a worker still serves its stale
+        // opcode). Define the routes directly and skip caching; boot must never
+        // break, and a null key must never reach the cache store (it would
+        // collide across files under an empty key).
+        if ($cacheKey === null) {
             call_user_func($callback, $this);
 
-            // No cache key.
             return null;
         }
 
         $cacher = $this->getRouteCacher();
-        $cacheKey = $this->getCacheKey($filename);
 
         // Route caching is best-effort: an unreadable/corrupt entry or an
         // unwritable cache directory (e.g. permissions, or a torn write from
@@ -127,7 +130,11 @@ class Router extends LaravelRouter
      */
     public function clearCache($filename)
     {
-        $this->getRouteCacher()->forget($this->getCacheKey($filename));
+        $cacheKey = $this->getCacheKey($filename);
+
+        if ($cacheKey !== null) {
+            $this->getRouteCacher()->forget($cacheKey);
+        }
     }
 
     /**
@@ -147,15 +154,19 @@ class Router extends LaravelRouter
      * Get the key under which the routes cache for the given file should be stored.
      *
      * @param  string $filename
-     * @return string
+     * @return string|null
      */
     protected function getCacheKey($filename)
     {
-        // filemtime() emits a warning (escalated to a fatal by the app's error
-        // handler) when the file cannot be stat'd — e.g. a route file removed
-        // in a deploy while a worker still serves its stale opcode. Building the
-        // cache key must never break boot, so fall back to 0 on a stat failure.
-        return 'routes.cache.'.$this->cacheVersion.'.'.md5($filename).(@filemtime($filename) ?: 0);
+        // Building the key must never break boot. filemtime() (and md5() on a
+        // null path) raise warnings the app's error handler escalates to a
+        // fatal — e.g. a route file removed in a deploy while a worker still
+        // serves its stale opcode. Treat any failure as "not cacheable".
+        try {
+            return 'routes.cache.'.$this->cacheVersion.'.'.md5($filename).filemtime($filename);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**
