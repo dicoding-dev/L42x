@@ -151,7 +151,11 @@ class Router extends LaravelRouter
      */
     protected function getCacheKey($filename)
     {
-        return 'routes.cache.'.$this->cacheVersion.'.'.md5($filename).filemtime($filename);
+        // filemtime() emits a warning (escalated to a fatal by the app's error
+        // handler) when the file cannot be stat'd — e.g. a route file removed
+        // in a deploy while a worker still serves its stale opcode. Building the
+        // cache key must never break boot, so fall back to 0 on a stat failure.
+        return 'routes.cache.'.$this->cacheVersion.'.'.md5($filename).(@filemtime($filename) ?: 0);
     }
 
     /**
