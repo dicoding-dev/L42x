@@ -434,4 +434,23 @@ class RoutingIntegrationTest extends TestCase
         static::assertNotNull($key, 'cache() must return normally despite the write failure');
         static::assertEquals(1, $router->getRoutes()->count(), 'Routes must still be defined when caching fails');
     }
+
+    public function testBootStillWorksWhenRouteFileIsMissing(): void
+    {
+        // A route file removed in a deploy (while a worker still serves its
+        // stale opcode) makes filemtime() fail on the cache-key path. That must
+        // fall back to a rebuild, not escalate to a fatal boot error.
+        $missing = sys_get_temp_dir() . '/route-deleted-mid-deploy-' . uniqid() . '.php';
+
+        $defined = false;
+        $router = $this->getRouter();
+        $key = $router->cache($missing, function () use ($router, &$defined) {
+            $defined = true;
+            $router->get('/', 'HomeController@actionIndex');
+        });
+
+        static::assertNull($key, 'An unstattable route file must not be cached');
+        static::assertTrue($defined, 'A missing route file must still define its routes directly');
+        static::assertEquals(1, $router->getRoutes()->count(), 'Routes must still be defined');
+    }
 }
