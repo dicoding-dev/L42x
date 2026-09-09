@@ -71,7 +71,7 @@ class Router extends LaravelRouter
      * @param  int     $cacheMinutes
      * @return string|null
      */
-    public function cache($filename, Closure $callback, $cacheMinutes = 1440)
+    public function cache($filename, Closure $callback, $cacheMinutes = 1440): ?string
     {
         $cacheKey = null;
         if ($cacheMinutes > 0) {
