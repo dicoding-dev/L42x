@@ -1,57 +1,103 @@
 # L42x → Laravel 13 — Migration Roadmap & Dependency Graph
 
-> Status: living document. Tujuan akhir = **Laravel 13 stock (unforked)**, bukan fork baru.
+> Status: living document. **Endgame TIDAK berubah** = aplikasi jalan di **Laravel 13 stock
+> (unforked)**, fork dihapus. **Approach BERUBAH (2026-09-10, Agis)** dari "gradual convergence +
+> CI ratchet" menjadi **FRAMEWORK-FIRST + STRICT-MODE-L13 + ENFORCEMENT-VIA-TYPE**.
 > Basis data: graph dependency **nyata** hasil ekstraksi `use`-statement dari
-> `src/Illuminate/*` (L42x = `laravel/framework` 4.2.72) dan
-> `../framework/src/Illuminate/*` (Laravel 13.30.1), Sept 2026.
+> `src/Illuminate/*` (fork = `laravel/framework` 4.2.90) dan
+> `../framework/src/Illuminate/*` (Laravel 13.30.1), plus 42 record verified di
+> `.migration-verified-records.json` + re-klasifikasi 3-bucket (Sept 2026).
+>
+> **Koreksi review (2026-09-10, verified vs kode):** (1) Cache-TTL **BUKAN** type-expressible di
+> stock 13 (`put($key,$value,$ttl=null)` untyped di `Cache/Repository.php:367` **dan**
+> `Contracts/Cache/Repository.php:29`; `getSeconds()` `:903` terima bare int) → di-reklasifikasi
+> **tighten-then-lint**, bukan self-liquidating type. (2) Console `fire()→handle()` **BUKAN**
+> abstract/Psalm-catch di stock 13 (`Command.php:289` `method_exists($this,'handle')?'handle':'__invoke'`
+> → fire()-only jatuh ke `__invoke` missing = runtime `BadMethodCall`) → di-reklasifikasi
+> **fork-only temporary-abstract ratchet + post-swap grep/boot-smoke**. (3) **Composer replace
+> collision**: fork **dan** stock keduanya `laravel/framework`; fork `replace` 27 `illuminate/*`,
+> stock `replace` 37 → dua `laravel/framework` **tak bisa co-install**; swap-per-cluster butuh
+> **edit blok `replace` fork** tiap langkah. (4) **Swap-order** di-re-derive dari **hard-require**
+> v13 (bukan suggest). (5) **Collections early** hanya **copy SOURCE ke tree Support fork**, bukan
+> `composer require illuminate/collections` (fork masih punya `Support/Collection.php` on-disk → collide).
 
 ---
 
 ## 0. Ringkasan eksekutif
 
-**Konteks.** L42x adalah fork Laravel **4.2.72** yang dijaga hidup di PHP 8.3/8.5.
-Upstream 4.2 sudah EOL bertahun-tahun → **tidak ada patch security/fitur dari vendor**.
-Tim kecil → tidak sanggup jadi security-maintainer core Illuminate selamanya, tidak
-sanggup big-bang migrasi, tidak bisa jalankan dua app paralel. App code jauh lebih besar
-dari framework-nya.
+**Konteks.** Fork `dicoding-dev/L42x` = `laravel/framework` **4.2.90** monolitik yang dijaga
+hidup di PHP 8.3/8.5. Upstream 4.2 sudah EOL bertahun-tahun → **tidak ada patch security/fitur
+dari vendor**. Tim kecil → tidak sanggup jadi security-maintainer core Illuminate selamanya.
+Endgame tetap: **hapus fork, jalan di stock Laravel 13** (`composer require laravel/framework:^13`).
 
-**Strategi.** Bukan "migrasi bertahap" (mustahil in-process: core 4.2 & 13 tak bisa
-seboot). Yang bertahap = **membuat *flip* akhir jadi murah**:
+**Approach baru — FRAMEWORK-FIRST.** Alih-alih menggeser app dulu lalu "the flip", kita
+**konvergenkan FORK-nya** menuju L13, lalu **swap tiap komponen ke package `illuminate/*` v13
+asli, satu dependency-cluster demi cluster, sampai fork = 0**. Fork diubah jadi
+**"STRICT-MODE Laravel 13"**: signature publik-nya diperketat agar **sama-atau-lebih-ketat**
+dari stock 13, sehingga idiom 4.2 lama menjadi `TypeError` / method-not-found — tertangkap PHP
+saat runtime DAN Psalm secara statis (Psalm sudah jalan di CI app).
 
-1. Setiap perubahan kode digeser mendekat ke idiom L13 (konvergensi oportunistik,
-   di-*enforce* ratchet CI — nol izin management).
-2. Komponen "leaf" & yang native-di-13 dibereskan/diuapkan lebih dulu.
-3. Logika bisnis ditarik keluar dari framework (app-space) → selamat dari migrasi.
-4. Suatu hari: **satu flip** menukar mesin core 4.2 → Laravel 13 stock. Karena app
-   sudah bicara idiom L13, flip = beberapa minggu, bukan 18 bulan.
+**Enforcement VIA TYPE — tapi tidak semua break bisa jadi type.** Aturan hidup di **kontrak
+framework** (single source of truth) bila break-nya type-expressible. **Verified koreksi:** ada
+dua kelas break yang **tidak** self-liquidating lewat type:
+- **Tighten-then-lint** (Cache-TTL): stock 13 lebih **longgar** dari yang kita butuhkan
+  (`$ttl=null`, terima bare int). Fork yang diperketat ke `DateTimeInterface|DateInterval`
+  **lebih ketat dari stock** → saat swap, package v13 **kembali menerima bare int** → bug
+  60× senyap **kembali tak-terjaga**. Maka: fork-tighten hanya **memaksa migrasi app**, tapi
+  **guard permanen pasca-swap = Psalm-rule / ratchet-grep**, bukan type.
+- **Fork-only temporary-abstract** (Console `handle()`): stock 13 me-resolve `handle`-or-`__invoke`
+  di runtime (`Command.php:289`), jadi `fire()`-only bukan error abstract/Psalm melainkan runtime
+  miss. Fork bikin `handle()` abstract **sementara** untuk me-ratchet ~308 rewrite; post-swap
+  deteksi = **grep + boot-smoke**.
 
-**Anti-goal.** Endgame **BUKAN** "L130x" (Laravel 13 yang di-fork). Itu cuma me-reset
-jam kiamat satu versi ke atas. Semua kustomisasi diarahkan ke **extension point**
-(`Auth::extend`, custom driver, macro, service provider), **core Laravel haram
-di-patch** — kalau tidak, jebakan fork terulang.
+Ratchet CI **didemote tapi TIDAK dihapus**: ia adalah tempat berlabuh permanen untuk (a) pola yang
+tak bisa jadi type sama sekali (SQL string-concat, missing global helper `str_*`/`array_*`,
+route-array `'before'=>`, config assertion, wire-format), **dan** (b) **guard pasca-swap** untuk
+tighten-then-lint (Cache-TTL) dan temporary-abstract (Console) yang strictness fork-nya menguap
+saat swap.
+
+**Tiga bucket per perubahan** (klasifikasi utama tiap komponen — lihat §6):
+
+| Bucket | Definisi | Enforcement | Kerja app |
+|---|---|---|---|
+| **1 — FORK-ONLY** | idiom yang **juga ada** di stock 13 (Contracts, `dispatch()`, pagination `currentPage()`, Macroable) | fix di dalam fork; app tak tersentuh | **nol** |
+| **2 — APP-UNAVOIDABLE** | API **dihapus** di stock 13 (`fire()`, `->lists()`, `getEnvironment()`, route filters, `illuminate/html`) | perketat/hapus signature di fork → app WAJIB adopsi idiom baru **sebelum** swap (shim mati saat swap). *Enforcement type bila removal; grep bila hanya reshape.* | ya, sebelum swap |
+| **3 — VALUE-SEMANTICS** | signature **sama** tapi arti beda; framework tak bisa membedakan (Cache TTL menit→detik) | fork perketat param **sementara** (interval-only) → paksa migrasi app; **guard permanen = Psalm-rule/ratchet-grep** (stock 13 re-admit bare int → tidak self-liquidating) | ya, sudah/harus pass interval |
+
+**Anti-goal.** Endgame **BUKAN** "L130x" (Laravel 13 yang di-fork). "Strict-mode L13" hanya
+**perancah** untuk memindahkan app ke idiom L13 sebelum swap — begitu semua komponen di-swap ke
+`illuminate/*` v13 asli, fork = 0 dan tidak ada lagi yang di-maintain. Semua kustomisasi →
+**extension point** (`Auth::extend`, custom driver, macro, service provider). **Core Laravel
+haram di-patch** — kalau tidak, jebakan fork terulang.
 
 **Angka kepala:**
 
 | Metrik | Nilai |
 |---|---|
-| Komponen L42x (existing) | 28 |
-| Komponen L13 | 38 |
-| Komponen fondasi baru L13 yang wajib diperkenalkan dulu | 7 (Contracts, Collections, Macroable, Conditionable, Reflection, Pipeline, Bus) |
-| **Cyclic clusters (SCC) di core 4.2** | **2** — satu 11-node, satu 3-node |
-| Layer topologis | 4 (0–3) |
-| Panjang critical path | 4 |
-| Sudah "done" (di primitif terawat) | 2 (Encryption→OpenSSL, Hashing→`password_*`) |
-| "Evaporate" (native di L13, hapus saat flip) | ≥4 (CachedRouting, Workbench, Exception, sebagian Queue/SQS) |
+| Komponen di-verify (record) | 42 |
+| Bucket 1 (fork-only, nol app work) | Contracts, Collections, Conditionable, Reflection, Http, Redis, Log, View, Translation, Queue, Validation, Auth, Bus, Broadcasting, Concurrency, Image, JsonSchema, Notifications, Process, Container, Workbench |
+| Bucket 2 (app-unavoidable removal) | Support, Macroable, Pipeline, Events, Encryption, Cookie, Session, Filesystem, Database, Console, Config, Exception, Foundation, Mail, CachedRouting, Html, Pagination, Routing, Hashing, Testing |
+| Bucket 3 (value-semantics) | Cache (TTL menit→detik) — **tighten-then-lint, bukan self-liquidating** |
+| **Cyclic clusters (SCC) di core fork** | **2** — satu 11-node (SCC-1), satu 3-node (SCC-2) |
+| Sudah "done"/kerja app selesai | Cache task 1.1 (bare-int TTL → Carbon interval) — DONE, tetap valid |
+| Fork `replace` illuminate/* (verified) | **27** (auth, cache, config, console, container, cookie, database, encryption, events, exception, filesystem, foundation, hashing, http, html, log, mail, pagination, queue, redis, routing, session, support, translation, validation, view, workbench) |
+| Stock `replace` illuminate/* (verified) | **37** (superset; incl. contracts, collections, macroable, conditionable, reflection, pipeline, bus, testing, broadcasting, concurrency, image, json-schema, notifications, process) |
+
+> Catatan: banyak komponen "campuran" — bucket ditetapkan berdasarkan **item load-bearing**-nya
+> (mis. Database mostly flip-only tapi diklasifikasikan bucket 2 karena `->lists()` removal +
+> pluck-swap yang tak-terhindarkan). Detail per-komponen & rasional bucket ada di
+> `MIGRATION-ENFORCEMENT-MATRIX.md`.
 
 ---
 
-## 1. Temuan struktural utama — DUA CYCLE
+## 1. Temuan struktural utama — DUA CYCLE (tervalidasi, JANGAN dilemahkan)
 
-Graph `use`-statement mengungkap bahwa core 4.2 **bukan hierarki bersih** melainkan
-mengandung dua **strongly-connected component (SCC)** — kumpulan komponen yang saling
-bergantung melingkar. **Anggota satu SCC tidak bisa diurutkan/dimigrasi satu per satu
-secara terisolasi** — mereka harus bergerak sebagai klaster, ATAU cycle-nya diputus dulu
-dengan memperkenalkan interface (itulah fungsi komponen `Contracts` di L13).
+Graph `use`-statement mengungkap core fork **bukan hierarki bersih** melainkan mengandung dua
+**strongly-connected component (SCC)**. **Anggota satu SCC tidak bisa di-swap satu per satu**;
+mereka bergerak sebagai klaster ATAU cycle-nya diputus dulu via interface (`Contracts`).
+Di frame framework-first ini SCC memaksa **swap-per-cluster** — DAN diperkuat oleh **composer
+replace-collision** (§1a): namespace `Illuminate\*` bertabrakan + kedua package bernama
+`laravel/framework` → **tak bisa co-exist di classpath** → satu SCC harus di-swap dalam satu window.
 
 ### SCC-1 — "the core ball of mud" (11 komponen)
 ```
@@ -65,10 +111,14 @@ cookie, encryption, events, filesystem, redis
 Facade menyebut kelas **konkret** lintas framework → `support → http → session → cache
 → database → container → support`. Seluruh stack request/data terjerat jadi satu simpul.
 
-**Cara L13 memutusnya:** komponen `Contracts` (interface) + Facade yang resolve lewat
-container/kontrak, bukan import konkret. **Maka langkah pertama konvergensi = perkenalkan
-`Contracts` dan alihkan Facade/import konkret ke interface** — ini yang memecah SCC-1
-sehingga komponen-komponennya bisa dikerjakan terpisah.
+**Cara memutusnya = PREREQUISITE #1:** perkenalkan package `Contracts` (interface) + alihkan
+Facade/binding dari import konkret ke interface. **Ini langkah PERTAMA** (Prasyarat, §5) yang
+memecah SCC-1. Setelah putus, "SCC-1 core cutover" adalah **satu swap cluster low-risk** —
+low-risk justru karena saat itu fork sudah berperilaku seperti 13.
+
+> ⚠️ **Gotcha graph (verified):** naive dep-graph melaporkan **false cycle** dari 5 cross-import
+> type-hint-only di `Contracts` (database/http/image/support/validation). **JANGAN** promosikan
+> jadi `composer require` — kalau dilakukan, setiap foundation package deadlock.
 
 ### SCC-2 — "application bootstrap knot" (3 komponen)
 ```
@@ -79,293 +129,368 @@ foundation, mail, auth
 - `Mail/MailServiceProvider.php` → `use Illuminate\Foundation\Application` (konkret)
 - `Foundation` → bootstrap `Auth`
 
-`foundation → auth → mail → foundation`. Diputus di L13 via kontrak Mailer + service
-provider yang decoupled. Praktisnya klaster ini bagian dari **the flip** (core aplikasi).
+`foundation → auth → mail → foundation`. Diputus dengan **re-point Mail lewat Mailer contract**
+dan **Auth lewat Contracts** (agar Foundation tak lagi import Mail/Auth konkret). Praktisnya
+klaster ini = **terminal cutover** (the flip aplikasi).
+
+### 1a. Composer replace-collision — lebih kuat dari namespace-collision (VERIFIED, koreksi review)
+
+Bukan hanya namespace `Illuminate\*` yang bertabrakan. **Fork dan stock keduanya bernama
+`laravel/framework`** (verified `composer.json`), dan keduanya punya blok `replace`:
+
+- **Fork** `replace` **27** `illuminate/*` (incl. `illuminate/html`, `illuminate/workbench`;
+  **TIDAK** ada `contracts`, `collections`, `macroable`, `conditionable`, `reflection`, `pipeline`,
+  `bus`, `testing`).
+- **Stock** `replace` **37** `illuminate/*` (superset — semua di atas ada).
+
+`replace` berarti fork **mengklaim menyediakan** `illuminate/cache` dst. Konsekuensi Composer:
+
+1. **Fork + real `illuminate/cache:^13` tak bisa co-install** — resolver menolak karena fork
+   sudah `replace` `illuminate/cache`. Ini konflik **lebih kuat** dari sekadar class-collision.
+2. **Dua `laravel/framework` tak bisa co-install** sama sekali (nama package identik).
+
+**Mekanik swap-per-cluster (konsekuensi):**
+- Interim state = **fork (`laravel/framework` fork) + `illuminate/<swapped>:^13`** yang di-`require`
+  **individual**. Untuk tiap cluster yang di-swap, **hapus entry-nya dari blok `replace` fork**
+  lalu `composer require illuminate/<pkg>:^13`. Selama entry masih di `replace`, real package ditolak.
+- Untuk paket yang fork **tak** `replace` tapi stock `replace` (contracts/collections/macroable/
+  conditionable/reflection/pipeline): **tak bisa** `composer require illuminate/<pkg>:^13` selama
+  fork masih on-disk menyediakan kelas namespace itu (mis. `Support/Collection.php`) → introduce =
+  **copy SOURCE ke tree fork**, real swap menyusul di window Support (§4/§5).
+- **Fase 5 gate:** `composer require laravel/framework:^13` **hanya** setelah blok `replace` fork
+  **kosong** (0 entry tersisa) — kalau tidak, resolver deadlock antara dua `laravel/framework`.
 
 ---
 
-## 2. Dependency graph (bottom-up, per layer)
+## 2. Dependency graph (bottom-up, per layer) — swap **bottom-up per cluster**
 
-Panah = "butuh ini dulu". Kerja **bottom-up**. `[…]` = cyclic cluster (bergerak bareng
-atau putus cycle dulu). `*` = sudah `done`.
+Panah = "butuh ini dulu (L13-shaped/swapped)". Kerja **bottom-up**. `[…]` = SCC (swap satu
+window; replace-collision + namespace-collision memaksa cluster-swap).
+
+> **Koreksi review — layer di-re-derive dari HARD-REQUIRE v13 (bukan suggest):**
+> - **Console BUKAN L0.** `illuminate/console:^13` **hard-require** `illuminate/view` (menyeret
+>   container/events/filesystem/session/support) → **tak bisa mendahului SCC-1**. Console pindah ke L2.
+> - **Bus BUKAN opsional.** `illuminate/events:^13` (anggota SCC-1) **hard-require** `illuminate/bus`
+>   → Bus adalah **transitif non-opsional** dari Events → **diperkenalkan bersama SCC-1**, bukan SKIP.
+> - **Semua L2 gated ke SELURUH cluster SCC-1.** `queue`→require `database`(SCC-1)+`console`;
+>   `auth`→require `queue`; `routing`→require `session`(SCC-1). "L2-parallel" hanya berlaku **setelah
+>   SCC-1 selesai**; tak ada L2 yang boleh mendahului SCC-1.
 
 ```
-L0  console                                   ← tak bergantung apa pun (paling dasar)
+PREREQ  split monolith fork → potongan illuminate/*-shaped
+        + edit-ready blok `replace` (§1a) untuk dibuka per-cluster
+        + INTRODUCE Contracts (leaf, realDeps=[])   ← MEMUTUS SCC-1, membuka semua
+          + leaf traits (COPY SOURCE ke tree Support fork, BUKAN composer require):
+            Macroable, Conditionable, Reflection, Collections, Pipeline
       │
-L1  ┌─────────────────── CYCLE / SCC-1 ───────────────────┐
-    │ support ⇄ container ⇄ http ⇄ session ⇄ cache ⇄       │  ← 11-node ball of mud;
-    │ database ⇄ cookie ⇄ encryption* ⇄ events ⇄           │    putus dulu via Contracts
-    │ filesystem ⇄ redis                                   │
-    └──────────────────────────────────────────────────────┘
+L1  ┌─────────────────── CYCLE / SCC-1 core cutover ───────────────────┐
+    │ support ⇄ container ⇄ http ⇄ session ⇄ cache ⇄                    │  ← 11-node ball of mud;
+    │ database ⇄ cookie ⇄ encryption ⇄ events ⇄                         │    swap SATU cluster
+    │ filesystem ⇄ redis    (Contracts+Reflection+BUS ikut jangkar)     │    setelah Contracts putus
+    └───────────────────────────────────────────────────────────────────┘  (Bus = hard-require Events)
       │
-L2   hashing*  config  exception  translation  log  view      ← 10 komponen INDEPENDEN
-     workbench  routing  validation  queue                       (paralel lebar)
-      │
-L3  ┌── SCC-2 ──┐
-    │ foundation │  cachedrouting   html   pagination           ← terminal
-    │ ⇄ mail     │
-    │ ⇄ auth     │
-    └────────────┘
+L2   console  hashing  config  exception  translation  log  view        ← SEMUA butuh SCC-1 selesai;
+     workbench  routing  validation  queue                                 tiap swap per-unit
+      │   (console→view; queue→database+console; routing→session;          (replace+namespace collide)
+      │    auth→queue — semua hard-require, dipenuhi oleh SCC-1)
+L3  ┌── SCC-2 (terminal / the flip) ──┐
+    │ foundation ⇄ mail ⇄ auth         │   cachedrouting  html  pagination
+    └──────────────────────────────────┘   (auth juga hard-require queue → L2 dulu)
 ```
 
 **Critical path (batas bawah durasi):**
 ```
-console  →  [SCC-1 core cluster]  →  hashing  →  [foundation+mail+auth]
+[SCC-1 core cluster (+Bus)]  →  console  →  hashing  →  [foundation+mail+auth]
 ```
-Panjang 4. Semua kerja lain bisa disembunyikan paralel di balik rantai ini.
+Panjang 4. Kerja lain paralel di balik rantai ini. **Catatan:** console pindah dari kepala rantai
+(dulu keliru di L0) ke setelah SCC-1 karena hard-require `view`.
+
+### Klaster yang WAJIB bergerak bareng (karena replace/namespace collision / SCC / hard-require)
+- **SCC-1 core:** `contracts + reflection + support + container` jadi jangkar; `http, session,
+  cache, cookie, encryption, events, filesystem, redis, database` swap dalam window yang sama.
+  **`bus` ikut** (hard-require `events`). Tiap entry di-`require` individual setelah dihapus dari
+  blok `replace` fork (§1a).
+- **SCC-2 (terminal):** `foundation + mail + auth` — putus cycle dulu (Mailer contract + Auth
+  Contracts), lalu swap sebagai the flip. `auth` juga hard-require `queue` (L2).
+- **Standalone-but-atomic (L2, setelah SCC-1):** `console`, `config`, `translation`, `log`, `view`,
+  `routing`, `validation`, `queue`, `hashing`, `pagination` — bukan di SCC, tapi replace+namespace
+  collide → swap per-unit; masing-masing punya hard-require yang dipenuhi SCC-1.
 
 ---
 
-## 3. Rencana paralelisasi (apa boleh dikerjakan bersamaan)
+## 3. Rencana paralelisasi
 
-Komponen **satu layer tanpa edge antar-mereka** = boleh dikerjakan concurrent.
+Komponen **satu layer tanpa edge antar-mereka** = boleh dikerjakan concurrent — **tapi SEMUA L2
+gated ke SCC-1 selesai** (hard-require), jadi paralelisme L2 baru terbuka pasca-SCC-1.
 
 | Layer | Batch paralel | Lebar | Catatan |
 |---|---|---|---|
-| **0** | `console` | 1 | fondasi, tak ada blocker |
-| **1** | **SCC-1** `[support, container, http, session, cache, database, cookie, encryption*, events, filesystem, redis]` | 1 klaster | **tidak bisa dipecah** sebelum cycle diputus via `Contracts`. Setelah diputus → 11 sub-target paralel |
-| **2** | `hashing*`, `config`, `exception`, `translation`, `log`, `view`, `workbench`, `routing`, `validation`, `queue` | **10** | **titik paralel terlebar** — sebar tim / ratchet oportunistik di sini |
-| **3** | **SCC-2** `[foundation, mail, auth]`, `cachedrouting`, `html`, `pagination` | 4 | terminal; SCC-2 = bagian the flip |
+| **Prereq** | split monolith + `replace`-map + `Contracts` + leaf traits (copy source) | 1 | **membuka semua**; harus lebih dulu |
+| **1** | **SCC-1 core cutover** (11 komponen **+ Bus** transitif) | 1 klaster | **tidak bisa dipecah**; swap satu window setelah Contracts memutus cycle; hapus 11+ entry dari `replace` fork |
+| **2** | `console`, `hashing`, `config`, `exception`, `translation`, `log`, `view`, `workbench`, `routing`, `validation`, `queue` | **11** | **titik paralel terlebar — tapi baru setelah SCC-1**; tiap swap per-unit; hard-require (console→view, queue→database, routing→session) sudah dipenuhi SCC-1 |
+| **3** | **SCC-2** `[foundation, mail, auth]`, `cachedrouting`, `html`, `pagination` | 4 | terminal; SCC-2 = the flip; auth juga butuh queue (L2) |
 
-**Choke point (fan-in tertinggi, kerjakan/putus lebih dulu):** `support` dan `container`
-— hampir semua melewatinya. Memutus cycle di `support` (Facade → kontrak) **membuka L2–L3**.
+**Choke point:** `support` dan `container`. Memutus cycle di `support` (Facade → kontrak)
+**membuka SCC-1**, dan SCC-1 selesai **membuka seluruh L2**. Karena itu Prasyarat (Contracts +
+Support-shape) diprioritaskan.
 
 ---
 
-## 4. Fondasi baru L13 — WAJIB diperkenalkan lebih dulu
+## 4. Fondasi baru L13 — INTRODUCE lebih dulu (memutus cycle)
 
-Komponen ini **tidak ada di 4.2** tapi di L13 hampir semua bergantung padanya. Mereka duduk
-**di bawah `Support`** dan **memutus cycle** SCC-1. Perkenalkan sebagai shim/polyfill dulu.
+Komponen ini **tidak ada di fork 4.2** tapi di L13 hampir semua bergantung padanya. Mereka
+duduk **di bawah `Support`** dan **memutus cycle** SCC-1. Introduce = **ship verbatim dari stock
+13** (bukan hand-port), jaga divergence dari upstream.
 
-| Komponen | Effort | Peran | Status di 4.2 / kenapa prasyarat |
+> **Koreksi review — "introduce EARLY" ≠ "composer require EARLY".** Fork `replace` `illuminate/support`
+> tapi **TIDAK** `replace` `collections/contracts/macroable/conditionable/reflection/pipeline`. Real
+> `illuminate/collections:^13` mengirim `Illuminate\Support\{Collection,Arr,Enumerable}` yang
+> **collide** dengan `src/Illuminate/Support/Collection.php` fork yang masih on-disk. Maka introduce
+> EARLY = **copy SUPERSET SOURCE ke dalam tree Support fork** (namespace fork), **BUKAN**
+> `composer require illuminate/collections`. Real package baru masuk **di window swap SCC-1** saat
+> Support fork di-copot.
+
+| Komponen | Bucket | Effort | Peran / cara introduce |
 |---|---|---|---|
-| **Contracts** | low | interface untuk semua service | **tidak ada** package Contracts di 4.2 → **memutus SCC-1** (import konkret → interface) |
-| **Collections** | **high** | `Collection` dipisah dari Support | 4.2: satu class `Collection` ~20KB di Support; pemisahan + API L13 jauh lebih besar |
-| **Macroable** | trivial | `::macro()` | 4.2: `MacroableTrait` di dalam support → tinggal dipromosikan jadi package |
-| **Conditionable** | trivial | `->when()/->unless()` | idiom fluent L13; **tak ada** di 4.2 |
-| **Reflection** | trivial | util refleksi | 4.2: cuma `Reflector` stub 947B → bukan introduce, "isi ulang" saja |
-| **Pipeline** | low | middleware pipeline | **tak ada** di 4.2 (request lewat filter, bukan pipeline) |
-| **Bus** | medium | command/job bus | **tak ada** abstraksi command-bus di 4.2 sama sekali |
+| **Contracts** | 1 | low | 155 interface, PSR-only composer require (**JANGAN** tambah `illuminate/*` → false cycle). **PREREQ #1, memutus SCC-1.** Fork tak `replace` contracts → aman di-require verbatim atau di-copy. |
+| **Collections** | 1 | high | **copy SOURCE** superset ke `Illuminate\Support\*` tree fork (Collection/`Enumerable`/`LazyCollection`/`Arr`). Bukan call-site churn — **behavior-parity testing** (59→111 method). Real `illuminate/collections` swap **di window SCC-1**, bukan sekarang. |
+| **Macroable** | 2 | trivial | rename `MacroableTrait`→`Macroable` (nama pendek hilang di 13), copy di tree Support. Bucket 2 karena rename = removal. |
+| **Conditionable** | 1 | trivial | 2 file verbatim di `Support/Traits/Conditionable.php` + `Support/HigherOrderWhenProxy.php`. Additive murni. Copy source. |
+| **Reflection** | 1 | trivial | `Reflector` **sudah ada** (stub 39-line); ganti dengan superset stock 13, **tetap fisik di tree Support** (jangan bikin dir baru). |
+| **Pipeline** | 2 | low | copy source verbatim; **inert** sampai Routing/Kernel/Bus/Queue reshape (filter→middleware). Bucket 2 karena removal-nya ada di Routing (filter dihapus). |
+| **Bus** | 1 | medium | **BUKAN SKIP** (koreksi review). `illuminate/events:^13` **hard-require** `illuminate/bus` → Bus transitif **wajib** ikut window SCC-1. App tetap 0 `Illuminate\Bus` call-site (pakai `DomainTransactionCommandBus` sendiri), jadi **nol app work**, tapi package-nya **harus terpasang** saat Events di-swap. |
 
-> Fitur L13-baru lain (opsional, adopsi saat perlu): `Broadcasting`, `Concurrency`, `Image`,
-> `JsonSchema`, `Notifications`, `Process`, `Testing` — semua `introduce`, tak ada padanan 4.2.
-> `Access\Gate` (otorisasi) ikut gratis di package `Auth` L13. Bukan prasyarat migrasi.
-
----
-
-## 5. Tabel migrasi per-komponen (28 existing)
-
-Kolom **class** (enum verified): `done` · `evaporate` (native di 13, hapus saat flip) ·
-`shim-standalone` (swap internal ke lib/native, API tetap) · `shim-symfony` (bungkus
-Symfony) · `reshape-callsites` (bentuk ulang call-site sekarang, mesin flip di akhir) ·
-`flip-only` (core, mesin baru pindah saat flip) · `app-space-extract` (pindah ke package).
-
-**Breakdown verified (28 existing):** flip-only 13 · reshape-callsites 7 · evaporate 3 ·
-shim-symfony 2 · done 1 (hashing) · shim-standalone 1 (encryption) · app-space-extract 1 (html).
-Effort: trivial 1 · low 6 · medium 10 · high 7 · very-high 4.
-
-> ✅ **Basis verifikasi:** kolom **deps/cycle** = deterministik (grep `use`-statement +
-> Tarjan). Kolom **class/effort** = **28/28 komponen existing ter-verifikasi adversarial**
-> oleh agent (baca kode L42x + L13, grep count nyata, koreksi klasifikasi) + cross-check
-> backing library (§5b). Gotcha behavior-change konkret yang ditemukan → §5c.
-> Catatan lensa: `flip-only` = *mesin* baru pindah saat flip; tapi call-site tetap
-> disiapkan bertahap sekarang (Fase 5) — checklist reshape-nya = §5c.
-
-| Komponen | Layer | Class (verified) | Effort | Gotcha / catatan kunci |
-|---|---|---|---|---|
-| **hashing** | 2 | **done** | low | default cost 10→12 (hash lama tetap verify, no lockout) |
-| **encryption** | 1 | **shim-standalone** | low | algoritma **identik** (OpenSSL AES-256-CBC, HMAC-SHA256, wire-format kompatibel); bukan `done` krn tak implement Contracts + pakai `bindShared()` lawas |
-| **cookie** | 1 | **shim-symfony** | medium | L13 `EncryptCookies` HMAC-prefix `v2` + validasi; cookie terenkripsi lama L42x **tak valid** saat flip |
-| **session** | 1 | **shim-symfony** | medium | `implements` pindah Symfony `SessionInterface`→`Contracts\Session\Session`; Middleware HttpKernel→pipeline (non-inkremental) |
-| **cache** | 1 | **reshape-callsites** | high | ⚠️ **TTL menit→detik (60x lebih pendek, senyap)**; `StoreInterface`→`Contracts\Cache\Store` |
-| **config** | 2 | **reshape-callsites** | medium | ctor `(loader,env)`→`(array)`; ⚠️ `getEnvironment()` **dihapus** tapi **dipakai app** (pixel/sentry blade) |
-| **events** | 2 | **reshape-callsites** | medium | `fire()`→`dispatch()` (21 callsite internal); `firing()` dihapus |
-| **log** | 2 | **reshape-callsites** | medium | Monolog **1→3** (level jadi enum); wiring imperatif→config channels |
-| **routing** | 2 | **reshape-callsites** | very-high | ⚠️ **filters dihapus total → wajib jadi middleware sebelum flip**; Router bukan lagi HttpKernel |
-| **pagination** | 3 | **reshape-callsites** | high | getter rename massal (`getCurrentPage`→`currentPage`…); Presenter dihapus |
-| **mail** | 3 | **reshape-callsites** | high | engine sudah symfony/mailer (menipu!); API/provider beda; queued-mail path beda (Mailable) |
-| **console** | 0 | **flip-only** | medium | `fire()`→`handle()` (48 def); array args→`$signature` |
-| **container** | 1 | **flip-only** | medium | exception pindah ke `Contracts\Container` |
-| **http** | 1 | **flip-only** | medium | `Support\Contracts\*`→`Contracts\*`; `FrameGuard` (X-Frame-Options) hilang |
-| **filesystem** | 1 | **flip-only** | low | L13 = **superset** kompatibel; `FileNotFoundException` pindah ke Contracts |
-| **redis** | 1 | **flip-only** | low | default Predis→**phpredis**; predis 2.x construct cluster beda |
-| **translation** | 2 | **flip-only** | medium | dep Symfony **dilepas** → native; `transChoice`/domain diganti |
-| **view** | 2 | **flip-only** | high | ⚠️ **flush Blade compiled cache saat flip**; direktif L4-era bisa beda render |
-| **validation** | 2 | **flip-only** | high | surface lama kompatibel; +`validate()`/`safe()`, +egulias/brick deps |
-| **support** | 1 | **flip-only** | high | split ke Collections/Macroable/Contracts; `MacroableTrait`→`Macroable`; Contracts pindah namespace |
-| **database** | 1 | **flip-only** | very-high | ⚠️ **blast radius app**: `->lists()`, `ArrayableInterface`, `SoftDeletingTrait`, casting timestamp/null |
-| **queue** | 2 | **flip-only** | very-high | ⚠️ **wire-format payload beda → drain antrian saat cutover**; dispatch API inkompatibel |
-| **foundation** | 3 | **flip-only** | very-high | Application = container **+** HTTP kernel; `App::error/down/middleware` hilang |
-| **auth** | 3 | **flip-only** | high | ⚠️ `Reminders`→`Passwords` (tabel `password_reminders`→`password_resets`); Guard split 3; recaller format beda (§8) |
-| **cachedrouting** | 3 | **evaporate** | low | **custom dicoding** → `route:cache` bawaan L13; app pemanggil `->cache()` harus di-desugar |
-| **exception** | 2 | **evaporate** | low | package hilang; `App::error()` closure → `reportable()/renderable()`; Whoops hilang |
-| **workbench** | 2 | **evaporate** | trivial | dev-tool, dibuang; tak dipakai app |
-| **html** | 3 | **app-space-extract** | medium | **~497 file view** pakai `Form::`/`HTML::` → ekstrak ke package, API dipertahankan verbatim |
-
-### Catatan per-komponen non-trivial
-- **support** — choke point + biang cycle. Konvergensi = pisahkan `Collection` (→
-  Collections), sediakan `Arr`/`Str` tanda tangan L13 (sudah dimulai: `Arr::first`),
-  dan **alihkan Facade dari import konkret ke kontrak**. Ini yang memutus SCC-1.
-- **database** — surface app terbesar. Eloquent/query builder banyak beda (casts, relasi,
-  `$fillable` default). Fokus: pakai **binding** (bukan string-concat) → tutup SQLi
-  sekalian; pusatkan akses ke repository/service (app-extract) agar flip murah.
-- **routing** — beda paling tajam: 4.2 "filters" vs 13 "middleware", `['uses'=>'C@m']` vs
-  `[C::class,'m']`, route model binding. Semua call-site route bisa digeser sekarang.
-- **session** — kandidat **shim-symfony** terbaik: kontrak = storage, cocok dengan
-  Symfony HttpFoundation Session (sudah jadi dependency). Hati-hati semantik flash & CSRF.
-- **auth** — ~200 baris glue di atas primitif yang **sudah** terawat (password_verify,
-  OpenSSL recaller). Audit sekali, pin; flip pakai dual-read (§8).
-- **cachedrouting / exception / workbench / html** — tidak diport. Native/absorbed/dibuang
-  di L13. Bekukan sekarang (bugfix only), hapus saat flip.
+> Fitur L13-baru lain (**semua bucket 1, SKIP by default / YAGNI**): `Broadcasting`,
+> `Concurrency`, `Image`, `JsonSchema`, `Notifications`, `Process`, `Testing`. App tak pakai
+> subsistem Illuminate-nya (grep = 0). `Access\Gate` ikut gratis di package `Auth` L13.
+> `Testing` adalah pengecualian **bucket 2**: package-nya baru, tapi idiom LAMA yang digantinya
+> (`assertResponseOk`/`$this->call`/crawler) **ada** di `Foundation\Testing` fork dan dipakai
+> ~500 file test → rewrite wajib sebelum swap (lihat §6/matrix).
+> **Catatan Bus:** beda dari YAGNI lain — Bus **tak boleh** di-skip karena hard-require Events.
 
 ---
 
-### 5b. Pergeseran backing library (penentu class/effort)
+## 5. Prasyarat #1 — SPLIT MONOLITH + INTRODUCE CONTRACTS + REPLACE-MAP (buka semua)
 
-`require` non-illuminate di composer.json = mesin terawat yang menopang komponen. Delta
-backing = penentu utama `done`/`shim`/`reshape`.
+Fork sekarang = `laravel/framework` **monolitik** (satu package, `replace` 27 `illuminate/*`).
+Real `illuminate/*` v13 = puluhan package terpisah dengan namespace `Illuminate\*` yang **sama**
+DAN keduanya bernama `laravel/framework`. Konsekuensi:
 
-| Komponen | Backing 4.2 | Backing 13 | Implikasi |
-|---|---|---|---|
-| encryption | OpenSSL | OpenSSL | sama → **done** |
-| hashing | `password_*` | `password_*` | sama → **done** |
-| cookie/http/session/routing/console | `symfony/*` | `symfony/*` (sama) | mesin sama; delta = API Illuminate, bukan engine → effort lebih rendah |
-| filesystem | `symfony/finder` (FS native) | **`league/flysystem`** | re-platform → shim-std |
-| support | (mungil, pure) | **doctrine/inflector, vlucas/phpdotenv, ramsey/uuid, league/uri, commonmark, symfony/uid, carbon** | membengkak → choke point **very-high** |
-| translation | `symfony/translation` | native (ditulis ulang) | backing dilepas; API mirip |
-| pagination | `symfony/http-foundation`+`translation` | native (ditulis ulang) | reshape ringan |
-| cache | native/carbon | **+PSR-16, `symfony/cache`** | reshape |
-| validation | `symfony/translation`+`http-foundation` | **+`egulias/email-validator`, `brick/math`, `ramsey/uuid`** | rule bertambah |
-| database | carbon | **+`brick/math`** (desimal presisi) | reshape, surface app terbesar |
-| log | `monolog` v2 | `monolog` v3 | major bump |
-| mail | `symfony/mailer` | **+`league/commonmark`, css-inline, transport bridges** | Mailable/markdown baru |
-| container | pure | **`psr/container`** (PSR-11) | flip; adopsi kontrak PSR-11 |
+1. **Replace + namespace collision** → fork dan v13 tak bisa co-exist di classpath → swap **wajib
+   per-cluster**, bukan per-file bebas. Tiap swap butuh **edit blok `replace` fork** (§1a).
+2. **SCC-1 harus diputus** sebelum core-nya bisa di-swap → introduce `Contracts` agar Facade/
+   binding/import pindah dari kelas konkret ke interface.
 
-**Pola:** komponen ber-backing Symfony sama di kedua sisi (cookie/http/session/routing/
-console) → murah, delta cuma di lapisan Illuminate. Yang mahal = yang **ganti/menambah
-backing** (filesystem→Flysystem, support membengkak, validation/cache/database nambah lib).
+**Langkah Prasyarat (urut):**
+1. **Introduce `Contracts`** verbatim dari stock 13 (semua 33 subdomain) — pure leaf
+   (`realDeps=[]`, `blockers=[]`). Jangan tambah `illuminate/*` ke composer-nya. Fork tak
+   `replace` contracts → tak ada konflik.
+2. **Introduce leaf traits/util** dengan **copy SOURCE** ke bawah Support, **tetap fisik di tree
+   Support** (namespace, bukan package boundary, yang penting di monolith):
+   `Macroable` (rename dari `MacroableTrait`), `Conditionable` + `HigherOrderWhenProxy`,
+   `Reflector` superset + `ReflectsClosures`, `Collections` shape superset.
+   **JANGAN** `composer require illuminate/collections|macroable|conditionable|pipeline` sekarang —
+   collide dengan on-disk fork Support (§4). Real package menyusul di window SCC-1.
+3. **Alihkan Facade/binding** dari import konkret ke interface `Contracts\*` → **SCC-1 putus**.
+4. **Siapkan `replace`-map (§1a):** dokumentasikan tiap entry `replace` fork → package v13 target +
+   urutan pembukaannya (SCC-1 cluster dulu, lalu L2 per-unit, lalu SCC-2). Belum diedit sekarang;
+   entry dihapus **saat** cluster-nya di-swap (Fase 4).
+
+Setelah ini, pola berulang per-komponen (§6) bisa jalan.
 
 ---
 
-### 5c. ⚠️ Gotcha kritis migrasi (temuan verified per-komponen)
+## 6. Pola berulang per-komponen (STRICT-MODE-L13 loop)
 
-Ini jebakan konkret yang ditemukan agent saat baca kode L42x vs L13. **Prioritaskan yang
-"silent" — tak ada error, cuma hasil salah.**
+Untuk **tiap** komponen, tiga langkah:
+
+**(a) Tighten fork type → strict-mode-L13.** Perketat signature publik fork agar sama/lebih
+ketat dari stock 13. Idiom 4.2 lama jadi `TypeError`/method-not-found. Enforcement hidup di
+kontrak framework (single source of truth) — **kecuali** dua kelas di bawah.
+
+**(b) App conforms — DIPAKSA PHP+Psalm (bucket 2/3 saja).** Karena signature diperketat, call-site
+lama gagal compile/resolve. App migrasi ke idiom baru. **Bucket 1 = SKIP langkah ini** (app tak
+tersentuh — idiom juga ada di stock 13).
+
+**(c) Swap komponen ke `illuminate/*` v13 asli.** Hormati replace+namespace-collision → hapus entry
+dari blok `replace` fork (§1a), lalu `composer require illuminate/<pkg>:^13`, swap per-cluster
+bottom-up. Setelah swap, shim/alias di fork mati.
+
+**Dua pengecualian di mana strictness fork TIDAK bertahan pasca-swap (butuh guard non-type):**
+- **Tighten-then-lint (Cache-TTL, bucket 3).** Fork perketat TTL → interval-only **sementara**,
+  memaksa app pass interval. Tapi stock 13 `put($k,$v,$ttl=null)` (verified `Repository.php:367`,
+  `Contracts/Cache/Repository.php:29`) **re-admit bare int** saat swap → bug 60× senyap kembali
+  **tak-terjaga**. **Guard permanen = Psalm-rule/ratchet-grep** yang melarang bare-int TTL, hidup
+  **melewati** swap. Bukan self-liquidating.
+- **Fork-only temporary-abstract (Console `handle()`).** Fork bikin `handle()` abstract
+  **sementara** untuk me-ratchet ~308 rewrite `fire()`. Tapi stock 13 me-resolve
+  `method_exists($this,'handle')?'handle':'__invoke'` (verified `Command.php:289`) → `fire()`-only
+  jatuh ke `__invoke` missing = **runtime `BadMethodCall`**, bukan abstract/Psalm error. Post-swap
+  deteksi = **grep + boot-smoke**, bukan type.
+
+Untuk pola yang **TIDAK type-expressible** (missing global helper `str_*`/`array_*`, SQL
+string-concat, config assertion seperti default cipher / redis client, wire-format payload,
+Blade-cache flush, route-array `'before'=>`): **pakai ratchet CI grep / boot-guard / runbook**.
+
+### 6a. Ringkasan bucket + enforcement per-komponen
+
+Detail lengkap (rasional bucket, fork strict action, app impact, swap order) ada di
+**`MIGRATION-ENFORCEMENT-MATRIX.md`**. Ringkas di sini:
+
+| Komponen | Bucket | Type-expr? | Enforcement inti | Kerja app |
+|---|---|:---:|---|---|
+| **Contracts** | 1 | ✅ (by presence) | introduce verbatim; binding type-hint interface | ~0 (1-file rename ikut Support) |
+| **Support** | 2 | ⚠️ sebagian | rename `MacroableTrait`→`Macroable`, hapus `Support\Contracts\*Interface`; helper `str_*`/`array_*` → **ratchet (bukan type)** | kecil: 1 file interface + audit helper |
+| **Collections** | 1 | ❌ (copy source, superset) | copy source ke tree Support; parity test; **real swap di SCC-1 window** (collide fork on-disk) | nol |
+| **Macroable** | 2 | ✅ (rename) | `use ...MacroableTrait` → trait-not-found | nol app (framework-internal) |
+| **Conditionable** | 1 | ❌ (copy source) | copy 2 file | nol |
+| **Pipeline** | 2 | ❌ (removal ada di Routing) | copy source; filter-removal di Routing | indirect (filter→middleware) |
+| **Reflection** | 1 | ✅ (trivial, sudah aman) | keep `Support\Reflector` superset | nol |
+| **Container** | 1 | ✅ | hapus `share/isShared/bindShared/resolvingAny`; relokasi exception ke Contracts (alias) | ~0 (11 ref, 10 test, alias jaga) |
+| **Http** | 1 | ✅ | hapus `FrameGuard`; internal `Support\Contracts\*`→`Contracts\Support\*` | nol |
+| **Cache** | **3** | ⚠️ **tighten-then-lint** | **fork tighten TTL param → `DateTimeInterface\|DateInterval`** (bare int TypeError) untuk **memaksa migrasi app**; **guard permanen pasca-swap = Psalm-rule/ratchet-grep** (stock 13 `$ttl=null` re-admit bare int → strictness fork menguap). `StoreInterface`→`Contracts\Cache\Store`. **Fork-internal bare-int caller (verified: `CacheBasedSessionHandler.php:60`, `ArrayStore.php:74`, `ApcStore.php:94`) harus dikonversi di commit yang sama** atau fork tak boot. | task 1.1 DONE; 5 custom Store pindah contract |
+| **Events** | 2 | ✅ | add `dispatch()` canonical, deprecate lalu hapus `fire()/queue()/firing()/forgetQueued()`; drop `$priority` | ~96 `fire()`→`dispatch()` + review 118 `listen()` |
+| **Encryption** | 2 | ✅ | hapus `setKey()`; implement `Contracts\Encryption\*`; relokasi `DecryptException` (alias) | ~0 code; config `cipher=AES-256-CBC` (deploy) |
+| **Cookie** | 2 | ⚠️ sebagian | widen jar param (additive); **rewrite Guard/Queue decorator → middleware** (flip-time) | ~0 code; runtime logout sekali di flip |
+| **Session** | 2 | ⚠️ sebagian | Store `implements Contracts\Session\Session`, hapus bag API; Middleware → StartSession/AuthenticateSession | ~0 code (402 site di data-API stabil) |
+| **Redis** | 1 | ❌ (wholesale replace + config) | drop-in RedisManager; config `client` = **config-guard, bukan type** | nol |
+| **Filesystem** | 2 | ✅ (alias) | relokasi `FileNotFoundException` ke Contracts + `class_alias` (`@deprecated`) | 11 import (aliasable, deferrable) |
+| **Database** | 2 | ⚠️ campuran | hapus `lists()`; rename `pluck`→`value` + `pluck` semantik-baru; `SoftDeletingTrait`→`SoftDeletes`; `ArrayableInterface`→`Arrayable`. **pluck-swap NOT type-expressible** → grep/Psalm-rule + review | **sangat besar**: ~173 lists + ~193 pluck + ~21 rename |
+| **Queue** | 1 | ✅ (removal kecil) | hapus closure-push branch + Iron.io driver; **string-push + `fire()` handler tetap valid di 13** | 2 closure push; ops: **drain queue** di cutover |
+| **Console** | 2 | ⚠️ **fork-only temp-abstract** | fork **sementara** `execute()` panggil `abstract handle()` untuk me-ratchet ~308 rewrite; **stock 13 resolve handle-or-`__invoke` runtime → post-swap deteksi = grep/boot-smoke, bukan abstract/Psalm**; hapus `Application::make/start/...` | **besar**: ~308 `fire()`→`handle()`, ~87 getArguments/Options→`$signature`, Kernel wiring |
+| **Config** | 2 | ✅ | hapus `getEnvironment()` + loader/package-cascade; ctor `(array)` | ~48 site `getEnvironment()`→`App::environment()` (incl. blade) |
+| **Exception** | 2 | ❌ (closure/string-binding) | hapus `App::error()`/bindings → merge ke Foundation Handler | **besar**: 11 `App::error` + custom ExceptionServiceProvider rewrite |
+| **Translation** | 1 | ✅ | hapus `trans()/transChoice()`, implement `Contracts\Translation\Translator` | nol (app pakai `Lang::get`/`__`) |
+| **Log** | 1 | ✅ | rename `getMonolog()`→`getLogger()`, `Writer`→`Logger`; hapus `useFiles/useDailyFiles` | 3 `getMonolog()` (CoreLogServiceProvider + Monolog 1→3) |
+| **View** | 1 | ❌ (subset, sudah benar) | hapus `Factory::of/name/alias`; Blade `extend` **bukan** type → grep/manual | 2 `Blade::extend`→`directive` |
+| **Workbench** | 1 | ❌ (delete) | hapus dir + composer require | nol |
+| **Routing** | 2 | ✅ (method removal) | hapus `filter/before/after/when/callFilter/controller`; drop HttpKernelInterface. Route-array `'before'=>` **bukan** type → grep | **besar**: ~52 filter + 141-line filters.php + 131 route-array → middleware |
+| **Validation** | 1 | ✅ (contract identity) | Validator `implements Contracts\Validation\Validator` (drop old) | nol (18 `make`, 0 custom rule) |
+| **Hashing** | 2 | ✅ | `HasherInterface` extend/alias `Contracts\Hashing\Hasher`, lalu delete | 4 site type-hint → contract |
+| **Foundation** | 2 | ❌ (positive bootstrap) | hapus `App::error/missing/fatal/down/middleware`, drop HttpKernel/Terminable; **reshape bootstrap = grep/boot-smoke** | **sangat besar**: bootstrap rewrite + testing base |
+| **Mail** | 2 | ✅ | `send():?SentMessage`, hapus `failures()`/closure-queue, `queue()` terima Mailable | ~17 closure/callback → Mailable |
+| **Auth** | 1 | ✅ (self-liquidating, app kosong) | drop `attempt()` 3rd arg, relokasi UserInterface→Contracts, AuthManager `implements Factory` | ~0 (853 file di facade stabil; 0 breaking site) |
+| **Bus** | 1 | ❌ (introduce, transitif Events) | **BUKAN skip** — hard-require `illuminate/events` → wajib terpasang di SCC-1 window; copy verbatim (sudah strict) | nol (0 `Illuminate\Bus` call) |
+| **CachedRouting** | 2 | ✅ (removal) | hapus `Router::cache()/clearCache()` + subtree | 28 `Route::cache(__FILE__,fn)` de-sugar |
+| **Html** | 2 | ❌ (preserve API) | **app-space-extract** verbatim; enforcement = boot-smoke, bukan type | 0 view edit; pindah 3 file provider |
+| **Pagination** | 2 | ✅ (mostly) | rename getter (`getCurrentPage`→`currentPage`…); hapus Factory/Presenter | ~3 site (Presenter/Factory) + `items()` rename |
+| **Testing** | 2 | ✅ (removal di Foundation) | hapus `assertResponseOk/$this->call/crawler` dari `Foundation\Testing` | **besar**: ~500 file test → fluent `TestResponse` |
+
+---
+
+## 7. ⚠️ Gotcha kritis migrasi (verified — JANGAN dilemahkan)
+
+Jebakan konkret yang ditemukan agent saat baca kode fork vs L13. **Prioritaskan yang "silent".**
 
 **A. Silent behavior change (paling bahaya — tak ada error, hasil beda diam-diam)**
-- 🔴 **Cache TTL menit → detik.** Setiap `Cache::put/add/remember($k,$v, N)` dengan TTL
-  numerik: L42x = N **menit**, L13 = N **detik** → cache **60× lebih pendek**, senyap.
-  Regresi paling berdampak. Sweep semua call-site TTL numerik.
-- 🟠 **Hashing cost 10 → 12.** Hash lama tetap `verify` (aman), cuma CPU/login naik.
-- 🟠 **Database casting.** Timestamp default, `$dateFormat`, null vs empty-string,
-  strict-mode — bisa ubah nilai tanpa error.
-- 🟠 **Redis default Predis → phpredis.** L13 default `ext-redis`; kalau tak terpasang & app
-  mengandalkan Predis, wiring harus dipin ke `predis`.
+- 🔴 **Cache TTL menit → detik** (bucket 3, **tighten-then-lint — BUKAN self-liquidating**).
+  `Cache::put/add/remember($k,$v,N)` TTL numerik: fork = N **menit**, L13 = N **detik** → 60×
+  lebih pendek, senyap. **Enforcement dua tahap:** (1) fork **sementara** tighten param ke
+  `DateTimeInterface|DateInterval` → bare int = `TypeError` → paksa migrasi app; (2) **guard
+  permanen pasca-swap = Psalm-rule/ratchet-grep** melarang bare-int TTL — karena stock 13
+  `put($k,$v,$ttl=null)` (verified `Repository.php:367`, `Contracts/Cache/Repository.php:29`,
+  `getSeconds():903`) **kembali menerima bare int**, strictness fork **menguap saat swap**. Task
+  1.1 (app) **DONE** (sudah pass Carbon interval). Follow-on: fork tighten (memaksa) + Psalm-rule
+  (menjaga). **Fork-internal bare-int caller (verified: `CacheBasedSessionHandler.php:60` `put($id,$data,$this->minutes)`,
+  `ArrayStore.php:74` & `ApcStore.php:94` `put($key,$value,0)`) harus dikonversi bareng tighten**
+  atau fork tak boot.
+- 🔴 **Database `pluck`↔`value`/`lists` name-swap** (bucket 2, **NOT type-expressible**).
+  fork `pluck`=single value → L13 `value()`; fork `lists`=column array → L13 `pluck()`.
+  193 `->pluck()` site berubah arti diam-diam. Rename fork memaksa review; **grep/Psalm-rule**
+  cegah dev "memperbaiki" balik ke `pluck()` dengan makna salah.
+- 🟠 **Database casting.** Timestamp default, `$dateFormat`, null vs empty-string, strict-mode.
+- 🟠 **Redis default Predis → phpredis** (config assertion, bukan type): pin `client=>predis`
+  bila `ext-redis` absen.
+- 🟠 **Encryption default cipher** (fork AES-256-CBC vs L13 aes-128-cbc): boot-guard config,
+  bukan signature — pin `cipher=AES-256-CBC` sebelum swap atau cookie/cache lama undecryptable.
 
-**B. Persisted-state pecah saat flip (data ditulis L42x tak terbaca L13)**
-- 🔴 **Auth recaller cookie & session.** Format "remember me" beda (L42x `getRecallerName`
-  vs L13 `Recaller`) → sesi aktif invalid, logout massal. **Wajib dual-read** (§8).
-- 🔴 **Cookie `EncryptCookies` v2.** L13 mem-prefix HMAC (`CookieValuePrefix 'v2'`) &
-  memvalidasi; cookie terenkripsi lama L42x ditolak saat flip.
-- 🔴 **Queue wire-format.** Payload ter-serialisasi L42x di SQS/Redis **tak bisa** dikonsumsi
-  worker L13. **Drain antrian sampai kosong saat cutover.**
-- 🟠 **Auth `Reminders` → `Passwords`.** Tabel `password_reminders` → `password_resets`;
-  migration/kode yang menyebut `Illuminate\Auth\Reminders\*` pecah.
-- 🟠 **View Blade compiled cache.** `.php` hasil kompilasi di `storage/framework/views`
-  **wajib di-flush** saat flip.
+**B. Persisted-state pecah saat flip (data ditulis fork tak terbaca L13)**
+- 🔴 **Auth recaller cookie & session** — format "remember me" beda → logout massal.
+  **Wajib dual-read** (§8).
+- 🔴 **Cookie `EncryptCookies` v2.** L13 mem-prefix HMAC (`CookieValuePrefix 'v2'`) & memvalidasi;
+  cookie terenkripsi lama fork ditolak saat flip (logout sekali, expected).
+- 🔴 **Queue wire-format.** Payload ter-serialisasi fork **tak bisa** dikonsumsi worker L13.
+  **Drain antrian sampai kosong saat cutover** (runbook, bukan type).
+- 🟠 **Auth `Reminders` → `Passwords`.** Tabel `password_reminders` → `password_resets`.
+- 🟠 **View Blade compiled cache** wajib di-flush di `storage/framework/views` saat swap.
+- 🟠 **Cache DatabaseStore drop Encrypter** — row cache-table terenkripsi lama tak terbaca;
+  invalidate/flush DB cache di cutover.
 
-**C. Rename mekanis (sweep sebelum/saat flip)**
-- `Console` `fire()` → `handle()` (**48 definisi**); array args → `$signature`.
-- `Events` `fire()` → `dispatch()` (**21 callsite**); `firing()` dihapus.
-- `Support` `MacroableTrait` → `Macroable`; `Illuminate\Support\Contracts\*` →
-  `Illuminate\Contracts\Support\*` (Arrayable/Jsonable/Renderable/MessageProvider).
-- `Pagination` getter: `getCurrentPage`→`currentPage`, `getLastPage`→`lastPage`,
-  `getFrom`→`firstItem`, `getTo`→`lastItem`, `getTotal`→`total`, `getPerPage`→`perPage`.
-- `Routing` filters (`Route::filter`, `->before/->after`, `filters.php`) → **middleware**.
-- Eloquent `->lists()` → `pluck()`; `ArrayableInterface` → `Arrayable`; `SoftDeletingTrait`.
+**C. Rename mekanis yang type-caught (idiom lama jadi TypeError/method-not-found)**
+- `Events` `fire()` → `dispatch()` (**~96 callsite**); `firing()`/`$priority` dihapus.
+- `Support` `MacroableTrait` → `Macroable`; `Support\Contracts\*Interface` → `Contracts\Support\*`.
+- `Pagination` getter: `getCurrentPage`→`currentPage`, dll.; `getItems()`→`items()`.
+- `Database` `->lists()` → `->pluck()`; `SoftDeletingTrait`→`SoftDeletes`; `ArrayableInterface`→`Arrayable`.
+- `Config` `getEnvironment()` → `App::environment()`.
+- `Cache` `StoreInterface` → `Contracts\Cache\Store`.
+- `Hashing` `HasherInterface` → `Contracts\Hashing\Hasher`.
+- `Filesystem` `Illuminate\Filesystem\FileNotFoundException` → `Contracts\Filesystem\...` (alias).
+- **`Console` `fire()` → `handle()` (~308 def)** — type-caught **HANYA di fork** (temporary
+  abstract). **Menguap saat swap** (stock resolve `handle`-or-`__invoke` runtime) → post-swap =
+  grep/boot-smoke, lihat §7D.
 
-**D. Breakage di app-space (ditemukan agent grep app konsumen — verifikasi ulang di app)**
-- `Html` `Form::`/`HTML::` di **~497 file view** → ekstrak ke package, API dipertahankan.
-- `Config::getEnvironment()` dipakai di `pixel.blade.php`, `sentry.blade.php` dll — method
-  ini **dihapus** di L13.
-- `CachedRouting` `->cache(...)` pada route facade → de-sugar ke registrasi route biasa.
+**D. Enforcement grep/boot/runbook (NOT type-expressible / strictness fork menguap saat swap)**
+- 🔴 **Cache bare-int TTL — guard PERMANEN** (strictness fork menguap; stock re-admit bare int)
+  → **Psalm-rule / ratchet-grep** yang hidup melewati swap.
+- 🔴 **Console `fire()`-only command pasca-swap** (stock jatuh ke `__invoke` missing =
+  runtime `BadMethodCall`, bukan Psalm) → **grep `function fire(` + boot-smoke tiap command**.
+- Global helper `str_*`/`array_*` (helpers.php 59→23) — missing function fatal saat call, tak
+  terlihat Psalm → **ratchet grep**.
+- `Routing` route-array `'before'=>'auth'` (array key, bukan method call) → **grep/Psalm-rule**.
+- `Foundation` bootstrap `bootstrap/app.php` builder / Kernel middleware arrays / `withExceptions`
+  → **grep + boot-smoke test** (file yang tak panggil builder baru bukan type error).
+- `Exception` `App::error(Closure)` + `$app['exception']` string-binding → **grep**.
+- SQL string-concat / `whereRaw` → **ratchet grep** (SQLi surface).
+- Redis client / Encryption cipher / config channels logging.php → **boot-guard / config assertion**.
 
-> Struktural: **komponen `Contracts` tidak ada sama sekali di pohon L42x** (`src/Illuminate/
-> Contracts` absen). Karena banyak rename di atas bermuara ke relokasi ke namespace
-> `Illuminate\Contracts\*`, **memperkenalkan `Contracts` = prasyarat** (Fase 4) yang membuka
-> mayoritas sweep rename ini.
-
----
-
-## 6. Roadmap berfase (cross-ref graph)
-
-### Fase 0 — Enabler (sekali kerja, buka semua)
-- **WAF di edge** (Cloudflare/AWS) — tutup surface security core 4.2 yang tak terpatch **sekarang**.
-- **Ratchet CI + divergence ledger** — rem satu arah agar konvergensi tak mundur.
-- **`../framework` L13 sebagai north-star** tanda tangan API.
-
-### Fase 1 — Evaporate (susutkan fork tanpa port)
-`cachedrouting`, `workbench`, `exception`, bagian `queue`/SQS → bekukan, tandai "hapus saat flip".
-
-### Fase 2 — Leaf/done (audit + pin)
-`encryption`, `hashing` → sudah di primitif terawat. Audit sekali, dokumentasikan "sengaja begini".
-
-### Fase 3 — Decoupling app-space *(bulk bertahun-tahun, nol izin management)*
-Tarik logika bisnis dari `database`/controller ke PHP polos; kustomisasi core → service
-provider/package. Digerakkan ratchet, bukan proyek. **Metric % file lepas-framework =
-bukti progres ke management.**
-
-### Fase 4 — Putus cycle + shim (bottom-up per graph)
-1. Perkenalkan `Contracts`/`Collections` → **putus SCC-1**.
-2. `support` (Arr/Str/Collection L13-sig, Facade→kontrak) — buka L2–L3.
-3. `session` (shim-symfony), `config`, `log`, `filesystem` (flysystem), `translation`.
-
-### Fase 5 — Reshape call-site (framework-locked)
-`routing`, `validation`, `http`, `view`, `pagination`, `mail`, `cache`, `events`, `queue`,
-`auth` → bentuk call-site ke idiom L13; mesin tetap 4.2 sampai flip.
-
-### Fase 6 — The Flip *(minggu, bukan bulan)*
-Skeleton L13 stock → pindah app code (sudah L13-sig) + package app-space → copot semua shim,
-buang core 4.2 + komponen evaporate → **dual-read Auth** (§8) → **Laravel 13 stock, tanpa fork**.
+> Struktural: **package `Contracts` tidak ada sama sekali di tree fork**. Banyak rename di atas
+> bermuara ke relokasi namespace `Illuminate\Contracts\*` → **introduce `Contracts` = Prasyarat**
+> (§5) yang membuka mayoritas sweep rename ini.
 
 ---
 
-## 7. Risk register
-
-| Risiko | Dampak | Mitigasi |
-|---|---|---|
-| Framework EOL, tanpa patch vendor (core Illuminate) | security surface tak terjaga | WAF (Fase 0); leaf sudah di primitif terawat; audit sekali komponen glue |
-| Cycle SCC-1 menghalangi kerja terpisah | migrasi macet | perkenalkan `Contracts` lebih dulu (Fase 4) |
-| "Gradual" membusuk jadi limbo dua-idiom | onboarding makin kacau | **ratchet CI** (blok pola 4.2 baru, grandfather lama) |
-| Endgame jadi fork baru "L130x" | jebakan terulang | anti-goal (§9): kustomisasi ke extension point, core haram |
-| Flip Auth me-logout semua user | insiden produksi | **dual-read transition** (§8) |
-| SQL injection di query string-concat | data breach | audit `whereRaw`/concat → binding (Fase 3) |
-
----
-
-## 8. Auth — transition dual-read (agar flip tanpa logout massal)
+## 8. Auth — transition dual-read (agar flip tanpa logout massal) — TIDAK berubah
 
 `Guard` menyimpan state di format Illuminate yang **sudah beredar** di user:
 - recaller cookie: `{user_id}|{remember_token}` (dienkripsi app key)
 - session key user login: `login_{sha1(class)}`
 
-Saat flip, **jangan** langsung ganti format (semua sesi/cookie invalid). Pola zero-downtime:
-1. **Baca dua format**: recaller & session key lama (Illuminate) *dan* format baru L13.
+Saat swap Auth, **jangan** langsung ganti format. Pola zero-downtime:
+1. **Baca dua format**: recaller & session key lama (fork) *dan* format baru L13.
 2. **Tulis** hanya format baru.
-3. Format lama kedaluwarsa alami seiring TTL remember-me (mis. beberapa minggu).
+3. Format lama kedaluwarsa alami seiring TTL remember-me.
 4. Hapus kode dual-read setelah TTL lewat.
+
+> Catatan Auth (verified): app pakai facade stabil di **853 file**, dan **0 call-site** untuk
+> setiap API yang dihapus (attempt 3rd arg, Reminders, custom provider, manager driver). Jadi
+> Auth = **bucket 1** (fork-only) untuk app ini; strictness self-liquidating gratis. Yang tersisa
+> = dual-read state format (runtime), bukan code edit. Catatan swap: `illuminate/auth:^13`
+> **hard-require** `illuminate/queue` → Auth swap butuh Queue (L2) sudah L13-shaped.
 
 ---
 
-## 9. ⛔ Anti-goal (kotak peringatan)
+## 9. ⛔ Anti-goal (kotak peringatan — DIPERKUAT)
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
-║  ENDGAME = LARAVEL 13 STOCK (UNFORKED).                               ║
+║  ENDGAME = LARAVEL 13 STOCK (UNFORKED). FORK DIHAPUS, FORK = 0.       ║
 ║                                                                       ║
-║  "L13 custom" hanya MILESTONE/perancah (4.2 memakai baju L13 via      ║
-║  shim), BUKAN tujuan. Jika berhenti di L13 yang di-fork, jebakan      ║
-║  4.2 terulang satu versi ke atas.                                     ║
+║  "STRICT-MODE L13" cuma PERANCAH: fork yang signature-nya diperketat  ║
+║  agar app pindah ke idiom L13 SEBELUM tiap komponen di-swap ke        ║
+║  illuminate/* v13 asli. Ia SELF-LIQUIDATING untuk removal (fire/      ║
+║  lists/getEnvironment) — hilang begitu swap selesai. TAPI DUA KELAS   ║
+║  TIDAK self-liquidating & butuh guard non-type PERMANEN:              ║
+║   • Cache-TTL (stock re-admit bare int) → Psalm-rule/ratchet.         ║
+║   • Console handle() (stock resolve handle|__invoke) → grep/boot.     ║
+║                                                                       ║
+║  Enforcement lewat TYPE (PHP+Psalm) bila removal; ratchet CI          ║
+║  DIDEMOTE tapi TETAP untuk: pola non-type (helper, SQL-concat,        ║
+║  config) DAN guard pasca-swap tighten-then-lint di atas.              ║
+║                                                                       ║
+║  Fork & stock SAMA-SAMA laravel/framework & sama-sama replace         ║
+║  illuminate/* → TAK BISA co-install. Swap per-cluster = hapus entry   ║
+║  replace fork tiap langkah; Fase-5 gate: replace fork = 0 baru        ║
+║  composer require laravel/framework:^13.                              ║
 ║                                                                       ║
 ║  Semua kustomisasi → EXTENSION POINT L13:                            ║
 ║    Auth::extend, custom cache/queue/route driver, macro,              ║
@@ -376,19 +501,110 @@ Saat flip, **jangan** langsung ganti format (semua sesi/cookie invalid). Pola ze
 
 ---
 
-## 10. Metodologi & keterbatasan
+## 10. Roadmap berfase (framework-first)
+
+### Fase 0 — Enabler (sekali kerja)
+- **WAF di edge** (Cloudflare/AWS) — tutup surface security core 4.2 tak terpatch **sekarang**.
+- **`../framework` L13 sebagai north-star** signature (single source of truth kontrak).
+- **Ratchet CI didemote** — untuk pola non-type (helper global, SQL-concat, config) **DAN** guard
+  pasca-swap tighten-then-lint (Cache-TTL bare-int) + fork-only temp-abstract (Console fire-only).
+
+### Fase 1 — PRASYARAT: split monolith + introduce Contracts + replace-map (§5)
+Split fork monolitik → potongan `illuminate/*`-shaped; introduce `Contracts` + leaf traits
+(**copy source**, bukan composer require); alihkan Facade/binding ke interface → **putus SCC-1**.
+Siapkan `replace`-map (§1a) untuk dibuka per-cluster. **Ini membuka semua.**
+
+### Fase 2 — Strict-mode tighten (bucket 2/3, per-komponen, tanpa swap)
+Perketat signature fork komponen-per-komponen (§6 langkah a). App conforms, dipaksa PHP+Psalm
+(§6 langkah b). Cache TTL tighten (+ konversi fork-internal caller + tambah Psalm-rule guard),
+Events `dispatch()`, Database `lists`/`pluck`/`SoftDeletes`, Console `handle()` (temp abstract),
+Config `getEnvironment()`, Routing filters→middleware, dst. Mesin masih fork.
+
+### Fase 3 — App-space extract (yang tak punya padanan v13)
+`Html` extract verbatim ke package app-space (0 view edit). `CachedRouting` de-sugar 28 site.
+Logika bisnis ditarik ke PHP polos (selamat dari swap).
+
+### Fase 4 — Swap bottom-up per cluster (§6 langkah c; tiap swap = edit `replace` fork §1a)
+1. **SCC-1 core cutover** (contracts+reflection+support+container jangkar; http/session/cache/
+   cookie/encryption/events/filesystem/redis/database + **bus** transitif satu window). Hapus
+   ~12 entry dari `replace` fork; `composer require illuminate/<pkg>:^13` masing-masing.
+2. **L2** per-unit (baru terbuka setelah SCC-1; hard-require dipenuhi): console (butuh view),
+   config, translation, log, view, routing (butuh session), validation, hashing, queue (butuh
+   database+console). Tiap: hapus entry `replace` → require real.
+3. **SCC-2 terminal (the flip):** putus cycle (Mailer contract + Auth Contracts) → swap
+   foundation+mail+auth (auth butuh queue L2) → dual-read Auth (§8) → drain queue, flush Blade
+   cache, migrasi tabel.
+
+### Fase 5 — Fork = 0
+Copot semua shim/alias; hapus komponen evaporate (CachedRouting/Workbench/Exception/Html-in-core);
+buang core fork; **verifikasi blok `replace` fork = 0 entry** (prasyarat resolver) → `composer
+require laravel/framework:^13` stock, tanpa fork; verifikasi tak ada `Illuminate\*` fork tersisa.
+Hapus dual-read setelah TTL remember-me lewat. **Pertahankan** Psalm-rule Cache-TTL bare-int +
+grep Console fire-only (guard pasca-swap yang tak self-liquidate).
+
+---
+
+## 11. Risk register
+
+| Risiko | Dampak | Mitigasi |
+|---|---|---|
+| Framework EOL, tanpa patch vendor (core Illuminate) | security surface tak terjaga | WAF (Fase 0); swap ke v13 asli mengakhiri maintainer-burden |
+| Cycle SCC-1 menghalangi swap terpisah | migrasi macet | **Prasyarat #1**: introduce `Contracts` → putus SCC-1 (§5) |
+| **Fork & stock sama-sama `laravel/framework` & replace illuminate/*** | **tak bisa co-install (resolver conflict)** | swap **per-cluster** + **edit blok `replace` fork tiap langkah** (§1a); Fase-5 gate replace=0 |
+| Namespace `Illuminate\*` collide fork↔v13 | tak bisa co-exist | swap **per-cluster** (SCC-1 core sebagai satu window) |
+| Idiom 4.2 lolos ke prod (bucket 2 removal) | regresi senyap | **enforcement via type** (PHP+Psalm), self-liquidating |
+| **Cache-TTL bare-int kembali pasca-swap** (stock re-admit) | **bug 60× senyap balik** | **Psalm-rule/ratchet-grep PERMANEN** (tighten fork hanya memaksa migrasi, tak menjaga) |
+| **Console `fire()`-only lolos pasca-swap** (stock jatuh ke `__invoke`) | command mati runtime | **grep + boot-smoke tiap command** (temp-abstract fork menguap saat swap) |
+| Pola non-type lolos (helper/SQL-concat/config) | regresi | ratchet grep + boot-guard + runbook (§7D) |
+| Endgame jadi fork baru "L130x" | jebakan terulang | anti-goal (§9): strict-mode = perancah, fork=0 |
+| Flip Auth me-logout semua user | insiden produksi | **dual-read transition** (§8) |
+| Queue wire-format / Cookie v2 / DB-cache | data tak terbaca | drain queue + invalidate cache + logout-sekali di cutover (runbook) |
+| SQL injection di query string-concat | data breach | audit `whereRaw`/concat → binding (Fase 2, ratchet) |
+| Fork tak boot setelah Cache tighten (internal bare-int caller) | build merah | konversi `CacheBasedSessionHandler:60`+`ArrayStore:74`+`ApcStore:94` di commit yang sama |
+
+---
+
+## 12. Metodologi & keterbatasan
 
 - **Edges** = `grep -rhoE 'use Illuminate\\[A-Za-z]+'` per direktori komponen di kedua repo,
   dedupe lowercase, exclude self. Deterministik & tervalidasi manual.
-- **SCC/layer/critical-path** = Tarjan + topological layering (kode deterministik),
-  divalidasi manual (akar cycle di-grep langsung: Facade→Http, CapsuleTrait→Container,
-  PasswordBroker→Mail, MailServiceProvider→Foundation).
-- **Verifikasi per-komponen** = workflow multi-agent (baca kode L42x + L13, grep count
-  nyata, koreksi adversarial). Dijalankan bertahap dengan resume tiap org spend limit reset.
-  Status: **28/28 komponen existing ter-verifikasi**; 7 komponen **L13-baru** (Bus,
-  JsonSchema, Process, Broadcasting, Notifications, Image, Testing) belum ter-verify —
-  tidak kritikal (bukan tabel utama, lihat §4). Data mentah verified disimpan di
-  `.migration-verified-records.json` (apiDelta + risks lengkap per komponen).
-- **Keterbatasan**: auto-generate doc + audit oleh agent gagal di spend limit; dokumen ini
-  **di-merge manual** dari record verified (bukan tulisan agent). Klaim app-space di §5c(D)
-  ditemukan agent via grep app konsumen — **verifikasi ulang di repo `dicoding`** saat digarap.
+- **SCC/layer/critical-path** = Tarjan + topological layering (deterministik), divalidasi manual
+  (akar cycle di-grep langsung: Facade→Http, CapsuleTrait→Container, PasswordBroker→Mail,
+  MailServiceProvider→Foundation). **Layer L2 di-re-derive dari HARD-REQUIRE v13** (console→view,
+  queue→database+console, auth→queue, routing→session), bukan suggest — console pindah dari L0 ke L2.
+- **Verifikasi & re-klasifikasi 3-bucket per-komponen** = workflow multi-agent adversarial (baca
+  kode fork + L13, grep count nyata di app `dicoding`, koreksi klasifikasi). Data mentah di
+  `.migration-verified-records.json` (42 record) + prosa `MIGRATION-DETAIL.md`; matriks
+  enforcement `MIGRATION-ENFORCEMENT-MATRIX.md`.
+- **Koreksi enforcement dari review (verified vs kode, 2026-09-10):**
+  - **Cache-TTL BUKAN type-expressible di stock 13.** `Cache/Repository.php:367`
+    `put($key,$value,$ttl=null)` + `Contracts/Cache/Repository.php:29` (untyped) + `getSeconds():903`
+    (terima bare int). Fork interval-only lebih ketat dari stock → **tidak self-liquidating** →
+    reklasifikasi tighten-then-lint (guard permanen = Psalm/ratchet).
+  - **Console `handle()` BUKAN abstract/Psalm-catch.** `Command.php:289`
+    `method_exists($this,'handle')?'handle':'__invoke'` → `fire()`-only jatuh ke `__invoke` missing =
+    runtime `BadMethodCall`. Reklasifikasi fork-only temporary-abstract + post-swap grep/boot-smoke.
+  - **Composer replace-collision.** Fork & stock sama-sama `laravel/framework`; fork replace 27,
+    stock replace 37 `illuminate/*` → tak bisa co-install → swap-per-cluster butuh edit blok
+    `replace` fork (§1a).
+  - **Collections early = copy source, bukan composer require.** Fork replace `support` tapi tak
+    replace `collections`; real `illuminate/collections` collide `Support/Collection.php` fork
+    on-disk → introduce = copy source ke tree Support, real swap di window SCC-1.
+  - **Database hard-require** (dari review): `illuminate/database:^13` hard-require **hanya**
+    container/support/contracts/collections/conditionable/macroable; events/filesystem/console =
+    suggest. Klaim lama "drag pagination/http/queue/broadcasting" **dikoreksi** — itu bukan hard
+    require; swap-window tetap benar via namespace/replace.
+  - **Bus non-opsional.** `illuminate/events:^13` hard-require `illuminate/bus` → Bus wajib ikut
+    SCC-1 window (bukan SKIP/YAGNI seperti record lama).
+- **Koreksi bucket dari re-klasifikasi (tetap berlaku):**
+  - Record lama menyebut Exception "nothing to migrate, effort low" — **SALAH untuk app**: 11
+    `App::error` + custom ExceptionServiceProvider harus di-rewrite → medium.
+  - Record lama menyiratkan Queue "every job must become ShouldQueue" — **SALAH**: L13 KEEP
+    string-push + `fire()` default → bucket 1, ~2 closure site saja.
+  - Record lama Hashing "done, no imports" — **SALAH**: 4 site type-hint `HasherInterface`
+    (dihapus di 13) → bucket 2 kecil.
+- **Keterbatasan**: klaim app-space (grep count) ditemukan agent di repo `dicoding` — verifikasi
+  ulang saat digarap. `.env`-specific config dir (`app/config/local/…`) harus direkonsiliasi
+  dengan model single-dir + `env()` L13 saat Foundation flip. Hard-require graph L2 (console→view
+  dst) berbasis metadata package v13 yang dikutip review; verifikasi ulang `composer.json` tiap
+  split-package saat swap.
