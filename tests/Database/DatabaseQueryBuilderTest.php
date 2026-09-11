@@ -91,7 +91,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 
 		$driver->shouldReceive('remember')
 						 ->once()
-						 ->with($query->getCacheKey(), 5, m::type('Closure'))
+						 ->with($query->getCacheKey(), m::type(\DateTimeInterface::class), m::type('Closure'))
 						 ->andReturnUsing(function($key, $minutes, $callback) { return $callback(); });
 
 
@@ -134,7 +134,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 
 		$taggedCache->shouldReceive('remember')
 						->once()
-						->with($query->getCacheKey(), 5, m::type('Closure'))
+						->with($query->getCacheKey(), m::type(\DateTimeInterface::class), m::type('Closure'))
 						->andReturnUsing(function($key, $minutes, $callback) { return $callback(); });
 
 		$this->assertEquals($query->get(), ['results']);

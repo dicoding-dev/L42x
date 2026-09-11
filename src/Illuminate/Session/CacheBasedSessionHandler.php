@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Session;
 
+use Carbon\Carbon;
 use Illuminate\Cache\Repository;
 
 class CacheBasedSessionHandler implements \SessionHandlerInterface {
@@ -57,7 +58,7 @@ class CacheBasedSessionHandler implements \SessionHandlerInterface {
 	public function write(string $id, string $data): bool
 	{
 		try {
-            $this->cache->put($id, $data, $this->minutes);
+            $this->cache->put($id, $data, Carbon::now()->addMinutes($this->minutes));
         } catch (\Throwable) {
             return false;
         }
