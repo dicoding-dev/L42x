@@ -3,7 +3,7 @@
 use ArrayObject;
 use Illuminate\Support\Contracts\ArrayableInterface;
 use Illuminate\Support\Contracts\JsonableInterface;
-use Illuminate\Support\Contracts\RenderableInterface;
+use Illuminate\Contracts\Support\Renderable;
 use InvalidArgumentException;
 use JsonSerializable;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -65,10 +65,10 @@ class Response extends SymfonyResponse
             }
 		}
 
-		// If this content implements the "RenderableInterface", then we will call the
+		// If this content implements the "Renderable", then we will call the
 		// render method on the object so we will avoid any "__toString" exceptions
 		// that might be thrown and have their errors obscured by PHP's handling.
-		elseif ($content instanceof RenderableInterface)
+		elseif ($content instanceof Renderable)
 		{
 			$content = $content->render();
 		}
