@@ -754,7 +754,7 @@ class Connection implements ConnectionInterface {
 	{
 		if (isset($this->events))
 		{
-			$this->events->fire('illuminate.query', array($query, $bindings, $time, $this->getName()));
+			$this->events->dispatch('illuminate.query', array($query, $bindings, $time, $this->getName()));
 		}
 
 		if ( ! $this->loggingQueries) return;
@@ -786,7 +786,7 @@ class Connection implements ConnectionInterface {
 	{
 		if (isset($this->events))
 		{
-			$this->events->fire('connection.'.$this->getName().'.'.$event, $this);
+			$this->events->dispatch('connection.'.$this->getName().'.'.$event, $this);
 		}
 	}
 

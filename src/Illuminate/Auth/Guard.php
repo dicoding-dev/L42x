@@ -391,7 +391,7 @@ class Guard {
 		{
 			$payload = array($credentials, $remember, $login);
 
-			$this->events->fire('auth.attempt', $payload);
+			$this->events->dispatch('auth.attempt', $payload);
 		}
 	}
 
@@ -435,7 +435,7 @@ class Guard {
 		// based on the login and logout events fired from the guard instances.
 		if (isset($this->events))
 		{
-			$this->events->fire('auth.login', array($user, $remember));
+			$this->events->dispatch('auth.login', array($user, $remember));
 		}
 
 		$this->setUser($user);
@@ -528,7 +528,7 @@ class Guard {
 
 		if (isset($this->events))
 		{
-			$this->events->fire('auth.logout', array($user));
+			$this->events->dispatch('auth.logout', array($user));
 		}
 
 		// Once we have fired the logout event we will clear the users out of memory

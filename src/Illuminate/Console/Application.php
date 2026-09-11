@@ -73,7 +73,7 @@ class Application extends \Symfony\Component\Console\Application {
 		if (isset($this->laravel['events']))
 		{
 			$this->laravel['events']
-					->fire('artisan.start', array($this));
+					->dispatch('artisan.start', array($this));
 		}
 
 		return $this;
