@@ -6,7 +6,6 @@ use Illuminate\Session\Store;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Storage\MetadataBag;
 
 class SessionStoreTest extends BackwardCompatibleTestCase
 {
@@ -23,15 +22,12 @@ class SessionStoreTest extends BackwardCompatibleTestCase
         $session->getHandler()->shouldReceive('read')->once()->with($this->getSessionId())->andReturn(
             serialize(['foo' => 'bar', 'bagged' => ['name' => 'taylor']])
         );
-        $session->registerBag(new Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag('bagged'));
 		$session->start();
 
 		$this->assertEquals('bar', $session->get('foo'));
 		$this->assertEquals('baz', $session->get('bar', 'baz'));
 		$this->assertTrue($session->has('foo'));
 		$this->assertFalse($session->has('bar'));
-		$this->assertEquals('taylor', $session->getBag('bagged')->get('name'));
-		$this->assertInstanceOf(MetadataBag::class, $session->getMetadataBag());
 		$this->assertTrue($session->isStarted());
 
 		$session->put('baz', 'boom');
@@ -39,11 +35,20 @@ class SessionStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testSessionGetBagException()
+	public function testExists()
 	{
-		$this->expectException('InvalidArgumentException');
 		$session = $this->getSession();
-		$session->getBag('doesNotExist');
+		$session->put('foo', 'bar');
+		$session->put('baz', null);
+
+		$this->assertTrue($session->exists('foo'));
+		$this->assertTrue($session->exists('baz'));
+		$this->assertTrue($session->exists(['foo', 'baz']));
+		$this->assertFalse($session->exists(['foo', 'bar']));
+		$this->assertFalse($session->exists('bar'));
+
+		$this->assertTrue($session->has('foo'));
+		$this->assertFalse($session->has('baz'));
 	}
 
 
@@ -119,7 +124,6 @@ class SessionStoreTest extends BackwardCompatibleTestCase
 					'new' => [],
 					'old' => ['baz'],
                 ],
-				'_sf2_meta' => $session->getBagData('_sf2_meta'),
             ])
 		);
 		$session->save();
@@ -219,25 +223,15 @@ class SessionStoreTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testClear()
+	public function testFlush()
 	{
 		$session = $this->getSession();
-		$session->set('foo', 'bar');
-
-		$bag = new Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag('bagged');
-		$bag->set('qu', 'ux');
-		$session->registerBag($bag);
-
-		$session->clear();
-		$this->assertFalse($session->has('foo'));
-		$this->assertFalse($session->getBag('bagged')->has('qu'));
-
-		$session->set('foo', 'bar');
-		$session->getBag('bagged')->set('qu', 'ux');
+		$session->put('foo', 'bar');
 
 		$session->flush();
+
 		$this->assertFalse($session->has('foo'));
-		$this->assertFalse($session->getBag('bagged')->has('qu'));
+		$this->assertEmpty($session->all());
 	}
 
 

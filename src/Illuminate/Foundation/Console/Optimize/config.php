@@ -68,7 +68,6 @@ return array_map('realpath', array(
     $basePath.'/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Database/ConnectionResolverInterface.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Database/Connectors/ConnectionFactory.php',
-    $basePath.'/vendor/laravel/framework/src/Illuminate/Session/SessionInterface.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Session/Middleware.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Session/Store.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Session/SessionManager.php',

@@ -2,6 +2,7 @@
 
 use Closure;
 use Carbon\Carbon;
+use Illuminate\Contracts\Session\Session;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -66,7 +67,7 @@ class Middleware implements HttpKernelInterface {
 		{
 			$session = $this->startSession($request);
 
-			$request->setSession($session);
+			$request->setLaravelSession($session);
 		}
 
 		$response = $this->app->handle($request, $type, $catch);
@@ -105,7 +106,7 @@ class Middleware implements HttpKernelInterface {
 	 * Start the session for the given request.
 	 *
 	 * @param  \Symfony\Component\HttpFoundation\Request  $request
-	 * @return \Illuminate\Session\SessionInterface
+	 * @return \Illuminate\Contracts\Session\Session
 	 */
 	protected function startSession(Request $request)
 	{
@@ -119,10 +120,10 @@ class Middleware implements HttpKernelInterface {
 	/**
 	 * Close the session handling for the request.
 	 *
-	 * @param  \Illuminate\Session\SessionInterface  $session
+	 * @param  \Illuminate\Contracts\Session\Session  $session
 	 * @return void
 	 */
-	protected function closeSession(SessionInterface $session)
+	protected function closeSession(Session $session)
 	{
 		$session->save();
 
@@ -145,10 +146,10 @@ class Middleware implements HttpKernelInterface {
 	/**
 	 * Remove the garbage from the session if necessary.
 	 *
-	 * @param  \Illuminate\Session\SessionInterface  $session
+	 * @param  \Illuminate\Contracts\Session\Session  $session
 	 * @return void
 	 */
-	protected function collectGarbage(SessionInterface $session)
+	protected function collectGarbage(Session $session)
 	{
 		$config = $this->manager->getSessionConfig();
 
@@ -183,10 +184,10 @@ class Middleware implements HttpKernelInterface {
 	 * Add the session cookie to the application response.
 	 *
 	 * @param  \Symfony\Component\HttpFoundation\Response  $response
-	 * @param  \Symfony\Component\HttpFoundation\Session\SessionInterface  $session
+	 * @param  \Illuminate\Contracts\Session\Session  $session
 	 * @return void
 	 */
-	protected function addCookieToResponse(Response $response, SessionInterface $session)
+	protected function addCookieToResponse(Response $response, Session $session)
 	{
 		$s = $session;
 
@@ -252,7 +253,7 @@ class Middleware implements HttpKernelInterface {
 	 * Get the session implementation from the manager.
 	 *
 	 * @param  \Symfony\Component\HttpFoundation\Request  $request
-	 * @return \Illuminate\Session\SessionInterface
+	 * @return \Illuminate\Contracts\Session\Session
 	 */
 	public function getSession(Request $request)
 	{
