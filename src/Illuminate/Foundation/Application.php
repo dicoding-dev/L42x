@@ -861,7 +861,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	{
 		if ( ! is_null($this['config']['session.driver']) && ! $request->hasSession())
 		{
-			$request->setSession($this['session']->driver());
+			$request->setLaravelSession($this['session']->driver());
 		}
 
 		return $request;

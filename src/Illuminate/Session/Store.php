@@ -1,12 +1,11 @@
 <?php namespace Illuminate\Session;
 
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Str;
 use SessionHandlerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionBagInterface;
-use Symfony\Component\HttpFoundation\Session\Storage\MetadataBag;
+use stdClass;
 
-class Store implements SessionInterface {
+class Store implements Session {
 
 	/**
 	 * The session ID.
@@ -28,27 +27,6 @@ class Store implements SessionInterface {
 	 * @var array
 	 */
 	protected $attributes = array();
-
-	/**
-	 * The session bags.
-	 *
-	 * @var array
-	 */
-	protected $bags = array();
-
-	/**
-	 * The meta-data bag instance.
-	 *
-	 * @var \Symfony\Component\HttpFoundation\Session\Storage\MetadataBag
-	 */
-	protected $metaBag;
-
-	/**
-	 * Local copies of the session bag data.
-	 *
-	 * @var array
-	 */
-	protected $bagData = array();
 
 	/**
 	 * The session handler implementation.
@@ -77,11 +55,12 @@ class Store implements SessionInterface {
 		$this->setId($id);
 		$this->name = $name;
 		$this->handler = $handler;
-		$this->metaBag = new MetadataBag;
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Start the session, reading the data from a handler.
+	 *
+	 * @return bool
 	 */
 	public function start(): bool
 	{
@@ -100,13 +79,6 @@ class Store implements SessionInterface {
 	protected function loadSession()
 	{
 		$this->attributes = $this->readFromHandler();
-
-		foreach (array_merge($this->bags, array($this->metaBag)) as $bag)
-		{
-			$this->initializeLocalBag($bag);
-
-			$bag->initialize($this->bagData[$bag->getStorageKey()]);
-		}
 	}
 
 	/**
@@ -122,18 +94,9 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * Initialize a bag in storage if it doesn't exist.
+	 * Get the current session ID.
 	 *
-	 * @param  \Symfony\Component\HttpFoundation\Session\SessionBagInterface  $bag
-	 * @return void
-	 */
-	protected function initializeLocalBag($bag)
-	{
-		$this->bagData[$bag->getStorageKey()] = $this->pull($bag->getStorageKey(), []);
-	}
-
-	/**
-	 * {@inheritdoc}
+	 * @return string
 	 */
 	public function getId(): string
     {
@@ -141,7 +104,10 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Set the session ID.
+	 *
+	 * @param  string  $id
+	 * @return void
 	 */
 	public function setId($id)
 	{
@@ -175,7 +141,9 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Get the name of the session.
+	 *
+	 * @return string
 	 */
 	public function getName(): string
     {
@@ -183,7 +151,10 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Set the name of the session.
+	 *
+	 * @param  string  $name
+	 * @return void
 	 */
 	public function setName($name)
 	{
@@ -191,9 +162,11 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Flush the session data and regenerate the ID.
+	 *
+	 * @return bool
 	 */
-	public function invalidate($lifetime = null): bool
+	public function invalidate(): bool
     {
 		$this->attributes = array();
 
@@ -203,9 +176,12 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Generate a new session ID for the session.
+	 *
+	 * @param  bool  $destroy
+	 * @return bool
 	 */
-	public function migrate($destroy = false, $lifetime = null): bool
+	public function migrate($destroy = false): bool
     {
 		if ($destroy) $this->handler->destroy($this->getId());
 
@@ -226,30 +202,17 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Save the session data to storage.
+	 *
+	 * @return void
 	 */
 	public function save()
 	{
-		$this->addBagDataToSession();
-
 		$this->ageFlashData();
 
 		$this->handler->write($this->getId(), serialize($this->attributes));
 
 		$this->started = false;
-	}
-
-	/**
-	 * Merge all of the bag data into the session.
-	 *
-	 * @return void
-	 */
-	protected function addBagDataToSession()
-	{
-		foreach (array_merge($this->bags, array($this->metaBag)) as $bag)
-		{
-			$this->put($bag->getStorageKey(), $this->bagData[$bag->getStorageKey()]);
-		}
 	}
 
 	/**
@@ -267,7 +230,28 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Checks if a key exists.
+	 *
+	 * @param  string|array  $key
+	 * @return bool
+	 */
+	public function exists($key): bool
+    {
+		$placeholder = new stdClass;
+
+		foreach (is_array($key) ? $key : func_get_args() as $k)
+		{
+			if ($this->get($k, $placeholder) === $placeholder) return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Determine if a key is present and not null.
+	 *
+	 * @param  string  $name
+	 * @return bool
 	 */
 	public function has($name): bool
     {
@@ -275,7 +259,11 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Get an item from the session.
+	 *
+	 * @param  string  $name
+	 * @param  mixed  $default
+	 * @return mixed
 	 */
 	public function get($name, $default = null): mixed
     {
@@ -325,7 +313,11 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Set a key / value pair in the session.
+	 *
+	 * @param  string  $name
+	 * @param  mixed   $value
+	 * @return void
 	 */
 	public function set($name, $value)
 	{
@@ -372,7 +364,8 @@ class Store implements SessionInterface {
 	 * @param  mixed   $value
 	 * @return void
 	 */
-	public function flash($key, $value)
+	// ponytail: keeps 4.2 flash.{new,old} keys, not v13 _flash.* — align at the illuminate/session swap when live sessions drain.
+	public function flash($key, $value = true)
 	{
 		$this->put($key, $value);
 
@@ -444,7 +437,9 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Get all of the session data.
+	 *
+	 * @return array
 	 */
 	public function all(): array
     {
@@ -452,7 +447,10 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Replace the given session attributes entirely.
+	 *
+	 * @param  array  $attributes
+	 * @return void
 	 */
 	public function replace(array $attributes)
 	{
@@ -463,7 +461,10 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Remove an item from the session, returning its value.
+	 *
+	 * @param  string  $name
+	 * @return mixed
 	 */
 	public function remove($name): mixed
     {
@@ -471,27 +472,14 @@ class Store implements SessionInterface {
 	}
 
 	/**
-	 * Remove an item from the session.
+	 * Remove one or many items from the session.
 	 *
-	 * @param  string  $key
+	 * @param  string|array  $key
 	 * @return void
 	 */
 	public function forget($key)
 	{
 		array_forget($this->attributes, $key);
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function clear()
-	{
-		$this->attributes = array();
-
-		foreach ($this->bags as $bag)
-		{
-			$bag->clear();
-		}
 	}
 
 	/**
@@ -501,53 +489,17 @@ class Store implements SessionInterface {
 	 */
 	public function flush()
 	{
-		$this->clear();
+		$this->attributes = array();
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Determine if the session has been started.
+	 *
+	 * @return bool
 	 */
 	public function isStarted(): bool
     {
 		return $this->started;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function registerBag(SessionBagInterface $bag)
-	{
-		$this->bags[$bag->getStorageKey()] = $bag;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getBag($name): SessionBagInterface
-    {
-		return array_get($this->bags, $name, function()
-		{
-			throw new \InvalidArgumentException("Bag not registered.");
-		});
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getMetadataBag(): MetadataBag
-    {
-		return $this->metaBag;
-	}
-
-	/**
-	 * Get the raw bag data array for a given bag.
-	 *
-	 * @param  string  $name
-	 * @return array
-	 */
-	public function getBagData($name)
-	{
-		return array_get($this->bagData, $name, array());
 	}
 
 	/**
@@ -638,10 +590,10 @@ class Store implements SessionInterface {
 	/**
 	 * Set the request on the handler instance.
 	 *
-	 * @param  \Symfony\Component\HttpFoundation\Request  $request
+	 * @param  \Illuminate\Http\Request  $request
 	 * @return void
 	 */
-	public function setRequestOnHandler(Request $request)
+	public function setRequestOnHandler($request)
 	{
 		if ($this->handlerNeedsRequest())
 		{
