@@ -66,8 +66,13 @@ class Collection extends BaseCollection {
 	 * @return bool
 	 */
 	#[\Override]
-    public function contains($key)
+    public function contains($key, $operator = null, $value = null)
 	{
+		if (func_num_args() > 1)
+		{
+			return parent::contains($key, $operator, $value);
+		}
+
 		return ! is_null($this->find($key));
 	}
 
@@ -81,34 +86,6 @@ class Collection extends BaseCollection {
     public function fetch($key)
 	{
 		return new static(array_fetch($this->toArray(), $key));
-	}
-
-	/**
-	 * Get the max value of a given key.
-	 *
-	 * @param  string  $key
-	 * @return mixed
-	 */
-	public function max($key)
-	{
-		return $this->reduce(function($result, $item) use ($key)
-		{
-			return (is_null($result) || $item->{$key} > $result) ? $item->{$key} : $result;
-		});
-	}
-
-	/**
-	 * Get the min value of a given key.
-	 *
-	 * @param  string  $key
-	 * @return mixed
-	 */
-	public function min($key)
-	{
-		return $this->reduce(function($result, $item) use ($key)
-		{
-			return (is_null($result) || $item->{$key} < $result) ? $item->{$key} : $result;
-		});
 	}
 
 	/**
@@ -194,8 +171,13 @@ class Collection extends BaseCollection {
 	 * @return static
 	 */
 	#[\Override]
-    public function unique()
+    public function unique($key = null, $strict = false)
 	{
+		if ( ! is_null($key))
+		{
+			return parent::unique($key, $strict);
+		}
+
 		$dictionary = $this->getDictionary();
 
 		return new static(array_values($dictionary));
