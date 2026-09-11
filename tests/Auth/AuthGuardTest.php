@@ -157,7 +157,7 @@ class AuthGuardTest extends BackwardCompatibleTestCase
         $guard = new Guard($this->userProvider->reveal(), $this->session->reveal(), new Request());
         $guard->setDispatcher(($events = $this->prophesize(Dispatcher::class))->reveal());
 
-		$events->fire('auth.attempt', [['foo'], false, true])->shouldBeCalledTimes(1);
+		$events->dispatch('auth.attempt', [['foo'], false, true])->shouldBeCalledTimes(1);
 		$this->userProvider->retrieveByCredentials(['foo'])->shouldBeCalledTimes(1);
 
 		$guard->attempt(['foo']);
@@ -195,7 +195,7 @@ class AuthGuardTest extends BackwardCompatibleTestCase
         $this->session->migrate(true)->willReturn(true);
         $this->session->put(Argument::type('string'), 'foo')->shouldBeCalledOnce();
 
-        $events->fire('auth.login', [$user, false])->shouldBeCalledTimes(1);
+        $events->dispatch('auth.login', [$user, false])->shouldBeCalledTimes(1);
 
 		$guard->login($user->reveal());
 	}
@@ -289,7 +289,7 @@ class AuthGuardTest extends BackwardCompatibleTestCase
         $guard->setCookieJar(($cookieJar = $this->prophesize(CookieJar::class))->reveal());
         $guard->setDispatcher(($event = $this->prophesize(Dispatcher::class))->reveal());
 
-        $event->fire('auth.logout', [$user])->shouldBeCalledTimes(1);
+        $event->dispatch('auth.logout', [$user])->shouldBeCalledTimes(1);
 
         $guard->logout();
 	}
