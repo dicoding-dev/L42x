@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Events\Dispatcher;
-use Illuminate\Log\Writer;
+use Illuminate\Log\Logger as IlluminateLogger;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Monolog\Handler\ErrorLogHandler;
@@ -20,7 +20,7 @@ class LogWriterTest extends BackwardCompatibleTestCase
 
     public function testFileHandlerCanBeAdded()
     {
-        $writer = new Writer($monolog = m::mock(Logger::class));
+        $writer = new IlluminateLogger($monolog = m::mock(Logger::class));
         $monolog->shouldReceive('pushHandler')->once()->with(m::type(StreamHandler::class));
         $writer->useFiles(__DIR__);
 	}
@@ -28,7 +28,7 @@ class LogWriterTest extends BackwardCompatibleTestCase
 
 	public function testRotatingFileHandlerCanBeAdded()
 	{
-		$writer = new Writer($monolog = m::mock(Logger::class));
+		$writer = new IlluminateLogger($monolog = m::mock(Logger::class));
 		$monolog->shouldReceive('pushHandler')->once()->with(m::type(RotatingFileHandler::class));
 		$writer->useDailyFiles(__DIR__, 5);
 	}
@@ -36,7 +36,7 @@ class LogWriterTest extends BackwardCompatibleTestCase
 
 	public function testErrorLogHandlerCanBeAdded()
 	{
-		$writer = new Writer($monolog = m::mock(Logger::class));
+		$writer = new IlluminateLogger($monolog = m::mock(Logger::class));
 		$monolog->shouldReceive('pushHandler')->once()->with(m::type(ErrorLogHandler::class));
 		$writer->useErrorLog();
 	}
@@ -44,8 +44,8 @@ class LogWriterTest extends BackwardCompatibleTestCase
 
 	public function testMagicMethodsPassErrorAdditionsToMonolog()
 	{
-		$writer = new Writer($monolog = m::mock(Logger::class));
-		$monolog->shouldReceive('error')->once()->with('foo');
+		$writer = new IlluminateLogger($monolog = m::mock(Logger::class));
+		$monolog->shouldReceive('log')->once()->with('error', 'foo', []);
 
 		$writer->error('foo');
 	}
@@ -53,8 +53,8 @@ class LogWriterTest extends BackwardCompatibleTestCase
 
 	public function testWriterFiresEventsDispatcher()
 	{
-		$writer = new Writer($monolog = m::mock(Logger::class), $events = new Illuminate\Events\Dispatcher);
-		$monolog->shouldReceive('error')->once()->with('foo');
+		$writer = new IlluminateLogger($monolog = m::mock(Logger::class), $events = new Illuminate\Events\Dispatcher);
+		$monolog->shouldReceive('log')->once()->with('error', 'foo', []);
 
 		$events->listen('illuminate.log', function($level, $message, array $context = [])
 		{
@@ -79,7 +79,7 @@ class LogWriterTest extends BackwardCompatibleTestCase
     public function testListenShortcutFailsWithNoDispatcher()
     {
         $this->expectException(RuntimeException::class);
-        $writer = new Writer($monolog = m::mock(Logger::class));
+        $writer = new IlluminateLogger($monolog = m::mock(Logger::class));
         $writer->listen(
             function () {
             }
@@ -89,7 +89,7 @@ class LogWriterTest extends BackwardCompatibleTestCase
 
 	public function testListenShortcut()
 	{
-		$writer = new Writer($monolog = m::mock(Logger::class), $events = m::mock(
+		$writer = new IlluminateLogger($monolog = m::mock(Logger::class), $events = m::mock(
             Dispatcher::class
         ));
 
