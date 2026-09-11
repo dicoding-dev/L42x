@@ -1,6 +1,7 @@
 <?php namespace Illuminate\Database\Query;
 
 use Closure;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
@@ -1440,7 +1441,7 @@ class Builder {
 			return $cache->rememberForever($key, $callback);
 		}
 
-		return $cache->remember($key, $minutes, $callback);
+		return $cache->remember($key, Carbon::now()->addMinutes($minutes), $callback);
 	}
 
 	/**

@@ -36,6 +36,7 @@
  */
 
 use Closure;
+use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Routing\Router as LaravelRouter;
@@ -114,7 +115,7 @@ class Router extends LaravelRouter
             // Persist the routes, ignoring failures so a broken cache store
             // never propagates out of boot (routes stay defined in memory).
             try {
-                $cacher->put($cacheKey, $this->routes->getCacheableRoutes(), $cacheMinutes);
+                $cacher->put($cacheKey, $this->routes->getCacheableRoutes(), Carbon::now()->addMinutes($cacheMinutes));
             } catch (\Throwable $e) {
                 // Best-effort cache; a write failure is non-fatal.
             }

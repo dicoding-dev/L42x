@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Cache\StoreInterface;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
@@ -53,18 +54,17 @@ class CacheRepositoryTest extends BackwardCompatibleTestCase
 	{
 		$repo = $this->getRepository();
 		$repo->getStore()->shouldReceive('get')->andReturn(null);
-		$repo->getStore()->shouldReceive('put')->once()->with('foo', 'bar', 10);
-		$result = $repo->remember('foo', 10, function() { return 'bar'; });
+		$repo->getStore()->shouldReceive('put')->once()->with('foo', 'bar', m::type('int'));
+		$result = $repo->remember('foo', Carbon::now()->addMinutes(10), function() { return 'bar'; });
 		$this->assertEquals('bar', $result);
+	}
 
-		/**
-		 * Use Carbon object...
-		 */
-		// $repo = $this->getRepository();
-		// $repo->getStore()->shouldReceive('get')->andReturn(null);
-		// $repo->getStore()->shouldReceive('put')->once()->with('foo', 'bar', 9);
-		// $result = $repo->remember('foo', Carbon::now()->addMinutes(10), function() { return 'bar'; });
-		// $this->assertEquals('bar', $result);
+
+	public function testPutAcceptsDateIntervalTtl()
+	{
+		$repo = $this->getRepository();
+		$repo->getStore()->shouldReceive('put')->once()->with('foo', 'bar', m::type('int'));
+		$repo->put('foo', 'bar', new DateInterval('PT10M'));
 	}
 
 
