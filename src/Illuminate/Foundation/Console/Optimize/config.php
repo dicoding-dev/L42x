@@ -101,6 +101,7 @@ return array_map('realpath', array(
     $basePath.'/vendor/laravel/framework/src/Illuminate/Support/MessageBag.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Support/Facades/View.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/Support/Contracts/RenderableInterface.php',
+    $basePath.'/vendor/laravel/framework/src/Illuminate/Contracts/Support/Renderable.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/View/View.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/View/Engines/EngineInterface.php',
     $basePath.'/vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php',

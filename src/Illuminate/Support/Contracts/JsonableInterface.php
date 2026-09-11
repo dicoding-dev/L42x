@@ -1,6 +1,8 @@
 <?php namespace Illuminate\Support\Contracts;
 
-interface JsonableInterface {
+use Illuminate\Contracts\Support\Jsonable;
+
+interface JsonableInterface extends Jsonable {
 
 	/**
 	 * Convert the object to its JSON representation.
