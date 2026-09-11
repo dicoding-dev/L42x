@@ -7,17 +7,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.6.0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '8.3.29'
           tools: composer
           coverage: none
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3.4.3
         with:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
@@ -35,19 +35,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.6.0
         with:
           fetch-depth: 0
 
       - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '8.4'
           tools: composer
           coverage: none
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3.4.3
         with:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.6.0
 
       - name: Guard against new Laravel-4.2-only patterns
         run: bash ci/convergence-ratchet.sh src
