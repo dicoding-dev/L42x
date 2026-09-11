@@ -79,7 +79,8 @@
             "src/Illuminate/Queue/IlluminateQueueClosure.php"
         ],
         "files": [
-            "src/Illuminate/Support/helpers.php"
+            "src/Illuminate/Support/helpers.php",
+            "src/Illuminate/Support/functions.php"
         ],
         "psr-4": {
             "L4\\": "src/L4/",

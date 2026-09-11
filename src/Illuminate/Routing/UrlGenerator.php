@@ -361,7 +361,7 @@ class UrlGenerator {
 	 */
 	protected function getStringParameters(array $parameters)
 	{
-		return array_where($parameters, function($k, $v) { return is_string($k); });
+		return array_where($parameters, function($v, $k) { return is_string($k); });
 	}
 
 	/**
@@ -372,7 +372,7 @@ class UrlGenerator {
 	 */
 	protected function getNumericParameters(array $parameters)
 	{
-		return array_where($parameters, function($k, $v) { return is_numeric($k); });
+		return array_where($parameters, function($v, $k) { return is_numeric($k); });
 	}
 
 	/**

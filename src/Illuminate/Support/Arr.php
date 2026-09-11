@@ -3,12 +3,111 @@
 use ArgumentCountError;
 use ArrayAccess;
 use Closure;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Traits\MacroableTrait;
 use InvalidArgumentException;
+use JsonSerializable;
+use Traversable;
+use WeakMap;
 
 class Arr {
 
 	use MacroableTrait;
+
+    /**
+     * Get an array from the given items.
+     *
+     * @param  mixed  $items
+     * @return array
+     */
+    public static function from($items)
+    {
+        return match (true) {
+            is_array($items) => $items,
+            $items instanceof Enumerable => $items->all(),
+            $items instanceof Arrayable => $items->toArray(),
+            $items instanceof WeakMap => iterator_to_array($items, false),
+            $items instanceof Traversable => iterator_to_array($items),
+            $items instanceof Jsonable => json_decode($items->toJson(), true),
+            $items instanceof JsonSerializable => (array) $items->jsonSerialize(),
+            is_object($items) => (array) $items,
+            default => throw new InvalidArgumentException('Items cannot be represented by a scalar value.'),
+        };
+    }
+
+    /**
+     * Run an associative map over each of the items.
+     *
+     * The callback should return an associative array with a single key/value pair.
+     *
+     * @param  array  $array
+     * @param  callable  $callback
+     * @return array
+     */
+    public static function mapWithKeys(array $array, callable $callback)
+    {
+        $result = [];
+
+        foreach ($array as $key => $value) {
+            $assoc = $callback($value, $key);
+
+            foreach ($assoc as $mapKey => $mapValue) {
+                $result[$mapKey] = $mapValue;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Partition the array into two arrays using the given callback.
+     *
+     * @param  array  $array
+     * @param  callable  $callback
+     * @return array
+     */
+    public static function partition($array, callable $callback)
+    {
+        $passed = [];
+        $failed = [];
+
+        foreach ($array as $key => $item) {
+            if ($callback($item, $key)) {
+                $passed[$key] = $item;
+            } else {
+                $failed[$key] = $item;
+            }
+        }
+
+        return [$passed, $failed];
+    }
+
+    /**
+     * Select an array of values from an array.
+     *
+     * @param  array  $array
+     * @param  array|string  $keys
+     * @return array
+     */
+    public static function select($array, $keys)
+    {
+        $keys = static::wrap($keys);
+
+        return static::map($array, function ($item) use ($keys) {
+            $result = [];
+
+            foreach ($keys as $key) {
+                if (Arr::accessible($item) && Arr::exists($item, $key)) {
+                    $result[$key] = $item[$key];
+                } elseif (is_object($item) && isset($item->{$key})) {
+                    $result[$key] = $item->{$key};
+                }
+            }
+
+            return $result;
+        });
+    }
 
     /**
      * Determine whether the given value is array accessible.
@@ -842,22 +941,15 @@ class Arr {
     }
 
 	/**
-	 * Filter the array using the given Closure.
+	 * Filter the array using the given callback.
 	 *
 	 * @param  array     $array
-	 * @param  \Closure  $callback
+	 * @param  callable  $callback
 	 * @return array
 	 */
-	public static function where($array, Closure $callback): array
+	public static function where($array, callable $callback): array
     {
-		$filtered = array();
-
-		foreach ($array as $key => $value)
-		{
-			if (call_user_func($callback, $key, $value)) $filtered[$key] = $value;
-		}
-
-		return $filtered;
+		return array_filter($array, $callback, ARRAY_FILTER_USE_BOTH);
 	}
 
     /**
@@ -868,7 +960,7 @@ class Arr {
      */
     public static function whereNotNull($array)
     {
-        return static::where($array, function ($key, $value) {
+        return static::where($array, function ($value, $key) {
             return ! is_null($value);
         });
     }
