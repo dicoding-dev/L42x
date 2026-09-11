@@ -3,8 +3,12 @@
 use Closure;
 use ArrayAccess;
 use Illuminate\Support\NamespacedItemResolver;
+use Illuminate\Support\Traits\Macroable;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
 
-class Repository extends NamespacedItemResolver implements ArrayAccess {
+class Repository extends NamespacedItemResolver implements ArrayAccess, ConfigContract {
+
+	use Macroable;
 
 	/**
 	 * The loader implementation.
@@ -108,7 +112,7 @@ class Repository extends NamespacedItemResolver implements ArrayAccess {
 	 * @param  mixed   $value
 	 * @return void
 	 */
-	public function set($key, $value)
+	public function set($key, $value = null)
 	{
 		list($namespace, $group, $item) = $this->parseKey($key);
 
@@ -366,6 +370,174 @@ class Repository extends NamespacedItemResolver implements ArrayAccess {
 	public function getItems()
 	{
 		return $this->items;
+	}
+
+	/**
+	 * Get all of the configuration items.
+	 *
+	 * @return array
+	 */
+	public function all(): array
+	{
+		return $this->items;
+	}
+
+	/**
+	 * Get multiple configuration values.
+	 *
+	 * @param  array  $keys
+	 * @return array
+	 */
+	public function getMany(array $keys): array
+	{
+		$config = [];
+
+		foreach ($keys as $key => $default) {
+			if (is_numeric($key)) {
+				[$key, $default] = [$default, null];
+			}
+
+			$config[$key] = $this->get($key, $default);
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Prepend a value onto an array configuration value.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $value
+	 * @return void
+	 */
+	public function prepend($key, $value): void
+	{
+		$array = $this->get($key, []);
+
+		array_unshift($array, $value);
+
+		$this->set($key, $array);
+	}
+
+	/**
+	 * Push a value onto an array configuration value.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $value
+	 * @return void
+	 */
+	public function push($key, $value): void
+	{
+		$array = $this->get($key, []);
+
+		$array[] = $value;
+
+		$this->set($key, $array);
+	}
+
+	/**
+	 * Get the specified configuration value as a string.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $default
+	 * @return string
+	 */
+	public function string($key, $default = null): string
+	{
+		$value = $this->get($key, $default);
+
+		if (! is_string($value)) {
+			throw new \InvalidArgumentException(sprintf(
+				'Configuration value for [%s] must be a string, %s given.',
+				$key, gettype($value)
+			));
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Get the specified configuration value as an integer.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $default
+	 * @return int
+	 */
+	public function integer($key, $default = null): int
+	{
+		$value = $this->get($key, $default);
+
+		if (! is_int($value)) {
+			throw new \InvalidArgumentException(sprintf(
+				'Configuration value for [%s] must be an integer, %s given.',
+				$key, gettype($value)
+			));
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Get the specified configuration value as a float.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $default
+	 * @return float
+	 */
+	public function float($key, $default = null): float
+	{
+		$value = $this->get($key, $default);
+
+		if (! is_float($value)) {
+			throw new \InvalidArgumentException(sprintf(
+				'Configuration value for [%s] must be a float, %s given.',
+				$key, gettype($value)
+			));
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Get the specified configuration value as a boolean.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $default
+	 * @return bool
+	 */
+	public function boolean($key, $default = null): bool
+	{
+		$value = $this->get($key, $default);
+
+		if (! is_bool($value)) {
+			throw new \InvalidArgumentException(sprintf(
+				'Configuration value for [%s] must be a boolean, %s given.',
+				$key, gettype($value)
+			));
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Get the specified configuration value as an array.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $default
+	 * @return array
+	 */
+	public function array($key, $default = null): array
+	{
+		$value = $this->get($key, $default);
+
+		if (! is_array($value)) {
+			throw new \InvalidArgumentException(sprintf(
+				'Configuration value for [%s] must be an array, %s given.',
+				$key, gettype($value)
+			));
+		}
+
+		return $value;
 	}
 
 	/**

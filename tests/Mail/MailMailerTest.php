@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Log\Writer;
+use Illuminate\Log\Logger;
 use Illuminate\Mail\Mailer;
 use Illuminate\Mail\Message;
 use Illuminate\Mail\Transport\ArrayTransport;
@@ -181,7 +181,7 @@ class MailMailerTest extends BackwardCompatibleTestCase
         $view->shouldReceive('render')->once()->andReturn('rendered.view');
 
         $mailer = new Mailer($view, $transport = new ArrayTransport());
-        $logger = m::mock(Writer::class);
+        $logger = m::mock(Logger::class);
         $logger->shouldReceive('info')->once()->with('Pretending to mail message to: taylor@userscape.com');
         $mailer->setLogger($logger);
         $mailer->pretend();

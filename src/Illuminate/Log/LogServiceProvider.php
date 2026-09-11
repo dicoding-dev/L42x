@@ -19,7 +19,7 @@ class LogServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$logger = new Writer(
+		$logger = new Logger(
 			new Logger($this->app['env']), $this->app['events']
 		);
 
