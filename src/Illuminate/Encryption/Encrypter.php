@@ -1,9 +1,11 @@
 <?php namespace Illuminate\Encryption;
 
-use Symfony\Component\Security\Core\Util\StringUtils;
-use Symfony\Component\Security\Core\Util\SecureRandom;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\Encryption\EncryptException;
+use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
+use Illuminate\Contracts\Encryption\StringEncrypter;
 
-class Encrypter {
+class Encrypter implements EncrypterContract, StringEncrypter {
 
 	/**
 	 * The encryption key.
@@ -71,7 +73,7 @@ class Encrypter {
         );
 
         if ($value === false) {
-            throw new \RuntimeException('Could not encrypt the data.');
+            throw new EncryptException('Could not encrypt the data.');
         }
 
         // Once we have the encrypted value we will go ahead base64_encode the input
@@ -82,7 +84,7 @@ class Encrypter {
         $json = json_encode(compact('iv', 'value', 'mac'));
 
         if (! \is_string($json)) {
-            throw new \RuntimeException('Could not encrypt the data.');
+            throw new EncryptException('Could not encrypt the data.');
         }
 
         return base64_encode($json);
@@ -220,6 +222,28 @@ class Encrypter {
     }
 
     /**
+     * Get the current encryption key and all previous encryption keys.
+     *
+     * @return array
+     */
+    // ponytail: single-key fork; key rotation (previous_keys) arrives with the
+    // illuminate/encryption v13 swap. Contract still satisfied for consumers now.
+    public function getAllKeys(): array
+    {
+        return [$this->key];
+    }
+
+    /**
+     * Get the previous encryption keys.
+     *
+     * @return array
+     */
+    public function getPreviousKeys(): array
+    {
+        return [];
+    }
+
+    /**
      * Calculate the hash of the given payload.
      *
      * @param  array  $payload
@@ -232,16 +256,5 @@ class Encrypter {
             'sha256', $this->hash($payload['iv'], $payload['value']), $bytes, true
         );
     }
-
-	/**
-	 * Set the encryption key.
-	 *
-	 * @param  string  $key
-	 * @return void
-	 */
-	public function setKey($key)
-	{
-		$this->key = (string) $key;
-	}
 
 }

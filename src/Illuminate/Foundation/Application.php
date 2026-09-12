@@ -1158,6 +1158,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		// BC: Log\Writer renamed to Log\Logger (task 3.5); keep old name resolvable.
 		$this->alias('log', 'Illuminate\Log\Writer');
+
+		// Encrypter now implements the L13 contracts (task 2.9); resolve them to 'encrypter'.
+		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\Encrypter');
+		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\StringEncrypter');
 	}
 
 }
