@@ -5,6 +5,7 @@ use Illuminate\Http\FrameGuard;
 use Illuminate\Support\ServiceProvider;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 class FoundationApplicationTest extends BackwardCompatibleTestCase
@@ -159,6 +160,143 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
         $this->assertFalse($app->environment('qux', 'bar'));
         $this->assertFalse($app->environment(['qux', 'bar']));
     }
+
+	public function testCloneSelfReferenceAppKey()
+	{
+		$base = new Application;
+		$base->instance('app', $base);
+
+		$clone = clone $base;
+
+		$this->assertSame($clone, $clone['app'],
+			'clone[\'app\'] must resolve to the clone, not the base');
+		$this->assertSame($base, $base['app'],
+			'base[\'app\'] must still resolve to the base after cloning');
+		$this->assertNotSame($base, $clone['app'],
+			'clone[\'app\'] must not point at the base app');
+	}
+
+	public function testCloneSelfReferenceContainerKey()
+	{
+		$base = new Application;
+		$base->instance('Illuminate\Container\Container', $base);
+
+		$clone = clone $base;
+
+		$this->assertSame($clone, $clone['Illuminate\Container\Container'],
+			'clone[Container] must resolve to the clone');
+		$this->assertSame($base, $base['Illuminate\Container\Container'],
+			'base[Container] must still resolve to the base after cloning');
+	}
+
+	public function testCloneDoesNotFatalOnUninitializedTags()
+	{
+		// An Application that has never called tag() has an uninitialized
+		// $tags typed property (Container.php:108).  Cloning must not read
+		// or write it, otherwise PHP 8.3 throws a fatal.
+		$base = new Application;
+		// Do NOT call $base->tag() - leave $tags uninitialized.
+
+		$exception = null;
+		try {
+			$clone = clone $base;
+		} catch (\Throwable $e) {
+			$exception = $e;
+		}
+
+		$this->assertNull($exception,
+			'clone $app must not throw when $tags has never been initialized; got: '
+			. ($exception ? $exception->getMessage() : ''));
+	}
+
+	public function testHandleOctaneRequestRunsStackAndReturnsUnsentResponse()
+	{
+		$app = $this->newOctaneApplication($jar);
+		$expected = new Response('octane');
+		$app['router']->shouldReceive('dispatch')->once()->andReturn($expected);
+
+		$jar->queue($jar->make('octane_probe', 'v'));
+
+		$response = $app->handleOctaneRequest(SymfonyRequest::create('/octane', 'GET'));
+
+		$this->assertInstanceOf(Response::class, $response);
+		$this->assertSame($expected, $response);
+		$this->assertTrue($this->responseHasCookie($response, 'octane_probe'));
+	}
+
+	public function testBareHandleDoesNotRunQueuedCookieStack()
+	{
+		$app = $this->newOctaneApplication($jar);
+		$expected = new Response('bare');
+		$app['router']->shouldReceive('dispatch')->once()->andReturn($expected);
+
+		$jar->queue($jar->make('octane_probe', 'v'));
+
+		$response = $app->handle(SymfonyRequest::create('/octane', 'GET'));
+
+		$this->assertSame($expected, $response);
+		$this->assertFalse($this->responseHasCookie($response, 'octane_probe'));
+	}
+
+	public function testRunningInOctaneDefaultsFalseAndClonesByValue()
+	{
+		$app = new Application;
+
+		$this->assertFalse($app->runningInOctane());
+
+		$cloneBefore = clone $app;
+
+		$this->assertSame($app, $app->setRunningInOctane());
+		$this->assertTrue($app->runningInOctane());
+		$this->assertFalse($cloneBefore->runningInOctane());
+
+		$cloneAfter = clone $app;
+		$this->assertTrue($cloneAfter->runningInOctane());
+
+		$app->setRunningInOctane(false);
+		$this->assertFalse($app->runningInOctane());
+		$this->assertTrue($cloneAfter->runningInOctane());
+	}
+
+	private function newOctaneApplication(&$jar)
+	{
+		$app = new Application;
+		$jar = new Illuminate\Cookie\CookieJar;
+
+		$app['env'] = 'temporarilynottesting';
+		$app['config'] = array(
+			'app.manifest' => sys_get_temp_dir(),
+			'session.driver' => null,
+			'session' => array(
+				'driver' => null,
+				'cookie' => 'laravel_session',
+				'lottery' => array(0, 100),
+				'path' => '/',
+				'domain' => null,
+				'lifetime' => 120,
+				'expire_on_close' => false,
+			),
+		);
+		$app['encrypter'] = new Illuminate\Encryption\Encrypter(str_repeat('a', 32));
+		$app['cookie'] = $jar;
+		$app['session'] = new Illuminate\Session\SessionManager($app);
+		$app['router'] = m::mock('StdClass');
+
+		return $app;
+	}
+
+	private function responseHasCookie(Response $response, $name)
+	{
+		foreach ($response->headers->getCookies() as $cookie)
+		{
+			if ($cookie->getName() === $name)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
 
 class ApplicationCustomExceptionHandlerStub extends Illuminate\Foundation\Application {

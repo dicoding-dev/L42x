@@ -103,6 +103,34 @@ abstract class Manager {
 	}
 
 	/**
+	 * Set the application instance used by the manager.
+	 *
+	 * Called by the Octane worker to re-point the shared manager at the per-request sandbox.
+	 *
+	 * @param  \Illuminate\Foundation\Application  $app
+	 * @return $this
+	 */
+	public function setApplication($app)
+	{
+		$this->app = $app;
+
+		return $this;
+	}
+
+	/**
+	 * Forget all resolved driver instances so the next call to driver() re-resolves
+	 * from the sandbox. App-lifetime registrations in $customCreators are preserved.
+	 *
+	 * @return $this
+	 */
+	public function forgetDrivers()
+	{
+		$this->drivers = array();
+
+		return $this;
+	}
+
+	/**
 	 * Register a custom driver creator Closure.
 	 *
 	 * @param  string    $driver

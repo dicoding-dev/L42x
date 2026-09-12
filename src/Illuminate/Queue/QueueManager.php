@@ -104,6 +104,35 @@ class QueueManager {
 	}
 
 	/**
+	 * Set the application instance used by the queue manager.
+	 *
+	 * Called by the Octane worker to re-point the shared manager at the per-request sandbox.
+	 *
+	 * @param  \Illuminate\Foundation\Application  $app
+	 * @return $this
+	 */
+	public function setApplication($app)
+	{
+		$this->app = $app;
+
+		return $this;
+	}
+
+	/**
+	 * Forget all resolved queue connections so they are rebuilt against the sandbox.
+	 *
+	 * Preserves $connectors (the registered connector factories, which are app-lifetime).
+	 *
+	 * @return $this
+	 */
+	public function forgetConnections()
+	{
+		$this->connections = array();
+
+		return $this;
+	}
+
+	/**
 	 * Resolve a queue connection.
 	 *
 	 * @param  string  $name
