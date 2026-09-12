@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Cookie;
 
 use Illuminate\Encryption\Encrypter;
-use Illuminate\Encryption\DecryptException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

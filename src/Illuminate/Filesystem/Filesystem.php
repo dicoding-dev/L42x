@@ -4,6 +4,7 @@ use FilesystemIterator;
 use Symfony\Component\Finder\Finder;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 class Filesystem {
 

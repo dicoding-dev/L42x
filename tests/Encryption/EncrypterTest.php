@@ -25,7 +25,7 @@ class EncrypterTest extends BackwardCompatibleTestCase
 
     public function testExceptionThrownWhenPayloadIsInvalid()
     {
-        $this->expectException(Illuminate\Encryption\DecryptException::class);
+        $this->expectException(Illuminate\Contracts\Encryption\DecryptException::class);
         $this->expectExceptionMessage("The payload is invalid.");
         $e = $this->getEncrypter();
         $payload = $e->encrypt('foo');
