@@ -1132,7 +1132,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'events'         => 'Illuminate\Events\Dispatcher',
 			'files'          => 'Illuminate\Filesystem\Filesystem',
 			'form'           => 'Illuminate\Html\FormBuilder',
-			'hash'           => 'Illuminate\Hashing\HasherInterface',
+			'hash'           => 'Illuminate\Contracts\Hashing\Hasher',
 			'html'           => 'Illuminate\Html\HtmlBuilder',
 			'translator'     => 'Illuminate\Translation\Translator',
 			'log'            => 'Illuminate\Log\Logger',

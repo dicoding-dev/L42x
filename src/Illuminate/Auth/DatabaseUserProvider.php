@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Auth;
 
 use Illuminate\Database\Connection;
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Str;
 
 class DatabaseUserProvider implements UserProviderInterface {
@@ -16,7 +16,7 @@ class DatabaseUserProvider implements UserProviderInterface {
 	/**
 	 * The hasher implementation.
 	 *
-	 * @var \Illuminate\Hashing\HasherInterface
+	 * @var \Illuminate\Contracts\Hashing\Hasher
 	 */
 	protected $hasher;
 
@@ -31,11 +31,11 @@ class DatabaseUserProvider implements UserProviderInterface {
 	 * Create a new database user provider.
 	 *
 	 * @param  \Illuminate\Database\Connection  $conn
-	 * @param  \Illuminate\Hashing\HasherInterface  $hasher
+	 * @param  \Illuminate\Contracts\Hashing\Hasher  $hasher
 	 * @param  string  $table
 	 * @return void
 	 */
-	public function __construct(Connection $conn, HasherInterface $hasher, $table)
+	public function __construct(Connection $conn, Hasher $hasher, $table)
 	{
 		$this->conn = $conn;
 		$this->table = $table;

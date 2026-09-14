@@ -3,7 +3,7 @@
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Database\Connection;
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Hashing\Hasher;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 
@@ -46,7 +46,7 @@ class AuthEloquentUserProviderTest extends BackwardCompatibleTestCase
 	public function testCredentialValidation()
 	{
 		$conn = m::mock(Connection::class);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$hasher->shouldReceive('check')->once()->with('plain', 'hash')->andReturn(true);
 		$provider = new Illuminate\Auth\EloquentUserProvider($hasher, 'foo');
 		$user = m::mock(UserInterface::class);
@@ -60,7 +60,7 @@ class AuthEloquentUserProviderTest extends BackwardCompatibleTestCase
 	public function testModelsCanBeCreated()
 	{
 		$conn = m::mock(Connection::class);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$provider = new Illuminate\Auth\EloquentUserProvider($hasher, 'EloquentProviderUserStub');
 		$model = $provider->createModel();
 
@@ -70,7 +70,7 @@ class AuthEloquentUserProviderTest extends BackwardCompatibleTestCase
 
 	protected function getProviderMock()
 	{
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		return $this->getMockBuilder(EloquentUserProvider::class)
             ->onlyMethods(['createModel'])
             ->setConstructorArgs([$hasher, 'foo'])
