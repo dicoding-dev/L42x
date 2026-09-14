@@ -1162,6 +1162,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		// Encrypter now implements the L13 contracts (task 2.9); resolve them to 'encrypter'.
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\Encrypter');
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\StringEncrypter');
+
+		// BC: Hashing\HasherInterface → Contracts\Hashing\Hasher (task 2.11); keep old name resolvable.
+		// class_alias covers use/typehint/instanceof; make()/autowiring by the old name needs this.
+		$this->alias('hash', 'Illuminate\Hashing\HasherInterface');
 	}
 
 }
