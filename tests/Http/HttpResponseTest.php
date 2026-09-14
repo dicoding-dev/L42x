@@ -3,7 +3,7 @@
 use Illuminate\Http\Response;
 use Illuminate\Support\Contracts\ArrayableInterface;
 use Illuminate\Support\Contracts\JsonableInterface;
-use Illuminate\Support\Contracts\RenderableInterface;
+use Illuminate\Contracts\Support\Renderable;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -52,7 +52,7 @@ class HttpResponseTest extends BackwardCompatibleTestCase
 
 	public function testRenderablesAreRendered()
 	{
-		$mock = m::mock(RenderableInterface::class);
+		$mock = m::mock(Renderable::class);
 		$mock->shouldReceive('render')->once()->andReturn('foo');
 		$response = new Response($mock);
 		$this->assertEquals('foo', $response->getContent());

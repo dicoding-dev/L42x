@@ -2,11 +2,11 @@
 
 use ArrayAccess;
 use Closure;
+use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\MessageBag;
 use Illuminate\View\Engines\EngineInterface;
 use Illuminate\Support\Contracts\MessageProviderInterface;
 use Illuminate\Support\Contracts\ArrayableInterface as Arrayable;
-use Illuminate\Support\Contracts\RenderableInterface as Renderable;
 
 class View implements ArrayAccess, Renderable
 {
@@ -66,12 +66,6 @@ class View implements ArrayAccess, Renderable
         $this->data = $data instanceof Arrayable ? $data->toArray() : (array) $data;
     }
 
-    /**
-     * Get the string contents of the view.
-     *
-     * @param  \Closure  $callback
-     * @return string
-     */
     public function render(?Closure $callback = null)
     {
         try {
