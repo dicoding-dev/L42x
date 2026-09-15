@@ -20,7 +20,6 @@ Grandfather yang lama; blok yang **baru**.
 | `array_first_last` | `array_first($x)` / `array_last($x)` | `Arr::first($x)` / `Arr::last($x)` | helper global dihapus di L13 |
 | `route_uses_string` | `Route::get('/x', ['uses'=>'C@m'])` | `Route::get('/x', [C::class,'m'])` | valid di 4.2 **dan** 13 |
 | `event_fire` | `Event::fire(...)` / `->fire(...)` | `->dispatch(...)` | rename di L13; `firing()` dihapus |
-| `config_getEnvironment` | `Config::getEnvironment()` | helper app `app_env()` (`config('app.env')`) | method **dihapus** di L13 (dipakai app!) |
 | `where_raw` | `->whereRaw("id=$id")` | binding `->where('id',$id)` / `?` | SQL injection + konvergensi |
 | `eloquent_lists` | `$q->lists('c')` | `$q->pluck('c')` | `->lists()` dihapus |
 | `macroable_trait` | `use …\MacroableTrait` | `use …\Macroable` | rename di L13 |
@@ -28,6 +27,15 @@ Grandfather yang lama; blok yang **baru**.
 | `legacy_contracts` | `ArrayableInterface` / `JsonableInterface` / `RenderableInterface` | `Contracts\Support\{Arrayable,Jsonable,Renderable}` | pindah namespace |
 | `pagination_getters` | `->getCurrentPage()`, `->getLastPage()`, `->getFrom/To/Total/PerPage()` | `->currentPage()`, `->lastPage()`, `->firstItem/lastItem/total/perPage()` | getter di-rename massal |
 | `route_filters` | `Route::filter(...)`, `->before(...)`, `->after(...)` | middleware | filter **dihapus total** di L13 |
+
+## Sudah type-enforced (dipindah dari ratchet)
+
+Pola yang komponen fork-nya sudah di-*tighten* (method dihapus tanpa shim) → panggilan lama =
+method-not-found (PHP+Psalm menangkap). Grep-ratchet jadi redundan → dicabut (framework-first §0.2).
+
+| `key` (eks-ratchet) | Pola 4.2 | Konvergen ke L13 | Enforcement sekarang |
+|---|---|---|---|
+| `config_getEnvironment` | `Config::getEnvironment()` | `App::environment()` | task 2.7 drop `Repository::getEnvironment()` (no shim) → method-not-found |
 
 ## Gotcha yang butuh perhatian manual (tak di-ratchet, cek saat digarap)
 
