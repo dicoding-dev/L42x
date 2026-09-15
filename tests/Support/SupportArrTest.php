@@ -155,7 +155,7 @@ class SupportArrTest extends TestCase
         $this->assertTrue(Arr::exists([null], 0));
         $this->assertTrue(Arr::exists(['a' => 1], 'a'));
         $this->assertTrue(Arr::exists(['a' => null], 'a'));
-        $this->assertTrue(Arr::exists(new Collection(['a' => null]), 'a'));
+        $this->assertFalse(Arr::exists(new Collection(['a' => null]), 'a'));
 
         $this->assertFalse(Arr::exists([1], 1));
         $this->assertFalse(Arr::exists([null], 1));
@@ -1068,7 +1068,7 @@ class SupportArrTest extends TestCase
     {
         $array = [100, '200', 300, '400', 500];
 
-        $array = Arr::where($array, function ($key, $value) {
+        $array = Arr::where($array, function ($value, $key) {
             return is_string($value);
         });
 
@@ -1079,7 +1079,7 @@ class SupportArrTest extends TestCase
     {
         $array = ['10' => 1, 'foo' => 3, 20 => 2];
 
-        $array = Arr::where($array, function ($key, $value) {
+        $array = Arr::where($array, function ($value, $key) {
             return is_numeric($key);
         });
 
