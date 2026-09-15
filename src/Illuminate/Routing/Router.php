@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Container\Container;
+use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
@@ -74,6 +76,27 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 	 * @var array
 	 */
 	protected array $regexFilters = array();
+
+	/**
+	 * All of the short-hand keys for middlewares (L13 route-middleware engine).
+	 *
+	 * @var array
+	 */
+	protected array $middleware = array();
+
+	/**
+	 * All of the middleware groups.
+	 *
+	 * @var array
+	 */
+	protected array $middlewareGroups = array();
+
+	/**
+	 * The priority-sorted list of middleware.
+	 *
+	 * @var array
+	 */
+	protected array $middlewarePriority = array();
 
 	/**
 	 * The registered route value binders.
@@ -1066,7 +1089,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 
 		if (is_null($response))
 		{
-			$response = $route->run($request);
+			$response = $this->runRouteWithinStack($route, $request);
 		}
 
 		$response = $this->prepareResponse($request, $response);
@@ -1077,6 +1100,143 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 		$this->callRouteAfter($route, $request, $response);
 
 		return $response;
+	}
+
+	/**
+	 * Run the matched route through its middleware stack, then execute it.
+	 *
+	 * L13 route-middleware runs here, INSIDE the legacy before/after filter
+	 * bracket. Routes without middleware short-circuit to a plain run() so
+	 * existing (filter-only) routes are byte-for-byte unaffected.
+	 *
+	 * @param  Route    $route
+	 * @param  Request  $request
+	 * @return mixed
+	 */
+	protected function runRouteWithinStack(Route $route, Request $request)
+	{
+		$middleware = $this->gatherRouteMiddleware($route);
+
+		if (empty($middleware))
+		{
+			return $route->run();
+		}
+
+		return (new Pipeline($this->container))
+			->send($request)
+			->through($middleware)
+			->then(function() use ($route)
+			{
+				return $route->run();
+			});
+	}
+
+	/**
+	 * Gather the middleware for the given route with resolved class names.
+	 *
+	 * @param  Route  $route
+	 * @return array
+	 */
+	public function gatherRouteMiddleware(Route $route)
+	{
+		return $this->resolveMiddleware($route->gatherMiddleware());
+	}
+
+	/**
+	 * Resolve a flat array of middleware classes from names/aliases/groups.
+	 *
+	 * @param  array  $middleware
+	 * @return array
+	 */
+	public function resolveMiddleware(array $middleware)
+	{
+		$resolved = (new Collection($middleware))
+			->map(function($name)
+			{
+				return (array) MiddlewareNameResolver::resolve($name, $this->middleware, $this->middlewareGroups);
+			})
+			->flatten()
+			->values()
+			->all();
+
+		return $this->sortMiddleware($resolved);
+	}
+
+	/**
+	 * Sort the given middleware by priority.
+	 *
+	 * @param  array  $middleware
+	 * @return array
+	 */
+	protected function sortMiddleware(array $middleware)
+	{
+		return (new SortedMiddleware($this->middlewarePriority, $middleware))->all();
+	}
+
+	/**
+	 * Register a short-hand name for a middleware.
+	 *
+	 * @param  string  $name
+	 * @param  string  $class
+	 * @return $this
+	 */
+	public function aliasMiddleware($name, $class)
+	{
+		$this->middleware[$name] = $class;
+
+		return $this;
+	}
+
+	/**
+	 * Register a group of middleware.
+	 *
+	 * @param  string  $name
+	 * @param  array   $middleware
+	 * @return $this
+	 */
+	public function middlewareGroup($name, array $middleware)
+	{
+		$this->middlewareGroups[$name] = $middleware;
+
+		return $this;
+	}
+
+	/**
+	 * Set the priority-sorted list of middleware.
+	 *
+	 * @param  array  $middleware
+	 * @return $this
+	 */
+	public function middlewarePriority(array $middleware)
+	{
+		$this->middlewarePriority = $middleware;
+
+		return $this;
+	}
+
+	/**
+	 * Remove any duplicate middleware from the given array.
+	 *
+	 * @param  array  $middleware
+	 * @return array
+	 */
+	public static function uniqueMiddleware(array $middleware)
+	{
+		$seen = array();
+		$result = array();
+
+		foreach ($middleware as $value)
+		{
+			$key = is_object($value) ? spl_object_id($value) : $value;
+
+			if ( ! isset($seen[$key]))
+			{
+				$seen[$key] = true;
+				$result[] = $value;
+			}
+		}
+
+		return $result;
 	}
 
 	/**
