@@ -110,10 +110,14 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): mixed
     {
+        // Prefer handle() (L13 idiom); fire() is the L4.2 fallback that dies at the Console swap.
+        // ponytail: fork mirror of stock Command's handle-or-__invoke resolution; app-side is grep-guarded.
+        $method = method_exists($this, 'handle') ? 'handle' : 'fire';
+
         // Symfony 5 removed support of returning null, so we cast the returned value as integer.
-        // In this case, void-returned fire() method will be casted to 0.
+        // A void-returned handle()/fire() is casted to 0.
         // @see https://github.com/symfony/console/blob/6.3/CHANGELOG.md#500
-		return (int) $this->fire();
+		return (int) $this->{$method}();
 	}
 
 	/**

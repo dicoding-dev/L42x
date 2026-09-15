@@ -2,7 +2,7 @@
 # regenerate: ci/convergence-ratchet.sh --init src   (hanya setelah count TURUN)
 array_first_last=0
 route_uses_string=5
-event_fire=4
+event_fire=3
 config_getEnvironment=3
 where_raw=1
 eloquent_lists=6
