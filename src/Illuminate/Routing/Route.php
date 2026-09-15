@@ -111,6 +111,46 @@ class Route {
 	}
 
 	/**
+	 * Get or set the middlewares attached to the route.
+	 *
+	 * @param  array|string|null  $middleware
+	 * @return $this|array
+	 */
+	public function middleware($middleware = null)
+	{
+		if (is_null($middleware))
+		{
+			return (array) ($this->action['middleware'] ?? []);
+		}
+
+		if ( ! is_array($middleware))
+		{
+			$middleware = func_get_args();
+		}
+
+		foreach ($middleware as $index => $value)
+		{
+			$middleware[$index] = $value instanceof \Closure ? $value : (string) $value;
+		}
+
+		$this->action['middleware'] = array_merge(
+			(array) ($this->action['middleware'] ?? []), $middleware
+		);
+
+		return $this;
+	}
+
+	/**
+	 * Get all middleware, including the ones from the controller.
+	 *
+	 * @return array
+	 */
+	public function gatherMiddleware()
+	{
+		return Router::uniqueMiddleware($this->middleware());
+	}
+
+	/**
 	 * Determine if the route matches given request.
 	 *
 	 * @param  \Illuminate\Http\Request  $request
