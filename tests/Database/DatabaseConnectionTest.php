@@ -154,7 +154,7 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 		$connection = $this->getMockConnection(['getName'], $pdo);
 		$connection->expects($this->any())->method('getName')->willReturn('name');
 		$connection->setEventDispatcher($events = m::mock(Dispatcher::class));
-		$events->shouldReceive('fire')->once()->with('connection.name.beganTransaction', $connection);
+		$events->shouldReceive('dispatch')->once()->with('connection.name.beganTransaction', $connection);
 		$connection->beginTransaction();
 	}
 
@@ -165,7 +165,7 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 		$connection = $this->getMockConnection(['getName'], $pdo);
 		$connection->expects($this->once())->method('getName')->willReturn('name');
 		$connection->setEventDispatcher($events = m::mock(Dispatcher::class));
-		$events->shouldReceive('fire')->once()->with('connection.name.committed', $connection);
+		$events->shouldReceive('dispatch')->once()->with('connection.name.committed', $connection);
 		$connection->commit();
 	}
 
@@ -176,7 +176,7 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 		$connection = $this->getMockConnection(['getName'], $pdo);
 		$connection->expects($this->once())->method('getName')->willReturn('name');
 		$connection->setEventDispatcher($events = m::mock(Dispatcher::class));
-		$events->shouldReceive('fire')->once()->with('connection.name.rollingBack', $connection);
+		$events->shouldReceive('dispatch')->once()->with('connection.name.rollingBack', $connection);
 		$connection->rollBack();
 	}
 
@@ -259,7 +259,7 @@ class DatabaseConnectionTest extends BackwardCompatibleTestCase
 		$connection = $this->getMockConnection();
 		$connection->logQuery('foo', [], time());
 		$connection->setEventDispatcher($events = m::mock(Dispatcher::class));
-		$events->shouldReceive('fire')->once()->with('illuminate.query', ['foo', [], null, null]);
+		$events->shouldReceive('dispatch')->once()->with('illuminate.query', ['foo', [], null, null]);
 		$connection->logQuery('foo', [], null);
 	}
 

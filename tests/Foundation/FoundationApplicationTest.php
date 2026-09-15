@@ -24,7 +24,7 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 		$app['translator'] = $trans = m::mock('StdClass');
 		$trans->shouldReceive('setLocale')->once()->with('foo');
 		$app['events'] = $events = m::mock('StdClass');
-		$events->shouldReceive('fire')->once()->with('locale.changed', ['foo']);
+		$events->shouldReceive('dispatch')->once()->with('locale.changed', ['foo']);
 
 		$app->setLocale('foo');
 	}

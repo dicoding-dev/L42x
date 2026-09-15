@@ -95,7 +95,7 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
             EngineInterface::class
         ));
 		$factory->getFinder()->shouldReceive('addExtension')->once()->with('php');
-		$factory->getDispatcher()->shouldReceive('fire');
+		$factory->getDispatcher()->shouldReceive('dispatch');
 		$factory->addExtension('php', 'php');
 		$factory->name('view', 'foo');
 		$view = $factory->of('foo', ['data']);
@@ -122,7 +122,7 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
 		$factory->getEngineResolver()->shouldReceive('resolve')->once()->with('bar')->andReturn($engine = m::mock(
             EngineInterface::class
         ));
-		$factory->getDispatcher()->shouldReceive('fire');
+		$factory->getDispatcher()->shouldReceive('dispatch');
 
 		$factory->addExtension('foo', 'bar', $resolver);
 
@@ -235,7 +235,7 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
 		$factory = $this->getFactory();
 		$view = m::mock(View::class);
 		$view->shouldReceive('getName')->once()->andReturn('name');
-		$factory->getDispatcher()->shouldReceive('fire')->once()->with('composing: name', [$view]);
+		$factory->getDispatcher()->shouldReceive('dispatch')->once()->with('composing: name', [$view]);
 
 		$factory->callComposer($view);
 	}
@@ -357,7 +357,7 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
 		$factory->getEngineResolver()->shouldReceive('resolve')->once()->with('php')->andReturn(m::mock(
             EngineInterface::class
         ));
-		$factory->getDispatcher()->shouldReceive('fire');
+		$factory->getDispatcher()->shouldReceive('dispatch');
 
 		$view = $factory->make('alias');
 
@@ -391,7 +391,7 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
         $factory->getFinder()->shouldReceive('find')->once()->with('view')->andReturn(
             __DIR__ . '/fixtures/section-exception.php'
         );
-        $factory->getDispatcher()->shouldReceive('fire')->times(4);
+        $factory->getDispatcher()->shouldReceive('dispatch')->times(4);
 
         $this->expectException('Exception', 'section exception message');
         $factory->make('view')->render();

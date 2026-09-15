@@ -169,8 +169,8 @@ class DatabaseEloquentModelTest extends BackwardCompatibleTestCase
 		$model->setEventDispatcher($events = m::mock(Dispatcher::class));
 		$events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($model), $model)->andReturn(true);
 		$events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($model), $model)->andReturn(true);
-		$events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($model), $model)->andReturn(true);
-		$events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($model), $model)->andReturn(true);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.updated: '.get_class($model), $model)->andReturn(true);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.saved: '.get_class($model), $model)->andReturn(true);
 
 		$model->id = 1;
 		$model->foo = 'bar';
@@ -191,7 +191,7 @@ class DatabaseEloquentModelTest extends BackwardCompatibleTestCase
 		$model->expects($this->once())->method('newQueryWithoutScopes')->willReturn($query);
 		$model->setEventDispatcher($events = m::mock(Dispatcher::class));
 		$events->shouldReceive('until');
-		$events->shouldReceive('fire');
+		$events->shouldReceive('dispatch');
 
 		$model->id = 1;
 		$model->syncOriginal();
@@ -260,8 +260,8 @@ class DatabaseEloquentModelTest extends BackwardCompatibleTestCase
 		$model->setEventDispatcher($events = m::mock(Dispatcher::class));
 		$events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($model), $model)->andReturn(true);
 		$events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($model), $model)->andReturn(true);
-		$events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($model), $model)->andReturn(true);
-		$events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($model), $model)->andReturn(true);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.updated: '.get_class($model), $model)->andReturn(true);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.saved: '.get_class($model), $model)->andReturn(true);
 
 		$model->id = 1;
 		$model->syncOriginal();
@@ -369,8 +369,8 @@ class DatabaseEloquentModelTest extends BackwardCompatibleTestCase
 		$model->setEventDispatcher($events = m::mock(Dispatcher::class));
 		$events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($model), $model)->andReturn(true);
 		$events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($model), $model)->andReturn(true);
-		$events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($model), $model);
-		$events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($model), $model);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.created: '.get_class($model), $model);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.saved: '.get_class($model), $model);
 
 		$model->name = 'taylor';
 		$model->exists = false;
@@ -388,8 +388,8 @@ class DatabaseEloquentModelTest extends BackwardCompatibleTestCase
 		$model->setEventDispatcher($events = m::mock(Dispatcher::class));
 		$events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($model), $model)->andReturn(true);
 		$events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($model), $model)->andReturn(true);
-		$events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($model), $model);
-		$events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($model), $model);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.created: '.get_class($model), $model);
+		$events->shouldReceive('dispatch')->once()->with('eloquent.saved: '.get_class($model), $model);
 
 		$model->name = 'taylor';
 		$model->exists = false;

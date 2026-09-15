@@ -306,7 +306,7 @@ class Mailer {
      */
     protected function sendSymfonyMessage(Email $message): void
     {
-        $this->events?->fire('mailer.sending', [$message]);
+        $this->events?->dispatch('mailer.sending', [$message]);
 
         if (!$this->pretending)
         {

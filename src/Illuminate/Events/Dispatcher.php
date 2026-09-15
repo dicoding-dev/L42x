@@ -110,7 +110,7 @@ class Dispatcher {
 	{
 		$this->listen($event.'_queue', function() use ($event, $payload)
 		{
-			$this->fire($event, $payload);
+			$this->dispatch($event, $payload);
 		});
 	}
 
@@ -152,7 +152,7 @@ class Dispatcher {
 	 */
 	public function until($event, $payload = array())
 	{
-		return $this->fire($event, $payload, true);
+		return $this->dispatch($event, $payload, true);
 	}
 
 	/**
@@ -163,7 +163,7 @@ class Dispatcher {
 	 */
 	public function flush($event)
 	{
-		$this->fire($event.'_queue');
+		$this->dispatch($event.'_queue');
 	}
 
 	/**
@@ -177,14 +177,14 @@ class Dispatcher {
 	}
 
 	/**
-	 * Fire an event and call the listeners.
+	 * Dispatch an event and call the listeners.
 	 *
 	 * @param  string  $event
 	 * @param  mixed   $payload
 	 * @param  bool    $halt
 	 * @return array|null
 	 */
-	public function fire($event, $payload = array(), $halt = false)
+	public function dispatch($event, $payload = array(), $halt = false)
 	{
 		$responses = array();
 
@@ -220,6 +220,21 @@ class Dispatcher {
 		array_pop($this->firing);
 
 		return $halt ? null : $responses;
+	}
+
+	/**
+	 * Fire an event and call the listeners.
+	 *
+	 * ponytail: L4.2 alias for dispatch(); removed in L13 stock, dies at Events swap.
+	 *
+	 * @param  string  $event
+	 * @param  mixed   $payload
+	 * @param  bool    $halt
+	 * @return array|null
+	 */
+	public function fire($event, $payload = array(), $halt = false)
+	{
+		return $this->dispatch($event, $payload, $halt);
 	}
 
 	/**
