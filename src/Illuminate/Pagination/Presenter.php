@@ -32,8 +32,8 @@ abstract class Presenter {
 	public function __construct(Paginator $paginator)
 	{
 		$this->paginator = $paginator;
-		$this->lastPage = $this->paginator->getLastPage();
-		$this->currentPage = $this->paginator->getCurrentPage();
+		$this->lastPage = $this->paginator->lastPage();
+		$this->currentPage = $this->paginator->currentPage();
 	}
 
 	/**
