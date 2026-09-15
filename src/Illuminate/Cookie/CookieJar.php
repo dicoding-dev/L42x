@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Cookie;
 
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Cookie;
 
 class CookieJar {
@@ -79,11 +80,12 @@ class CookieJar {
 	 * Determine if a cookie has been queued.
 	 *
 	 * @param  string  $key
+	 * @param  string|null  $path
 	 * @return bool
 	 */
-	public function hasQueued($key)
+	public function hasQueued($key, $path = null)
 	{
-		return ! is_null($this->queued($key));
+		return ! is_null($this->queued($key, null, $path));
 	}
 
 	/**
@@ -91,41 +93,86 @@ class CookieJar {
 	 *
 	 * @param  string  $key
 	 * @param  mixed   $default
+	 * @param  string|null  $path
 	 * @return \Symfony\Component\HttpFoundation\Cookie
 	 */
-	public function queued($key, $default = null)
+	public function queued($key, $default = null, $path = null)
 	{
-		return array_get($this->queued, $key, $default);
+		$queued = isset($this->queued[$key]) ? $this->queued[$key] : null;
+
+		if (is_null($queued))
+		{
+			return value($default);
+		}
+
+		if (is_null($path))
+		{
+			return Arr::last($queued, null, $default);
+		}
+
+		return isset($queued[$path]) ? $queued[$path] : value($default);
 	}
 
 	/**
 	 * Queue a cookie to send with the next response.
 	 *
-	 * @param  mixed
+	 * @param  mixed  ...$parameters
 	 * @return void
 	 */
-	public function queue()
+	public function queue(...$parameters)
 	{
-		if (head(func_get_args()) instanceof Cookie)
+		if (isset($parameters[0]) && $parameters[0] instanceof Cookie)
 		{
-			$cookie = head(func_get_args());
+			$cookie = $parameters[0];
 		}
 		else
 		{
-			$cookie = call_user_func_array($this->make(...), func_get_args());
+			$cookie = $this->make(...array_values($parameters));
 		}
 
-		$this->queued[$cookie->getName()] = $cookie;
+		if ( ! isset($this->queued[$cookie->getName()]))
+		{
+			$this->queued[$cookie->getName()] = array();
+		}
+
+		$this->queued[$cookie->getName()][$cookie->getPath()] = $cookie;
+	}
+
+	/**
+	 * Queue a cookie to expire with the next response.
+	 *
+	 * @param  string  $name
+	 * @param  string|null  $path
+	 * @param  string|null  $domain
+	 * @return void
+	 */
+	public function expire($name, $path = null, $domain = null)
+	{
+		$this->queue($this->forget($name, $path, $domain));
 	}
 
 	/**
 	 * Remove a cookie from the queue.
 	 *
 	 * @param  string  $name
+	 * @param  string|null  $path
+	 * @return void
 	 */
-	public function unqueue($name)
+	public function unqueue($name, $path = null)
 	{
-		unset($this->queued[$name]);
+		if (is_null($path))
+		{
+			unset($this->queued[$name]);
+
+			return;
+		}
+
+		unset($this->queued[$name][$path]);
+
+		if (empty($this->queued[$name]))
+		{
+			unset($this->queued[$name]);
+		}
 	}
 
 	/**
@@ -157,11 +204,23 @@ class CookieJar {
 	/**
 	 * Get the cookies which have been queued for the next request
 	 *
-	 * @return array
+	 * @return \Symfony\Component\HttpFoundation\Cookie[]
 	 */
 	public function getQueuedCookies()
 	{
-		return $this->queued;
+		return Arr::flatten($this->queued);
+	}
+
+	/**
+	 * Flush the cookies which have been queued for the next request.
+	 *
+	 * @return $this
+	 */
+	public function flushQueuedCookies()
+	{
+		$this->queued = array();
+
+		return $this;
 	}
 
 }

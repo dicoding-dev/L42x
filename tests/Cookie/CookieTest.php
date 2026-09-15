@@ -58,13 +58,12 @@ class CookieTest extends BackwardCompatibleTestCase
 		$this->assertEmpty($cookie->getQueuedCookies());
 		$this->assertFalse($cookie->hasQueued('foo'));
 		$cookie->queue($cookie->make('foo','bar'));
-		$this->assertArrayHasKey('foo', $cookie->getQueuedCookies());
 		$this->assertTrue($cookie->hasQueued('foo'));
 		$this->assertInstanceOf(Cookie::class, $cookie->queued('foo'));
 		$cookie->queue('qu','ux');
-		$this->assertArrayHasKey('qu', $cookie->getQueuedCookies());
 		$this->assertTrue($cookie->hasQueued('qu'));
 		$this->assertInstanceOf(Cookie::class, $cookie->queued('qu'));
+		$this->assertCount(2, $cookie->getQueuedCookies());
 	}
 
 
@@ -72,9 +71,43 @@ class CookieTest extends BackwardCompatibleTestCase
 	{
 		$cookie = $this->getCreator();
 		$cookie->queue($cookie->make('foo','bar'));
-		$this->assertArrayHasKey('foo',$cookie->getQueuedCookies());
+		$this->assertTrue($cookie->hasQueued('foo'));
 		$cookie->unqueue('foo');
 		$this->assertEmpty($cookie->getQueuedCookies());
+		$this->assertFalse($cookie->hasQueued('foo'));
+	}
+
+
+	public function testPathAwareQueuedCookies()
+	{
+		$cookie = $this->getCreator();
+		$cookie->queue($cookie->make('foo', 'a', 0, '/a'));
+		$cookie->queue($cookie->make('foo', 'b', 0, '/b'));
+
+		$this->assertCount(2, $cookie->getQueuedCookies());
+		$this->assertSame('a', $cookie->queued('foo', null, '/a')->getValue());
+		$this->assertSame('b', $cookie->queued('foo', null, '/b')->getValue());
+		$this->assertSame('b', $cookie->queued('foo')->getValue());
+
+		$cookie->unqueue('foo', '/a');
+		$this->assertNull($cookie->queued('foo', null, '/a'));
+		$this->assertSame('b', $cookie->queued('foo', null, '/b')->getValue());
+		$this->assertCount(1, $cookie->getQueuedCookies());
+
+		$cookie->flushQueuedCookies();
+		$this->assertEmpty($cookie->getQueuedCookies());
+	}
+
+
+	public function testExpireQueuesForgetCookie()
+	{
+		$cookie = $this->getCreator();
+		$cookie->expire('foo');
+
+		$this->assertTrue($cookie->hasQueued('foo'));
+		$queued = $cookie->queued('foo');
+		$this->assertInstanceOf(Cookie::class, $queued);
+		$this->assertTrue($queued->getExpiresTime() < time());
 	}
 
 
