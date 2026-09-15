@@ -2,8 +2,12 @@
 
 use FilesystemIterator;
 use Symfony\Component\Finder\Finder;
+use Illuminate\Support\Traits\Macroable;
+use Illuminate\Support\Traits\Conditionable;
 
 class Filesystem {
+
+	use Macroable, Conditionable;
 
 	/**
 	 * Determine if a file exists.
@@ -24,9 +28,9 @@ class Filesystem {
 	 *
 	 * @throws FileNotFoundException
 	 */
-	public function get($path)
+	public function get($path, $lock = false)
 	{
-		if ($this->isFile($path)) return file_get_contents($path);
+		if ($this->isFile($path)) return file_get_contents($path, $lock ? LOCK_SH : 0);
 
 		throw new FileNotFoundException("File does not exist at path {$path}");
 	}
@@ -39,9 +43,12 @@ class Filesystem {
 	 *
 	 * @throws FileNotFoundException
 	 */
-	public function getRequire($path)
+	public function getRequire($path, array $data = [])
 	{
-		if ($this->isFile($path)) return require $path;
+		if ($this->isFile($path)) {
+			extract($data);
+			return require $path;
+		}
 
 		throw new FileNotFoundException("File does not exist at path {$path}");
 	}
@@ -52,8 +59,9 @@ class Filesystem {
 	 * @param  string  $file
 	 * @return mixed
 	 */
-	public function requireOnce($file)
+	public function requireOnce($file, array $data = [])
 	{
+		extract($data);
 		require_once $file;
 	}
 
@@ -94,9 +102,9 @@ class Filesystem {
 	 * @param  string  $data
 	 * @return int
 	 */
-	public function append($path, $data)
+	public function append($path, $data, $lock = false)
 	{
-		return file_put_contents($path, $data, FILE_APPEND);
+		return file_put_contents($path, $data, FILE_APPEND | ($lock ? LOCK_EX : 0));
 	}
 
 	/**
@@ -246,15 +254,14 @@ class Filesystem {
 	 * @param  string  $directory
 	 * @return array
 	 */
-	public function files($directory)
+	public function files($directory, $hidden = false)
 	{
-		$glob = glob($directory.'/*');
+		$pattern = $hidden ? $directory.'/{,.}*' : $directory.'/*';
+		$flags = $hidden ? GLOB_BRACE : 0;
+		$glob = glob($pattern, $flags);
 
 		if ($glob === false) return array();
 
-		// To get the appropriate files, we'll simply glob the directory and filter
-		// out any "files" that are not truly files so we do not end up with any
-		// directories in our list, but only true files within the directory.
 		return array_filter($glob, function($file)
 		{
 			return filetype($file) == 'file';
@@ -267,9 +274,11 @@ class Filesystem {
 	 * @param  string  $directory
 	 * @return array
 	 */
-	public function allFiles($directory)
+	public function allFiles($directory, $hidden = false)
 	{
-		return iterator_to_array(Finder::create()->files()->in($directory), false);
+		$finder = Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory);
+
+		return iterator_to_array($finder, false);
 	}
 
 	/**
@@ -278,11 +287,11 @@ class Filesystem {
 	 * @param  string  $directory
 	 * @return array
 	 */
-	public function directories($directory)
+	public function directories($directory, $depth = 0)
 	{
 		$directories = array();
 
-		foreach (Finder::create()->in($directory)->directories()->depth(0) as $dir)
+		foreach (Finder::create()->in($directory)->directories()->depth($depth === 0 ? 0 : '>= 0') as $dir)
 		{
 			$directories[] = $dir->getPathname();
 		}
@@ -409,4 +418,279 @@ class Filesystem {
 		return $this->deleteDirectory($directory, true);
 	}
 
+	/**
+	 * Determine if a file or directory is missing.
+	 *
+	 * @param  string  $path
+	 * @return bool
+	 */
+	public function missing($path)
+	{
+		return ! $this->exists($path);
+	}
+
+	/**
+	 * Get the contents of a file as decoded JSON.
+	 *
+	 * @param  string  $path
+	 * @param  int  $flags
+	 * @param  bool  $lock
+	 * @return array
+	 */
+	public function json($path, $flags = 0, $lock = false)
+	{
+		return json_decode($this->get($path, $lock), true, 512, $flags);
+	}
+
+	/**
+	 * Get the contents of a file with shared access.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function sharedGet($path)
+	{
+		return file_get_contents($path, LOCK_SH);
+	}
+
+	/**
+	 * Get the MD5 hash of the file at the given path.
+	 *
+	 * @param  string  $path
+	 * @param  string  $algorithm
+	 * @return string
+	 */
+	public function hash($path, $algorithm = 'md5')
+	{
+		return hash_file($algorithm, $path);
+	}
+
+	/**
+	 * Write the contents of a file, replacing it atomically.
+	 *
+	 * @param  string  $path
+	 * @param  string  $content
+	 * @param  int|null  $mode
+	 * @return void
+	 */
+	public function replace($path, $content, $mode = null)
+	{
+		file_put_contents($path, $content);
+
+		if ($mode !== null) {
+			chmod($path, $mode);
+		}
+	}
+
+	/**
+	 * Replace a given string within a file.
+	 *
+	 * @param  string|array  $search
+	 * @param  string|array  $replace
+	 * @param  string  $path
+	 * @return void
+	 */
+	public function replaceInFile($search, $replace, $path)
+	{
+		file_put_contents($path, str_replace($search, $replace, file_get_contents($path)));
+	}
+
+	/**
+	 * Set the mode of a file or directory.
+	 *
+	 * @param  string  $path
+	 * @param  int|null  $mode
+	 * @return mixed
+	 */
+	public function chmod($path, $mode = null)
+	{
+		return chmod($path, $mode ?? 0664);
+	}
+
+	/**
+	 * Create a symlink to a target file.
+	 *
+	 * @param  string  $target
+	 * @param  string  $link
+	 * @return void
+	 */
+	public function link($target, $link)
+	{
+		symlink($target, $link);
+	}
+
+	/**
+	 * Create a relative symlink to a target file.
+	 *
+	 * @param  string  $target
+	 * @param  string  $link
+	 * @return void
+	 */
+	public function relativeLink($target, $link)
+	{
+		$relative = $this->getRelativePath($target, $link);
+
+		symlink($relative, $link);
+	}
+
+	/**
+	 * Get the basename of a file path.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function basename($path)
+	{
+		return basename($path);
+	}
+
+	/**
+	 * Get the dirname of a file path.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function dirname($path)
+	{
+		return dirname($path);
+	}
+
+	/**
+	 * Guess the file extension from the mime-type of a given file.
+	 *
+	 * @param  string  $path
+	 * @return string|null
+	 */
+	public function guessExtension($path)
+	{
+		$mime = $this->mimeType($path);
+
+		$extensions = [
+			'image/jpeg' => 'jpg',
+			'image/png' => 'png',
+			'image/gif' => 'gif',
+			'image/webp' => 'webp',
+			'image/svg+xml' => 'svg',
+			'text/plain' => 'txt',
+			'text/html' => 'html',
+			'text/css' => 'css',
+			'application/javascript' => 'js',
+			'application/json' => 'json',
+			'application/pdf' => 'pdf',
+			'application/zip' => 'zip',
+		];
+
+		return $extensions[$mime] ?? null;
+	}
+
+	/**
+	 * Get the MIME type of a file.
+	 *
+	 * @param  string  $path
+	 * @return string|false
+	 */
+	public function mimeType($path)
+	{
+		return mime_content_type($path);
+	}
+
+	/**
+	 * Determine if the given path is readable.
+	 *
+	 * @param  string  $path
+	 * @return bool
+	 */
+	public function isReadable($path)
+	{
+		return is_readable($path);
+	}
+
+	/**
+	 * Determine if the given directory is empty.
+	 *
+	 * @param  string  $directory
+	 * @return bool
+	 */
+	public function isEmptyDirectory($directory)
+	{
+		return count(scandir($directory)) === 2; // . and ..
+	}
+
+	/**
+	 * Determine if two files have the same hash.
+	 *
+	 * @param  string  $path1
+	 * @param  string  $path2
+	 * @return bool
+	 */
+	public function hasSameHash($path1, $path2)
+	{
+		return md5_file($path1) === md5_file($path2);
+	}
+
+	/**
+	 * Ensure a directory exists.
+	 *
+	 * @param  string  $path
+	 * @param  int  $mode
+	 * @param  bool  $recursive
+	 * @return void
+	 */
+	public function ensureDirectoryExists($path, $mode = 0755, $recursive = true)
+	{
+		if (! $this->isDirectory($path)) {
+			$this->makeDirectory($path, $mode, $recursive);
+		}
+	}
+
+	/**
+	 * Move a directory.
+	 *
+	 * @param  string  $from
+	 * @param  string  $to
+	 * @param  bool  $overwrite
+	 * @return bool
+	 */
+	public function moveDirectory($from, $to, $overwrite = false)
+	{
+		if ($overwrite && $this->isDirectory($to)) {
+			$this->deleteDirectory($to);
+		}
+
+		return @rename($from, $to);
+	}
+
+	/**
+	 * Get all of the directories within a given directory (recursive).
+	 *
+	 * @param  string  $directory
+	 * @return array
+	 */
+	public function allDirectories($directory)
+	{
+		return $this->directories($directory, -1);
+	}
+
+	/**
+	 * Delete all of the directories within a given directory.
+	 *
+	 * @param  string  $directory
+	 * @return bool
+	 */
+	public function deleteDirectories($directory)
+	{
+		$allDirectories = $this->directories($directory, -1);
+
+		if (! empty($allDirectories)) {
+			foreach ($allDirectories as $dir) {
+				@rmdir($dir);
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	// ponytail: add lines() when LazyCollection arrives (Wave 4+)
 }

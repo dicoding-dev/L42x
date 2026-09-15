@@ -1135,7 +1135,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'hash'           => 'Illuminate\Hashing\HasherInterface',
 			'html'           => 'Illuminate\Html\HtmlBuilder',
 			'translator'     => 'Illuminate\Translation\Translator',
-			'log'            => 'Illuminate\Log\Writer',
+			'log'            => 'Illuminate\Log\Logger',
 			'mailer'         => 'Illuminate\Mail\Mailer',
 			'paginator'      => 'Illuminate\Pagination\Factory',
 			'auth.reminder'  => 'Illuminate\Auth\Reminders\PasswordBroker',
@@ -1155,6 +1155,9 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		{
 			$this->alias($key, $alias);
 		}
+
+		// BC: Log\Writer renamed to Log\Logger (task 3.5); keep old name resolvable.
+		$this->alias('log', 'Illuminate\Log\Writer');
 	}
 
 }

@@ -3,7 +3,7 @@
 use Closure;
 use Illuminate\Queue\Jobs\Job;
 use Illuminate\Support\Str;
-use Illuminate\Log\Writer;
+use Illuminate\Log\Logger;
 use Illuminate\View\Factory;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Queue\QueueManager;
@@ -43,7 +43,7 @@ class Mailer {
 	/**
 	 * The log writer instance.
 	 */
-	protected Writer $logger;
+	protected Logger $logger;
 
 	/**
 	 * The IoC container instance.
@@ -431,10 +431,10 @@ class Mailer {
 	/**
 	 * Set the log writer instance.
 	 *
-	 * @param  \Illuminate\Log\Writer  $logger
+	 * @param  \Illuminate\Log\Logger  $logger
 	 * @return $this
 	 */
-	public function setLogger(Writer $logger): static
+	public function setLogger(Logger $logger): static
     {
 		$this->logger = $logger;
 

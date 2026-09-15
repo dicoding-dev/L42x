@@ -1,16 +1,20 @@
 <?php namespace Illuminate\Log;
 
 use Closure;
+use Psr\Log\LoggerInterface;
 use Illuminate\Events\Dispatcher;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as MonologLogger;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\RotatingFileHandler;
+use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
 
-class Writer {
+class Logger implements LoggerInterface {
+
+	use Conditionable;
 
 	/**
 	 * The Monolog logger instance.
@@ -43,7 +47,14 @@ class Writer {
 	protected $dispatcher;
 
 	/**
-	 * Create a new log writer instance.
+	 * Shared context for all log messages.
+	 *
+	 * @var array
+	 */
+	protected $sharedContext = [];
+
+	/**
+	 * Create a new log logger instance.
 	 *
 	 * @param  \Monolog\Logger  $monolog
 	 * @param  \Illuminate\Events\Dispatcher  $dispatcher
@@ -196,6 +207,16 @@ class Writer {
 	}
 
 	/**
+	 * Get the underlying logger instance.
+	 *
+	 * @return \Psr\Log\LoggerInterface
+	 */
+	public function getLogger(): LoggerInterface
+	{
+		return $this->monolog;
+	}
+
+	/**
 	 * Get the underlying Monolog instance.
 	 *
 	 * @return \Monolog\Logger
@@ -227,6 +248,31 @@ class Writer {
 	}
 
 	/**
+	 * Add shared context to all subsequent log messages.
+	 *
+	 * @param  array  $context
+	 * @return $this
+	 */
+	public function withContext(array $context): static
+	{
+		$this->sharedContext = array_merge($this->sharedContext, $context);
+
+		return $this;
+	}
+
+	/**
+	 * Flush the shared context.
+	 *
+	 * @return $this
+	 */
+	public function withoutContext(): static
+	{
+		$this->sharedContext = [];
+
+		return $this;
+	}
+
+	/**
 	 * Fires a log event.
 	 *
 	 * @param  string  $level
@@ -236,9 +282,6 @@ class Writer {
 	 */
 	protected function fireLogEvent($level, $message, array $context = array())
 	{
-		// If the event dispatcher is set, we will pass along the parameters to the
-		// log listeners. These are useful for building profilers or other tools
-		// that aggregate all of the log messages for a given "request" cycle.
 		if (isset($this->dispatcher))
 		{
 			$this->dispatcher->fire('illuminate.log', compact('level', 'message', 'context'));
@@ -246,39 +289,144 @@ class Writer {
 	}
 
 	/**
-	 * Dynamically pass log calls into the writer.
+	 * Write a message to the log.
 	 *
-	 * @param  mixed (level, param, param)
-	 * @return mixed
+	 * @param  string  $level
+	 * @param  string  $message
+	 * @param  array  $context
+	 * @return void
 	 */
-	public function write()
+	public function write($level, $message, $context = []): void
 	{
-		$level = head(func_get_args());
-
-		return call_user_func_array(array($this, $level), array_slice(func_get_args(), 1));
+		$this->writeLog($level, $message, $context);
 	}
 
 	/**
-	 * Dynamically handle error additions.
+	 * Write a message to the log and fire the log event.
 	 *
-	 * @param  string  $method
-	 * @param  mixed   $parameters
-	 * @return mixed
-	 *
-	 * @throws \BadMethodCallException
+	 * @param  string  $level
+	 * @param  string  $message
+	 * @param  array  $context
+	 * @return void
 	 */
-	public function __call($method, $parameters)
+	public function writeLog($level, $message, array $context): void
 	{
-		if (in_array($method, $this->levels))
-		{
-			$this->formatParameters($parameters);
+		$this->fireLogEvent($level, $message, $context);
 
-			call_user_func_array($this->fireLogEvent(...), array_merge(array($method), $parameters));
+		$this->monolog->log($level, $message, $context);
+	}
 
-			return $this->callMonolog($method, $parameters);
-		}
+	/**
+	 * System is unusable.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function emergency($message, array $context = []): void
+	{
+		$this->log('emergency', $message, $context);
+	}
 
-		throw new \BadMethodCallException("Method [$method] does not exist.");
+	/**
+	 * Action must be taken immediately.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function alert($message, array $context = []): void
+	{
+		$this->log('alert', $message, $context);
+	}
+
+	/**
+	 * Critical conditions.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function critical($message, array $context = []): void
+	{
+		$this->log('critical', $message, $context);
+	}
+
+	/**
+	 * Runtime errors that do not require immediate action.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function error($message, array $context = []): void
+	{
+		$this->log('error', $message, $context);
+	}
+
+	/**
+	 * Exceptional occurrences that are not errors.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function warning($message, array $context = []): void
+	{
+		$this->log('warning', $message, $context);
+	}
+
+	/**
+	 * Normal but significant events.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function notice($message, array $context = []): void
+	{
+		$this->log('notice', $message, $context);
+	}
+
+	/**
+	 * Interesting events.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function info($message, array $context = []): void
+	{
+		$this->log('info', $message, $context);
+	}
+
+	/**
+	 * Detailed debug information.
+	 *
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function debug($message, array $context = []): void
+	{
+		$this->log('debug', $message, $context);
+	}
+
+	/**
+	 * Logs with an arbitrary level.
+	 *
+	 * @param  mixed  $level
+	 * @param  string|\Stringable  $message
+	 * @param  array  $context
+	 * @return void
+	 */
+	public function log($level, $message, array $context = []): void
+	{
+		$context = array_merge($this->sharedContext, $context);
+
+		$this->fireLogEvent($level, $message, $context);
+
+		$this->monolog->log($level, $message, $context);
 	}
 
 	/**
@@ -306,4 +454,31 @@ class Writer {
 		}
 	}
 
+	/**
+	 * Dynamically handle calls to the logger.
+	 *
+	 * @param  string  $method
+	 * @param  mixed   $parameters
+	 * @return mixed
+	 *
+	 * @throws \BadMethodCallException
+	 */
+	public function __call($method, $parameters)
+	{
+		// ponytail: PSR-3 methods are explicit; __call handles macros + legacy level dispatch
+		if (in_array($method, $this->levels))
+		{
+			$this->formatParameters($parameters);
+
+			call_user_func_array($this->fireLogEvent(...), array_merge(array($method), $parameters));
+
+			return $this->callMonolog($method, $parameters);
+		}
+
+		throw new \BadMethodCallException("Method [$method] does not exist.");
+	}
+
 }
+
+// BC: class renamed from Writer to Logger (task 3.5); alias old FQN so type-hints resolve.
+class_alias('Illuminate\Log\Logger', 'Illuminate\Log\Writer');
