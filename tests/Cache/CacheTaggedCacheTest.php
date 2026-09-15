@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\StoreInterface;
 use Illuminate\Cache\TagSet;
@@ -18,8 +19,8 @@ class CacheTaggedCacheTest extends BackwardCompatibleTestCase
     public function testSectionCanBeFlushed()
     {
         $store = new ArrayStore;
-        $store->section('bop')->put('foo', 'bar', 10);
-        $store->section('zap')->put('baz', 'boom', 10);
+        $store->section('bop')->put('foo', 'bar', Carbon::now()->addMinutes(10));
+        $store->section('zap')->put('baz', 'boom', Carbon::now()->addMinutes(10));
 		$store->section('bop')->flush();
 		$this->assertNull($store->section('bop')->get('foo'));
 		$this->assertEquals('boom', $store->section('zap')->get('baz'));
@@ -30,7 +31,7 @@ class CacheTaggedCacheTest extends BackwardCompatibleTestCase
 	{
 		$store = new ArrayStore;
 		$tags = ['bop', 'zap'];
-		$store->tags($tags)->put('foo', 'bar', 10);
+		$store->tags($tags)->put('foo', 'bar', Carbon::now()->addMinutes(10));
 		$this->assertEquals('bar', $store->tags($tags)->get('foo'));
 	}
 
@@ -50,9 +51,9 @@ class CacheTaggedCacheTest extends BackwardCompatibleTestCase
 	{
 		$store = new ArrayStore;
 		$tags1 = ['bop', 'zap'];
-		$store->tags($tags1)->put('foo', 'bar', 10);
+		$store->tags($tags1)->put('foo', 'bar', Carbon::now()->addMinutes(10));
 		$tags2 = ['bam', 'pow'];
-		$store->tags($tags2)->put('foo', 'bar', 10);
+		$store->tags($tags2)->put('foo', 'bar', Carbon::now()->addMinutes(10));
 		$store->tags('zap')->flush();
 		$this->assertNull($store->tags($tags1)->get('foo'));
 		$this->assertEquals('bar', $store->tags($tags2)->get('foo'));
@@ -62,7 +63,7 @@ class CacheTaggedCacheTest extends BackwardCompatibleTestCase
 	public function testTagsWithStringArgument()
 	{
 		$store = new ArrayStore;
-		$store->tags('bop')->put('foo', 'bar', 10);
+		$store->tags('bop')->put('foo', 'bar', Carbon::now()->addMinutes(10));
 		$this->assertEquals('bar', $store->tags('bop')->get('foo'));
 	}
 
