@@ -368,7 +368,7 @@ class HttpRequestTest extends BackwardCompatibleTestCase
 		$request = Request::create('/', 'GET');
 		$session = m::mock(Store::class);
 		$session->shouldReceive('getOldInput')->once()->with('foo', 'bar')->andReturn('boom');
-		$request->setSession($session);
+		$request->setLaravelSession($session);
 		$this->assertEquals('boom', $request->old('foo', 'bar'));
 	}
 
@@ -378,7 +378,7 @@ class HttpRequestTest extends BackwardCompatibleTestCase
 		$request = Request::create('/', 'GET');
 		$session = m::mock(Store::class);
 		$session->shouldReceive('flashInput')->once();
-		$request->setSession($session);
+		$request->setLaravelSession($session);
 		$request->flush();
 	}
 

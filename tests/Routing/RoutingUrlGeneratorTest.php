@@ -265,7 +265,7 @@ class RoutingUrlGeneratorTest extends BackwardCompatibleTestCase {
         $request = Illuminate\Http\Request::create('http://www.foo.com/some');
 
         $session->shouldReceive('previousUrl')->andReturn('http://www.foo.com/previous-page');
-        $request->setSession($session);
+        $request->setLaravelSession($session);
 
         $url = new UrlGenerator(
 			new Illuminate\Routing\RouteCollection,

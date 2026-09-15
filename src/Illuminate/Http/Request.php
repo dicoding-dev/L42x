@@ -1,10 +1,13 @@
 <?php namespace Illuminate\Http;
 
+use Illuminate\Session\SymfonySessionDecorator;
 use Illuminate\Support\Str;
 use SplFileInfo;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class Request extends SymfonyRequest {
 
@@ -594,7 +597,34 @@ class Request extends SymfonyRequest {
 	}
 
 	/**
-	 * Get the session associated with the request.
+	 * Determine if the request contains a session instance.
+	 *
+	 * @param  bool  $skipIfUninitialized
+	 * @return bool
+	 */
+	#[\Override]
+	public function hasSession(bool $skipIfUninitialized = false): bool
+	{
+		return $this->session instanceof SymfonySessionDecorator;
+	}
+
+	/**
+	 * Get the Symfony session (decorator) associated with the request.
+	 *
+	 * @return \Symfony\Component\HttpFoundation\Session\SessionInterface
+	 *
+	 * @throws \Symfony\Component\HttpFoundation\Exception\SessionNotFoundException
+	 */
+	#[\Override]
+	public function getSession(): SessionInterface
+	{
+		return $this->hasSession()
+			? $this->session
+			: throw new SessionNotFoundException;
+	}
+
+	/**
+	 * Get the session store associated with the request.
 	 *
 	 * @return \Illuminate\Session\Store
 	 *
@@ -607,7 +637,18 @@ class Request extends SymfonyRequest {
 			throw new \RuntimeException("Session store not set on request.");
 		}
 
-		return $this->getSession();
+		return $this->session->store;
+	}
+
+	/**
+	 * Set the session instance on the request.
+	 *
+	 * @param  \Illuminate\Contracts\Session\Session  $session
+	 * @return void
+	 */
+	public function setLaravelSession($session)
+	{
+		$this->session = new SymfonySessionDecorator($session);
 	}
 
 }
