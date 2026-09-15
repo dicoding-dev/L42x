@@ -913,6 +913,57 @@ class RoutingRouteTest extends BackwardCompatibleTestCase
     }
 
 
+	public function testRouteMiddlewareRunsAndWraps(): void
+	{
+		// Closure middleware wraps the route response.
+		$router = $this->getRouter();
+		$router->get('foo/bar', fn() => 'hello')->middleware(fn($request, $next) => $next($request).'!');
+		$this->assertEquals('hello!', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+
+		// Middleware that never calls $next short-circuits the route.
+		$router = $this->getRouter();
+		$router->get('foo/bar', fn() => 'hello')->middleware(fn($request, $next) => 'blocked');
+		$this->assertEquals('blocked', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+
+		// Alias resolves to a class middleware.
+		$router = $this->getRouter();
+		$router->aliasMiddleware('stub', 'RouteMiddlewareStub');
+		$router->get('foo/bar', fn() => 'hello')->middleware('stub');
+		$this->assertEquals('hello-stubbed', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+
+		// Parameter after ':' is passed to the middleware.
+		$router = $this->getRouter();
+		$router->aliasMiddleware('append', 'RouteAppendMiddlewareStub');
+		$router->get('foo/bar', fn() => 'hello')->middleware('append:X');
+		$this->assertEquals('helloX', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+
+		// A group expands to its members, nesting outer->inner.
+		$router = $this->getRouter();
+		$router->aliasMiddleware('append', 'RouteAppendMiddlewareStub');
+		$router->middlewareGroup('grp', ['append:-a', 'append:-b']);
+		$router->get('foo/bar', fn() => 'x')->middleware('grp');
+		$this->assertEquals('x-b-a', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+	}
+
+
+	public function testRouteMiddlewareCoexistsWithFilters(): void
+	{
+		// A before filter that short-circuits still bypasses middleware (filters wrap middleware).
+		$router = $this->getRouter();
+		$router->filter('block', fn() => 'blocked-by-filter');
+		$router->get('foo/bar', ['before' => 'block', fn() => 'hello'])
+			->middleware(fn($request, $next) => $next($request).'+mw');
+		$this->assertEquals('blocked-by-filter', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+
+		// A pass-through before filter lets the route run; middleware still wraps it.
+		$router = $this->getRouter();
+		$router->filter('pass', fn() => null);
+		$router->get('foo/bar', ['before' => 'pass', fn() => 'hello'])
+			->middleware(fn($request, $next) => $next($request).'+mw');
+		$this->assertEquals('hello+mw', $router->dispatch(Request::create('foo/bar', 'GET'))->getContent());
+	}
+
+
 	protected function getRouter(): Router
     {
 		return new Router(new Illuminate\Events\Dispatcher);
@@ -1016,4 +1067,18 @@ class ActionStub extends Controller
     {
         return 'hello';
     }
+}
+
+class RouteMiddlewareStub {
+	public function handle($request, $next)
+	{
+		return $next($request).'-stubbed';
+	}
+}
+
+class RouteAppendMiddlewareStub {
+	public function handle($request, $next, $suffix)
+	{
+		return $next($request).$suffix;
+	}
 }
