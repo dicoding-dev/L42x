@@ -52,6 +52,21 @@ class CookieTest extends BackwardCompatibleTestCase
 	}
 
 
+	public function testSameSiteAndRawWidening()
+	{
+		$cookie = $this->getCreator();
+
+		// behavior-preserving default: L4.2/Symfony effective SameSite = lax
+		$this->assertSame('lax', $cookie->make('a', 'b')->getSameSite());
+		$this->assertFalse($cookie->make('a', 'b')->isRaw());
+
+		// per-cookie overrides via the widened signature
+		$c = $cookie->make('a', 'b', 0, null, null, null, true, true, 'strict');
+		$this->assertSame('strict', $c->getSameSite());
+		$this->assertTrue($c->isRaw());
+	}
+
+
 	public function testQueuedCookies()
 	{
 		$cookie = $this->getCreator();

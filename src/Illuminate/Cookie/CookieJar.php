@@ -20,6 +20,21 @@ class CookieJar {
 	protected $domain = null;
 
 	/**
+	 * The default secure setting.
+	 *
+	 * @var bool
+	 */
+	protected $secure = false;
+
+	/**
+	 * The default SameSite setting (fork preserves Symfony's 'lax' default;
+	 * L13 defaults to null + config-driven middleware, introduced at the flip).
+	 *
+	 * @var string|null
+	 */
+	protected $sameSite = 'lax';
+
+	/**
 	 * All of the cookies queued for sending.
 	 *
 	 * @var array
@@ -34,17 +49,19 @@ class CookieJar {
 	 * @param  int     $minutes
 	 * @param  string  $path
 	 * @param  string  $domain
-	 * @param  bool    $secure
+	 * @param  bool|null  $secure
 	 * @param  bool    $httpOnly
+	 * @param  bool    $raw
+	 * @param  string|null  $sameSite
 	 * @return \Symfony\Component\HttpFoundation\Cookie
 	 */
-	public function make($name, $value, $minutes = 0, $path = null, $domain = null, $secure = false, $httpOnly = true)
+	public function make($name, $value, $minutes = 0, $path = null, $domain = null, $secure = null, $httpOnly = true, $raw = false, $sameSite = null)
 	{
-		list($path, $domain) = $this->getPathAndDomain($path, $domain);
+		list($path, $domain, $secure, $sameSite) = $this->getPathAndDomain($path, $domain, $secure, $sameSite);
 
 		$time = ($minutes == 0) ? 0 : time() + ($minutes * 60);
 
-		return new Cookie($name, $value, $time, $path, $domain, $secure, $httpOnly);
+		return new Cookie($name, $value, $time, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
 	}
 
 	/**
@@ -54,13 +71,15 @@ class CookieJar {
 	 * @param  string  $value
 	 * @param  string  $path
 	 * @param  string  $domain
-	 * @param  bool    $secure
+	 * @param  bool|null  $secure
 	 * @param  bool    $httpOnly
+	 * @param  bool    $raw
+	 * @param  string|null  $sameSite
 	 * @return \Symfony\Component\HttpFoundation\Cookie
 	 */
-	public function forever($name, $value, $path = null, $domain = null, $secure = false, $httpOnly = true)
+	public function forever($name, $value, $path = null, $domain = null, $secure = null, $httpOnly = true, $raw = false, $sameSite = null)
 	{
-		return $this->make($name, $value, 2628000, $path, $domain, $secure, $httpOnly);
+		return $this->make($name, $value, 2628000, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
 	}
 
 	/**
@@ -180,11 +199,13 @@ class CookieJar {
 	 *
 	 * @param  string  $path
 	 * @param  string  $domain
+	 * @param  bool|null  $secure
+	 * @param  string|null  $sameSite
 	 * @return array
 	 */
-	protected function getPathAndDomain($path, $domain)
+	protected function getPathAndDomain($path, $domain, $secure = null, $sameSite = null)
 	{
-		return array($path ?: $this->path, $domain ?: $this->domain);
+		return array($path ?: $this->path, $domain ?: $this->domain, is_bool($secure) ? $secure : $this->secure, $sameSite ?: $this->sameSite);
 	}
 
 	/**
