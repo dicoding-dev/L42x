@@ -34,6 +34,23 @@ abstract class Controller {
 	protected $layout;
 
 	/**
+	 * Register middleware on the controller (L13 idiom).
+	 *
+	 * BC bridge: middleware registered here runs via the legacy controller-filter
+	 * path (ControllerDispatcher) until the routing engine is swapped to stock L13.
+	 * The signature matches L13's Controller::middleware($middleware, array $options),
+	 * so the '['only'=>..]'/'['except'=>..]' options carry over unchanged after the swap.
+	 *
+	 * @param  \Closure|string  $middleware
+	 * @param  array  $options
+	 * @return void
+	 */
+	public function middleware($middleware, array $options = array())
+	{
+		$this->beforeFilter($middleware, $options);
+	}
+
+	/**
 	 * Register a "before" filter on the controller.
 	 *
 	 * @param  \Closure|string  $filter
