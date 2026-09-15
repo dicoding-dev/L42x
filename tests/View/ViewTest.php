@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Contracts\ArrayableInterface;
-use Illuminate\Support\Contracts\RenderableInterface;
+use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\MessageBag;
 use Illuminate\View\Engines\EngineInterface;
 use Illuminate\View\Factory;
@@ -178,7 +178,7 @@ class ViewTest extends BackwardCompatibleTestCase
 		$view->getFactory()->shouldReceive('decrementRender')->once()->ordered();
 		$view->getFactory()->shouldReceive('flushSectionsIfDoneRendering')->once();
 
-		$view->renderable = m::mock(RenderableInterface::class);
+		$view->renderable = m::mock(Renderable::class);
 		$view->renderable->shouldReceive('render')->once()->andReturn('text');
 		$this->assertEquals('contents', $view->render());
 	}

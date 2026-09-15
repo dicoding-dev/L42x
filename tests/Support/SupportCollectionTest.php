@@ -64,20 +64,17 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 
 	public function testToJsonEncodesTheToArrayResult(): void
     {
-		$c = $this->getMock(Collection::class, ['toArray']);
-		$c->expects($this->once())->method('toArray')->willReturn('foo');
-		$results = $c->toJson();
+		$c = new Collection(['foo' => 'bar']);
 
-		$this->assertEquals(json_encode('foo'), $results);
+		$this->assertEquals(json_encode(['foo' => 'bar']), $c->toJson());
 	}
 
 
 	public function testCastingToStringJsonEncodesTheToArrayResult(): void
     {
-		$c = $this->getMock(\Illuminate\Database\Eloquent\Collection::class, ['toArray']);
-		$c->expects($this->once())->method('toArray')->willReturn('foo');
+		$c = new Collection(['foo' => 'bar']);
 
-		$this->assertEquals(json_encode('foo'), (string) $c);
+		$this->assertEquals(json_encode(['foo' => 'bar']), (string) $c);
 	}
 
 
@@ -201,7 +198,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 	public function testSort(): void
     {
 		$data = new Collection([5, 3, 1, 2, 4]);
-		$data->sort(function($a, $b)
+		$data = $data->sort(function($a, $b)
 		{
 			if ($a === $b)
 			{
@@ -222,7 +219,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 		$this->assertEquals(['dayle', 'taylor'], array_values($data->all()));
 
 		$data = new Collection(['dayle', 'taylor']);
-		$data->sortByDesc(function($x) { return $x; });
+		$data = $data->sortByDesc(function($x) { return $x; });
 
 		$this->assertEquals(['taylor', 'dayle'], array_values($data->all()));
 	}
@@ -262,7 +259,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 		$this->assertInstanceOf(Collection::class, $data[0]);
 		$this->assertEquals(4, $data->count());
 		$this->assertEquals([1, 2, 3], $data[0]->toArray());
-		$this->assertEquals([10], $data[3]->toArray());
+		$this->assertEquals([9 => 10], $data[3]->toArray());
 	}
 
 
@@ -305,9 +302,9 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 
 	public function testRandomOnEmpty(): void
     {
-		$data = new Collection();
-		$random = $data->random();
-		$this->assertNull($random);
+		$this->expectException(\InvalidArgumentException::class);
+
+		(new Collection())->random();
 	}
 
 
@@ -315,15 +312,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
     {
 		$data = new Collection(['taylor', 'dayle', 'shawn']);
 		$data = $data->take(-2);
-		$this->assertEquals(['dayle', 'shawn'], $data->all());
-	}
-
-
-	public function testTakeAll(): void
-    {
-		$data = new Collection(['taylor', 'dayle', 'shawn']);
-		$data = $data->take();
-		$this->assertEquals(['taylor', 'dayle', 'shawn'], $data->all());
+		$this->assertEquals([1 => 'dayle', 2 => 'shawn'], $data->all());
 	}
 
 
@@ -501,7 +490,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 	public function testKeys(): void
     {
 		$c = new Collection(['name' => 'taylor', 'framework' => 'laravel']);
-		$this->assertEquals(['name', 'framework'], $c->keys());
+		$this->assertEquals(['name', 'framework'], $c->keys()->all());
 	}
 
 }

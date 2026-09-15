@@ -7,12 +7,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Reflector;
 use Illuminate\Support\Util;
 use LogicException;
-use Psr\Container\ContainerInterface;
+use Illuminate\Contracts\Container\Container as ContainerContract;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
 
-class Container implements ArrayAccess, ContainerInterface {
+class Container implements ArrayAccess, ContainerContract {
 
     private static ?Container $instance;
 
@@ -699,7 +699,7 @@ class Container implements ArrayAccess, ContainerInterface {
      *
      * @return \Closure
      */
-    public function factory(string $abstract): Closure
+    public function factory($abstract): Closure
     {
         return function () use ($abstract) {
             return $this->make($abstract);

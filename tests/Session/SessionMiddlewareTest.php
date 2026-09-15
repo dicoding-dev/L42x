@@ -17,7 +17,7 @@ class SessionMiddlewareTest extends BackwardCompatibleTestCase
 
     public function testSessionIsProperlyStartedAndClosed()
     {
-        $request = Symfony\Component\HttpFoundation\Request::create('http://www.foo.com/some', 'GET');
+        $request = Illuminate\Http\Request::create('http://www.foo.com/some', 'GET');
         $response = new Symfony\Component\HttpFoundation\Response;
 
 		$middle = new Illuminate\Session\Middleware(
