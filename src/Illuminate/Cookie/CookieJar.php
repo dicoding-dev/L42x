@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Cookie;
 
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Cookie;
 
 class CookieJar {
@@ -19,6 +20,21 @@ class CookieJar {
 	protected $domain = null;
 
 	/**
+	 * The default secure setting.
+	 *
+	 * @var bool
+	 */
+	protected $secure = false;
+
+	/**
+	 * The default SameSite setting (fork preserves Symfony's 'lax' default;
+	 * L13 defaults to null + config-driven middleware, introduced at the flip).
+	 *
+	 * @var string|null
+	 */
+	protected $sameSite = 'lax';
+
+	/**
 	 * All of the cookies queued for sending.
 	 *
 	 * @var array
@@ -33,17 +49,19 @@ class CookieJar {
 	 * @param  int     $minutes
 	 * @param  string  $path
 	 * @param  string  $domain
-	 * @param  bool    $secure
+	 * @param  bool|null  $secure
 	 * @param  bool    $httpOnly
+	 * @param  bool    $raw
+	 * @param  string|null  $sameSite
 	 * @return \Symfony\Component\HttpFoundation\Cookie
 	 */
-	public function make($name, $value, $minutes = 0, $path = null, $domain = null, $secure = false, $httpOnly = true)
+	public function make($name, $value, $minutes = 0, $path = null, $domain = null, $secure = null, $httpOnly = true, $raw = false, $sameSite = null)
 	{
-		list($path, $domain) = $this->getPathAndDomain($path, $domain);
+		list($path, $domain, $secure, $sameSite) = $this->getPathAndDomain($path, $domain, $secure, $sameSite);
 
 		$time = ($minutes == 0) ? 0 : time() + ($minutes * 60);
 
-		return new Cookie($name, $value, $time, $path, $domain, $secure, $httpOnly);
+		return new Cookie($name, $value, $time, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
 	}
 
 	/**
@@ -53,13 +71,15 @@ class CookieJar {
 	 * @param  string  $value
 	 * @param  string  $path
 	 * @param  string  $domain
-	 * @param  bool    $secure
+	 * @param  bool|null  $secure
 	 * @param  bool    $httpOnly
+	 * @param  bool    $raw
+	 * @param  string|null  $sameSite
 	 * @return \Symfony\Component\HttpFoundation\Cookie
 	 */
-	public function forever($name, $value, $path = null, $domain = null, $secure = false, $httpOnly = true)
+	public function forever($name, $value, $path = null, $domain = null, $secure = null, $httpOnly = true, $raw = false, $sameSite = null)
 	{
-		return $this->make($name, $value, 2628000, $path, $domain, $secure, $httpOnly);
+		return $this->make($name, $value, 2628000, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
 	}
 
 	/**
@@ -79,11 +99,12 @@ class CookieJar {
 	 * Determine if a cookie has been queued.
 	 *
 	 * @param  string  $key
+	 * @param  string|null  $path
 	 * @return bool
 	 */
-	public function hasQueued($key)
+	public function hasQueued($key, $path = null)
 	{
-		return ! is_null($this->queued($key));
+		return ! is_null($this->queued($key, null, $path));
 	}
 
 	/**
@@ -91,41 +112,86 @@ class CookieJar {
 	 *
 	 * @param  string  $key
 	 * @param  mixed   $default
+	 * @param  string|null  $path
 	 * @return \Symfony\Component\HttpFoundation\Cookie
 	 */
-	public function queued($key, $default = null)
+	public function queued($key, $default = null, $path = null)
 	{
-		return array_get($this->queued, $key, $default);
+		$queued = isset($this->queued[$key]) ? $this->queued[$key] : null;
+
+		if (is_null($queued))
+		{
+			return value($default);
+		}
+
+		if (is_null($path))
+		{
+			return Arr::last($queued, null, $default);
+		}
+
+		return isset($queued[$path]) ? $queued[$path] : value($default);
 	}
 
 	/**
 	 * Queue a cookie to send with the next response.
 	 *
-	 * @param  mixed
+	 * @param  mixed  ...$parameters
 	 * @return void
 	 */
-	public function queue()
+	public function queue(...$parameters)
 	{
-		if (head(func_get_args()) instanceof Cookie)
+		if (isset($parameters[0]) && $parameters[0] instanceof Cookie)
 		{
-			$cookie = head(func_get_args());
+			$cookie = $parameters[0];
 		}
 		else
 		{
-			$cookie = call_user_func_array($this->make(...), func_get_args());
+			$cookie = $this->make(...array_values($parameters));
 		}
 
-		$this->queued[$cookie->getName()] = $cookie;
+		if ( ! isset($this->queued[$cookie->getName()]))
+		{
+			$this->queued[$cookie->getName()] = array();
+		}
+
+		$this->queued[$cookie->getName()][$cookie->getPath()] = $cookie;
+	}
+
+	/**
+	 * Queue a cookie to expire with the next response.
+	 *
+	 * @param  string  $name
+	 * @param  string|null  $path
+	 * @param  string|null  $domain
+	 * @return void
+	 */
+	public function expire($name, $path = null, $domain = null)
+	{
+		$this->queue($this->forget($name, $path, $domain));
 	}
 
 	/**
 	 * Remove a cookie from the queue.
 	 *
 	 * @param  string  $name
+	 * @param  string|null  $path
+	 * @return void
 	 */
-	public function unqueue($name)
+	public function unqueue($name, $path = null)
 	{
-		unset($this->queued[$name]);
+		if (is_null($path))
+		{
+			unset($this->queued[$name]);
+
+			return;
+		}
+
+		unset($this->queued[$name][$path]);
+
+		if (empty($this->queued[$name]))
+		{
+			unset($this->queued[$name]);
+		}
 	}
 
 	/**
@@ -133,11 +199,13 @@ class CookieJar {
 	 *
 	 * @param  string  $path
 	 * @param  string  $domain
+	 * @param  bool|null  $secure
+	 * @param  string|null  $sameSite
 	 * @return array
 	 */
-	protected function getPathAndDomain($path, $domain)
+	protected function getPathAndDomain($path, $domain, $secure = null, $sameSite = null)
 	{
-		return array($path ?: $this->path, $domain ?: $this->domain);
+		return array($path ?: $this->path, $domain ?: $this->domain, is_bool($secure) ? $secure : $this->secure, $sameSite ?: $this->sameSite);
 	}
 
 	/**
@@ -157,11 +225,23 @@ class CookieJar {
 	/**
 	 * Get the cookies which have been queued for the next request
 	 *
-	 * @return array
+	 * @return \Symfony\Component\HttpFoundation\Cookie[]
 	 */
 	public function getQueuedCookies()
 	{
-		return $this->queued;
+		return Arr::flatten($this->queued);
+	}
+
+	/**
+	 * Flush the cookies which have been queued for the next request.
+	 *
+	 * @return $this
+	 */
+	public function flushQueuedCookies()
+	{
+		$this->queued = array();
+
+		return $this;
 	}
 
 }

@@ -52,19 +52,33 @@ class CookieTest extends BackwardCompatibleTestCase
 	}
 
 
+	public function testSameSiteAndRawWidening()
+	{
+		$cookie = $this->getCreator();
+
+		// behavior-preserving default: L4.2/Symfony effective SameSite = lax
+		$this->assertSame('lax', $cookie->make('a', 'b')->getSameSite());
+		$this->assertFalse($cookie->make('a', 'b')->isRaw());
+
+		// per-cookie overrides via the widened signature
+		$c = $cookie->make('a', 'b', 0, null, null, null, true, true, 'strict');
+		$this->assertSame('strict', $c->getSameSite());
+		$this->assertTrue($c->isRaw());
+	}
+
+
 	public function testQueuedCookies()
 	{
 		$cookie = $this->getCreator();
 		$this->assertEmpty($cookie->getQueuedCookies());
 		$this->assertFalse($cookie->hasQueued('foo'));
 		$cookie->queue($cookie->make('foo','bar'));
-		$this->assertArrayHasKey('foo', $cookie->getQueuedCookies());
 		$this->assertTrue($cookie->hasQueued('foo'));
 		$this->assertInstanceOf(Cookie::class, $cookie->queued('foo'));
 		$cookie->queue('qu','ux');
-		$this->assertArrayHasKey('qu', $cookie->getQueuedCookies());
 		$this->assertTrue($cookie->hasQueued('qu'));
 		$this->assertInstanceOf(Cookie::class, $cookie->queued('qu'));
+		$this->assertCount(2, $cookie->getQueuedCookies());
 	}
 
 
@@ -72,9 +86,43 @@ class CookieTest extends BackwardCompatibleTestCase
 	{
 		$cookie = $this->getCreator();
 		$cookie->queue($cookie->make('foo','bar'));
-		$this->assertArrayHasKey('foo',$cookie->getQueuedCookies());
+		$this->assertTrue($cookie->hasQueued('foo'));
 		$cookie->unqueue('foo');
 		$this->assertEmpty($cookie->getQueuedCookies());
+		$this->assertFalse($cookie->hasQueued('foo'));
+	}
+
+
+	public function testPathAwareQueuedCookies()
+	{
+		$cookie = $this->getCreator();
+		$cookie->queue($cookie->make('foo', 'a', 0, '/a'));
+		$cookie->queue($cookie->make('foo', 'b', 0, '/b'));
+
+		$this->assertCount(2, $cookie->getQueuedCookies());
+		$this->assertSame('a', $cookie->queued('foo', null, '/a')->getValue());
+		$this->assertSame('b', $cookie->queued('foo', null, '/b')->getValue());
+		$this->assertSame('b', $cookie->queued('foo')->getValue());
+
+		$cookie->unqueue('foo', '/a');
+		$this->assertNull($cookie->queued('foo', null, '/a'));
+		$this->assertSame('b', $cookie->queued('foo', null, '/b')->getValue());
+		$this->assertCount(1, $cookie->getQueuedCookies());
+
+		$cookie->flushQueuedCookies();
+		$this->assertEmpty($cookie->getQueuedCookies());
+	}
+
+
+	public function testExpireQueuesForgetCookie()
+	{
+		$cookie = $this->getCreator();
+		$cookie->expire('foo');
+
+		$this->assertTrue($cookie->hasQueued('foo'));
+		$queued = $cookie->queued('foo');
+		$this->assertInstanceOf(Cookie::class, $queued);
+		$this->assertTrue($queued->getExpiresTime() < time());
 	}
 
 
