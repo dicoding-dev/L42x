@@ -410,6 +410,53 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	}
 
 	/**
+	 * Deprecated pre-L13 getter aliases — kept so callers that predate the
+	 * task-2.15 rename keep working. Remove when callers move to the new names.
+	 *
+	 * @deprecated use currentPage()
+	 */
+	public function getCurrentPage($total = null)
+	{
+		return $this->currentPage($total);
+	}
+
+	/** @deprecated use lastPage() */
+	public function getLastPage()
+	{
+		return $this->lastPage();
+	}
+
+	/** @deprecated use perPage() */
+	public function getPerPage()
+	{
+		return $this->perPage();
+	}
+
+	/** @deprecated use total() */
+	public function getTotal()
+	{
+		return $this->total();
+	}
+
+	/** @deprecated use items() */
+	public function getItems()
+	{
+		return $this->items();
+	}
+
+	/** @deprecated use firstItem() */
+	public function getFrom()
+	{
+		return $this->firstItem();
+	}
+
+	/** @deprecated use lastItem() */
+	public function getTo()
+	{
+		return $this->lastItem();
+	}
+
+	/**
 	* Set the base URL in use by the paginator.
 	*
 	* @param  string  $baseUrl
