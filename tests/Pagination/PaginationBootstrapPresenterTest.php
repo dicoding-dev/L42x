@@ -165,8 +165,8 @@ class PaginationBootstrapPresenterTest extends BackwardCompatibleTestCase
 	protected function getPaginator()
 	{
 		$paginator = m::mock(Paginator::class);
-		$paginator->shouldReceive('getLastPage')->once()->andReturn(2);
-		$paginator->shouldReceive('getCurrentPage')->once()->andReturn(1);
+		$paginator->shouldReceive('lastPage')->once()->andReturn(2);
+		$paginator->shouldReceive('currentPage')->once()->andReturn(1);
 		$paginator->shouldReceive('getUrl')->andReturnUsing(function($page) { return 'http://foo.com?page='.$page; });
 		return $paginator;
 	}
