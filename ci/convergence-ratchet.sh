@@ -40,7 +40,7 @@ PATTERNS=(
 
 count() {
   # jumlah baris match di file *.php (line-level; cukup untuk ratchet)
-  grep -rEc --include='*.php' "$1" "$SCAN_DIR" 2>/dev/null | awk -F: '{s+=$2} END{print s+0}'
+  grep -rEc --include='*.php' -- "$1" "$SCAN_DIR" 2>/dev/null | awk -F: '{s+=$2} END{print s+0}'
 }
 
 if [ "$MODE" = init ]; then

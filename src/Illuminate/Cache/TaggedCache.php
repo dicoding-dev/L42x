@@ -1,8 +1,9 @@
 <?php namespace Illuminate\Cache;
 
 use Closure;
-use DateTime;
+use DateInterval;
 use Carbon\Carbon;
+use DateTimeInterface;
 
 class TaggedCache implements StoreInterface {
 
@@ -63,12 +64,12 @@ class TaggedCache implements StoreInterface {
 	 *
 	 * @param  string  $key
 	 * @param  mixed   $value
-	 * @param  \DateTime|int  $minutes
+	 * @param  \DateTimeInterface|\DateInterval  $ttl
 	 * @return void
 	 */
-	public function put($key, $value, $minutes)
+	public function put($key, $value, $ttl)
 	{
-		$minutes = $this->getMinutes($minutes);
+		$minutes = $this->getMinutes($ttl);
 
 		if ( ! is_null($minutes))
 		{
@@ -81,14 +82,14 @@ class TaggedCache implements StoreInterface {
 	 *
 	 * @param  string  $key
 	 * @param  mixed   $value
-	 * @param  \DateTime|int  $minutes
+	 * @param  \DateTimeInterface|\DateInterval  $ttl
 	 * @return bool
 	 */
-	public function add($key, $value, $minutes)
+	public function add($key, $value, DateTimeInterface|DateInterval $ttl)
 	{
 		if (is_null($this->get($key)))
 		{
-			$this->put($key, $value, $minutes); return true;
+			$this->put($key, $value, $ttl); return true;
 		}
 
 		return false;
@@ -155,18 +156,18 @@ class TaggedCache implements StoreInterface {
 	 * Get an item from the cache, or store the default value.
 	 *
 	 * @param  string  $key
-	 * @param  \DateTime|int  $minutes
+	 * @param  \DateTimeInterface|\DateInterval  $ttl
 	 * @param  \Closure  $callback
 	 * @return mixed
 	 */
-	public function remember($key, $minutes, Closure $callback)
+	public function remember($key, DateTimeInterface|DateInterval $ttl, Closure $callback)
 	{
 		// If the item exists in the cache we will just return this immediately
 		// otherwise we will execute the given Closure and cache the result
 		// of that execution for the given number of minutes in storage.
 		if ( ! is_null($value = $this->get($key))) return $value;
 
-		$this->put($key, $value = $callback(), $minutes);
+		$this->put($key, $value = $callback(), $ttl);
 
 		return $value;
 	}
@@ -224,21 +225,21 @@ class TaggedCache implements StoreInterface {
 	}
 
 	/**
-	 * Calculate the number of minutes with the given duration.
+	 * Calculate the number of minutes until the given TTL.
 	 *
-	 * @param  \DateTime|int  $duration
+	 * @param  \DateTimeInterface|\DateInterval  $duration
 	 * @return int|null
 	 */
 	protected function getMinutes($duration)
 	{
-		if ($duration instanceof DateTime)
+		if ($duration instanceof DateInterval)
 		{
-			$fromNow = Carbon::instance($duration)->diffInMinutes();
-
-			return $fromNow > 0 ? $fromNow : null;
+			$duration = Carbon::now()->add($duration);
 		}
 
-		return is_string($duration) ? (int) $duration : $duration;
+		$fromNow = Carbon::instance($duration)->diffInMinutes();
+
+		return $fromNow > 0 ? $fromNow : null;
 	}
 
 }

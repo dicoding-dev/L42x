@@ -29,6 +29,19 @@ class EventsDispatcherTest extends BackwardCompatibleTestCase
 	}
 
 
+	public function testDispatchIsCanonicalAndFireDelegates()
+	{
+		$d = new Dispatcher;
+		$d->listen('foo', function ($x) { return 'heard:'.$x; });
+
+		$this->assertSame(['heard:bar'], $d->dispatch('foo', ['bar']));
+		// fire() is the L4.2 alias — identical behaviour, removed at L13 swap
+		$this->assertSame($d->dispatch('foo', ['bar']), $d->fire('foo', ['bar']));
+		// halt returns the first non-null response
+		$this->assertSame('heard:bar', $d->dispatch('foo', ['bar'], true));
+	}
+
+
 	public function testContainerResolutionOfEventHandlers()
 	{
 		$d = new Dispatcher($container = m::mock(Container::class));

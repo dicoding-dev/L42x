@@ -284,7 +284,7 @@ class Logger implements LoggerInterface {
 	{
 		if (isset($this->dispatcher))
 		{
-			$this->dispatcher->fire('illuminate.log', compact('level', 'message', 'context'));
+			$this->dispatcher->dispatch('illuminate.log', compact('level', 'message', 'context'));
 		}
 	}
 

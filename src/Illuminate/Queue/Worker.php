@@ -264,7 +264,7 @@ class Worker {
 		{
 			$data = json_decode($job->getRawBody(), true);
 
-			$this->events->fire('illuminate.queue.failed', array($connection, $job, $data));
+			$this->events->dispatch('illuminate.queue.failed', array($connection, $job, $data));
 		}
 	}
 
@@ -286,7 +286,7 @@ class Worker {
 	 */
 	public function stop()
 	{
-		$this->events->fire('illuminate.queue.stopping');
+		$this->events->dispatch('illuminate.queue.stopping');
 
 		die;
 	}
