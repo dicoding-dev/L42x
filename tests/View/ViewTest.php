@@ -49,7 +49,7 @@ class ViewTest extends BackwardCompatibleTestCase
 		$view->getFactory()->shouldReceive('getShared')->once()->andReturn(['shared' => 'foo']);
 		$view->getEngine()->shouldReceive('get')->once()->with('path', ['foo' => 'bar', 'shared' => 'foo'])->andReturn('contents');
 		$view->getFactory()->shouldReceive('decrementRender')->once()->ordered();
-		$view->getFactory()->shouldReceive('flushSectionsIfDoneRendering')->once();
+		$view->getFactory()->shouldReceive('flushStateIfDoneRendering')->once();
 
 		$me = $this;
 		$callback = function(View $rendered, $contents) use ($me, $view)
@@ -86,7 +86,7 @@ class ViewTest extends BackwardCompatibleTestCase
 		$view->getFactory()->shouldReceive('getShared')->twice()->andReturn(['shared' => 'foo']);
 		$view->getEngine()->shouldReceive('get')->twice()->with('path', ['foo' => 'bar', 'shared' => 'foo'])->andReturn('contents');
 		$view->getFactory()->shouldReceive('decrementRender')->twice();
-		$view->getFactory()->shouldReceive('flushSectionsIfDoneRendering')->twice();
+		$view->getFactory()->shouldReceive('flushStateIfDoneRendering')->twice();
 
 		$this->assertEquals('contents', $view->render());
 		$this->assertEquals('contents', (string) $view);
@@ -176,7 +176,7 @@ class ViewTest extends BackwardCompatibleTestCase
 		$view->getFactory()->shouldReceive('getShared')->once()->andReturn(['shared' => 'foo']);
 		$view->getEngine()->shouldReceive('get')->once()->andReturn('contents');
 		$view->getFactory()->shouldReceive('decrementRender')->once()->ordered();
-		$view->getFactory()->shouldReceive('flushSectionsIfDoneRendering')->once();
+		$view->getFactory()->shouldReceive('flushStateIfDoneRendering')->once();
 
 		$view->renderable = m::mock(Renderable::class);
 		$view->renderable->shouldReceive('render')->once()->andReturn('text');
@@ -192,7 +192,7 @@ class ViewTest extends BackwardCompatibleTestCase
 		$view->getFactory()->shouldReceive('getShared')->once()->andReturn(['shared' => 'foo']);
 		$view->getEngine()->shouldReceive('get')->once()->andReturn('contents');
 		$view->getFactory()->shouldReceive('decrementRender')->once()->ordered();
-		$view->getFactory()->shouldReceive('flushSectionsIfDoneRendering')->once();
+		$view->getFactory()->shouldReceive('flushStateIfDoneRendering')->once();
 
 		$view->getFactory()->shouldReceive('getSections')->once()->andReturn(['foo','bar']);
 		$sections = $view->renderSections();
