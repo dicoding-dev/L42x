@@ -1115,7 +1115,9 @@ class Router implements HttpKernelInterface, RouteFiltererInterface {
 	 */
 	protected function runRouteWithinStack(Route $route, Request $request)
 	{
-		$middleware = $this->gatherRouteMiddleware($route);
+		// Middleware IS the flipped filter surface, so honour disableFilters()
+		// (on by default in the testing env) exactly like the legacy filter path.
+		$middleware = $this->filtering ? $this->gatherRouteMiddleware($route) : array();
 
 		if (empty($middleware))
 		{
