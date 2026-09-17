@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Contracts\JsonableInterface;
-use Illuminate\Support\Contracts\ArrayableInterface;
+use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
 
-abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonSerializable {
+abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializable {
 
 	/**
 	 * The connection name for the model.
@@ -265,11 +265,11 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	/**
 	 * Register a new global scope on the model.
 	 *
-	 * @param ScopeInterface $scope
+	 * @param Scope $scope
 	 *
 	 * @return void
 	 */
-	public static function addGlobalScope(ScopeInterface $scope): void
+	public static function addGlobalScope(Scope $scope): void
     {
 		static::$globalScopes[get_called_class()][get_class($scope)] = $scope;
 	}
@@ -277,7 +277,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	/**
 	 * Determine if a model has a global scope.
 	 *
-	 * @param ScopeInterface $scope
+	 * @param Scope $scope
 	 *
 	 * @return bool
 	 */
@@ -289,11 +289,11 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	/**
 	 * Get a global scope registered with the model.
 	 *
-	 * @param ScopeInterface $scope
+	 * @param Scope $scope
 	 *
-     * @return ScopeInterface|null
+     * @return Scope|null
 	 */
-	public static function getGlobalScope($scope): ?ScopeInterface
+	public static function getGlobalScope($scope): ?Scope
     {
 		return Arr::first(static::$globalScopes[get_called_class()], function($value, $key) use ($scope)
 		{
@@ -304,7 +304,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	/**
 	 * Get the global scopes for this class instance.
 	 *
-     * @return ScopeInterface[]
+     * @return Scope[]
 	 */
 	public function getGlobalScopes(): array
     {
@@ -1740,7 +1740,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     /**
      * Get a new query instance without a given scope.
 	 *
-	 * @param  ScopeInterface  $scope
+	 * @param  Scope  $scope
 	 *
 	 * @return Builder
 	 */
@@ -2317,7 +2317,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 			// If the values implements the Arrayable interface we can just call this
 			// toArray method on the instances which will convert both models and
 			// collections to their proper array form and we'll set the values.
-			if ($value instanceof ArrayableInterface)
+			if ($value instanceof Arrayable)
 			{
 				$relation = $value->toArray();
 			}
@@ -2515,7 +2515,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
 	{
 		$value = $this->mutateAttribute($key, $value);
 
-		return $value instanceof ArrayableInterface ? $value->toArray() : $value;
+		return $value instanceof Arrayable ? $value->toArray() : $value;
 	}
 
 	/**
