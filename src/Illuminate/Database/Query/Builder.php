@@ -1348,16 +1348,34 @@ class Builder {
 	}
 
 	/**
-	 * Pluck a single column's value from the first result of a query.
+	 * Get an array with the values of a given column.
 	 *
 	 * @param  string  $column
-	 * @return mixed
+	 * @param  string  $key
+	 * @return array
 	 */
-	public function pluck($column)
+	public function pluck($column, $key = null)
 	{
-		$result = (array) $this->first(array($column));
+		$columns = $this->getListSelect($column, $key);
 
-		return count($result) > 0 ? reset($result) : null;
+		// First we will just get all of the column values for the record result set
+		// then we can associate those values with the column if it was specified
+		// otherwise we can just give these values back without a specific key.
+		$results = new Collection($this->get($columns));
+
+		$values = $results->fetch($columns[0])->all();
+
+		// If a key was specified and we have results, we will go ahead and combine
+		// the values with the keys of all of the records so that the values can
+		// be accessed by the key of the rows instead of simply being numeric.
+		if ( ! is_null($key) && count($results) > 0)
+		{
+			$keys = $results->fetch($key)->all();
+
+			return array_combine($keys, $values);
+		}
+
+		return $values;
 	}
 
 	/**
@@ -1630,37 +1648,6 @@ class Builder {
     }
 
 	/**
-	 * Get an array with the values of a given column.
-	 *
-	 * @param  string  $column
-	 * @param  string  $key
-	 * @return array
-	 */
-	public function lists($column, $key = null)
-	{
-		$columns = $this->getListSelect($column, $key);
-
-		// First we will just get all of the column values for the record result set
-		// then we can associate those values with the column if it was specified
-		// otherwise we can just give these values back without a specific key.
-		$results = new Collection($this->get($columns));
-
-		$values = $results->fetch($columns[0])->all();
-
-		// If a key was specified and we have results, we will go ahead and combine
-		// the values with the keys of all of the records so that the values can
-		// be accessed by the key of the rows instead of simply being numeric.
-		if ( ! is_null($key) && count($results) > 0)
-		{
-			$keys = $results->fetch($key)->all();
-
-			return array_combine($keys, $values);
-		}
-
-		return $values;
-	}
-
-	/**
 	 * Get the columns that should be used in a list array.
 	 *
 	 * @param  string  $column
@@ -1691,9 +1678,9 @@ class Builder {
 	 */
 	public function implode($column, $glue = null)
 	{
-		if (is_null($glue)) return implode($this->lists($column));
+		if (is_null($glue)) return implode($this->pluck($column));
 
-		return implode($glue, $this->lists($column));
+		return implode($glue, $this->pluck($column));
 	}
 
 	/**

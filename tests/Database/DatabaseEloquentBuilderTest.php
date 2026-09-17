@@ -137,27 +137,7 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testPluckMethodWithModelFound()
-	{
-		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
-		$mockModel = new StdClass;
-		$mockModel->name = 'foo';
-		$builder->shouldReceive('first')->with(['name'])->andReturn($mockModel);
-
-		$this->assertEquals('foo', $builder->pluck('name'));
-	}
-
-
-	public function testPluckMethodWithModelNotFound()
-	{
-		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
-		$builder->shouldReceive('first')->with(['name'])->andReturn(null);
-
-		$this->assertNull($builder->pluck('name'));
-	}
-
-
-	public function testValueMethodWithModelFound()
+public function testValueMethodWithModelFound()
 	{
 		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
 		$mockModel = new StdClass;
@@ -201,7 +181,7 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
 	public function testListsReturnsTheMutatedAttributesOfAModel()
 	{
 		$builder = $this->getBuilder();
-		$builder->getQuery()->shouldReceive('lists')->with('name', '')->andReturn(['bar', 'baz']);
+		$builder->getQuery()->shouldReceive('pluck')->with('name', '')->andReturn(['bar', 'baz']);
 		$builder->setModel($this->getMockModel());
 		$builder->getModel()->shouldReceive('hasGetMutator')->with('name')->andReturn(true);
 		$builder->getModel()->shouldReceive('newFromBuilder')->with(['name' => 'bar'])->andReturn(new EloquentBuilderTestListsStub(
@@ -211,18 +191,18 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
             ['name' => 'baz']
         ));
 
-		$this->assertEquals(['foo_bar', 'foo_baz'], $builder->lists('name'));
+		$this->assertEquals(['foo_bar', 'foo_baz'], $builder->pluck('name'));
 	}
 
 
 	public function testListsWithoutModelGetterJustReturnTheAttributesFoundInDatabase()
 	{
 		$builder = $this->getBuilder();
-		$builder->getQuery()->shouldReceive('lists')->with('name', '')->andReturn(['bar', 'baz']);
+		$builder->getQuery()->shouldReceive('pluck')->with('name', '')->andReturn(['bar', 'baz']);
 		$builder->setModel($this->getMockModel());
 		$builder->getModel()->shouldReceive('hasGetMutator')->with('name')->andReturn(false);
 
-		$this->assertEquals(['bar', 'baz'], $builder->lists('name'));
+		$this->assertEquals(['bar', 'baz'], $builder->pluck('name'));
 	}
 
 

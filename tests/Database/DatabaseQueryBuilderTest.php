@@ -750,7 +750,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 		{
 			return $results;
 		});
-		$results = $builder->from('users')->where('id', '=', 1)->lists('foo');
+		$results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
 		$this->assertEquals(['bar', 'baz'], $results);
 
 		$builder = $this->getBuilder();
@@ -762,7 +762,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 		{
 			return $results;
 		});
-		$results = $builder->from('users')->where('id', '=', 1)->lists('foo', 'id');
+		$results = $builder->from('users')->where('id', '=', 1)->pluck('foo', 'id');
 		$this->assertEquals([1 => 'bar', 10 => 'baz'], $results);
 	}
 
@@ -871,20 +871,7 @@ class DatabaseQueryBuilderTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testPluckMethodReturnsSingleColumn(): void
-    {
-		$builder = $this->getBuilder();
-		$builder->getConnection()->shouldReceive('select')->once()->with('select "foo" from "users" where "id" = ? limit 1', [1]
-        )->andReturn([['foo' => 'bar']]);
-		$builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar']])->andReturn(
-            [['foo' => 'bar']]
-        );
-		$results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
-		$this->assertEquals('bar', $results);
-	}
-
-
-	public function testValueMethodReturnsSingleColumn(): void
+public function testValueMethodReturnsSingleColumn(): void
     {
 		$builder = $this->getBuilder();
 		$builder->getConnection()->shouldReceive('select')->once()->with('select "foo" from "users" where "id" = ? limit 1', [1]
