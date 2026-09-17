@@ -318,7 +318,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 * @param  int|null  $total
 	 * @return int
 	 */
-	public function getCurrentPage($total = null)
+	public function currentPage($total = null)
 	{
 		if (is_null($total))
 		{
@@ -333,7 +333,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return int
 	 */
-	public function getLastPage()
+	public function lastPage()
 	{
 		return $this->lastPage;
 	}
@@ -343,7 +343,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return int
 	 */
-	public function getFrom()
+	public function firstItem()
 	{
 		return $this->from;
 	}
@@ -353,7 +353,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return int
 	 */
-	public function getTo()
+	public function lastItem()
 	{
 		return $this->to;
 	}
@@ -363,7 +363,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return int
 	 */
-	public function getPerPage()
+	public function perPage()
 	{
 		return $this->perPage;
 	}
@@ -383,7 +383,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return array
 	 */
-	public function getItems()
+	public function items()
 	{
 		return $this->items;
 	}
@@ -404,7 +404,7 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
 	 *
 	 * @return int
 	 */
-	public function getTotal()
+	public function total()
 	{
 		return $this->total;
 	}

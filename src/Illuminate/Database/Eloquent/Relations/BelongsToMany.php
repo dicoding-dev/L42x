@@ -184,7 +184,7 @@ class BelongsToMany extends Relation {
 		// from the database since this isn't performed by the Eloquent builder.
 		$pager = $this->query->paginate($perPage, $columns);
 
-		$this->hydratePivotRelation($pager->getItems());
+		$this->hydratePivotRelation($pager->items());
 
 		return $pager;
 	}

@@ -20,8 +20,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
         $factory->shouldReceive('getCurrentPage')->once()->andReturn(1);
         $p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 
@@ -31,8 +31,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(1);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(1, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(1, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 
@@ -42,9 +42,9 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(1);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
-		$this->assertEquals(['foo', 'bar'], $p->getItems());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
+		$this->assertEquals(['foo', 'bar'], $p->items());
 	}
 
 
@@ -54,9 +54,9 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(1);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(1, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
-		$this->assertCount(3, $p->getItems());
+		$this->assertEquals(1, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
+		$this->assertCount(3, $p->items());
 	}
 
 
@@ -66,8 +66,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(1);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 
@@ -77,8 +77,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(1);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(1, $p->getFrom());
-		$this->assertEquals(2, $p->getTo());
+		$this->assertEquals(1, $p->firstItem());
+		$this->assertEquals(2, $p->lastItem());
 	}
 
 
@@ -88,8 +88,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(15);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(2, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(2, $p->currentPage());
 	}
 
 
@@ -99,8 +99,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(-1);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 
@@ -110,8 +110,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn('-1');
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 
@@ -121,8 +121,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn('abc');
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 
@@ -132,8 +132,8 @@ class PaginationPaginatorTest extends BackwardCompatibleTestCase
 		$factory->shouldReceive('getCurrentPage')->once()->andReturn(null);
 		$p->setupPaginationContext();
 
-		$this->assertEquals(2, $p->getLastPage());
-		$this->assertEquals(1, $p->getCurrentPage());
+		$this->assertEquals(2, $p->lastPage());
+		$this->assertEquals(1, $p->currentPage());
 	}
 
 

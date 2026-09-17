@@ -46,20 +46,6 @@ class Factory {
 	protected $shared = array();
 
 	/**
-	 * Array of registered view name aliases.
-	 *
-	 * @var array
-	 */
-	protected $aliases = array();
-
-	/**
-	 * All of the registered view names.
-	 *
-	 * @var array
-	 */
-	protected $names = array();
-
-	/**
 	 * The extension to engine bindings.
 	 *
 	 * @var array
@@ -121,8 +107,6 @@ class Factory {
 	 */
 	public function make($view, $data = array(), $mergeData = array())
 	{
-		if (isset($this->aliases[$view])) $view = $this->aliases[$view];
-
 		$path = $this->finder->find($view);
 
 		$data = array_merge($mergeData, $this->parseData($data));
@@ -141,42 +125,6 @@ class Factory {
 	protected function parseData($data)
 	{
 		return $data instanceof Arrayable ? $data->toArray() : $data;
-	}
-
-	/**
-	 * Get the evaluated view contents for a named view.
-	 *
-	 * @param  string  $view
-	 * @param  mixed   $data
-	 * @return \Illuminate\View\View
-	 */
-	public function of($view, $data = array())
-	{
-		return $this->make($this->names[$view], $data);
-	}
-
-	/**
-	 * Register a named view.
-	 *
-	 * @param  string  $view
-	 * @param  string  $name
-	 * @return void
-	 */
-	public function name($view, $name)
-	{
-		$this->names[$name] = $view;
-	}
-
-	/**
-	 * Add an alias for a view.
-	 *
-	 * @param  string  $view
-	 * @param  string  $alias
-	 * @return void
-	 */
-	public function alias($view, $alias)
-	{
-		$this->aliases[$alias] = $view;
 	}
 
 	/**
@@ -614,11 +562,21 @@ class Factory {
 	 */
 	public function flushSections()
 	{
-		$this->renderCount = 0;
-
 		$this->sections = array();
 
 		$this->sectionStack = array();
+	}
+
+	/**
+	 * Flush all of the factory state like sections and stacks.
+	 *
+	 * @return void
+	 */
+	public function flushState()
+	{
+		$this->renderCount = 0;
+
+		$this->flushSections();
 	}
 
 	/**
@@ -626,9 +584,9 @@ class Factory {
 	 *
 	 * @return void
 	 */
-	public function flushSectionsIfDoneRendering()
+	public function flushStateIfDoneRendering()
 	{
-		if ($this->doneRendering()) $this->flushSections();
+		if ($this->doneRendering()) $this->flushState();
 	}
 
 	/**
@@ -831,16 +789,6 @@ class Factory {
 	public function getSections()
 	{
 		return $this->sections;
-	}
-
-	/**
-	 * Get all of the registered named views in environment.
-	 *
-	 * @return array
-	 */
-	public function getNames()
-	{
-		return $this->names;
 	}
 
 }

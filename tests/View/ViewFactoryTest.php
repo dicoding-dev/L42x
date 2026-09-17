@@ -78,32 +78,6 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testAddANamedViews()
-	{
-		$factory = $this->getFactory();
-		$factory->name('bar', 'foo');
-
-		$this->assertEquals(['foo' => 'bar'], $factory->getNames());
-	}
-
-
-	public function testMakeAViewFromNamedView()
-	{
-		$factory = $this->getFactory();
-		$factory->getFinder()->shouldReceive('find')->once()->with('view')->andReturn('path.php');
-		$factory->getEngineResolver()->shouldReceive('resolve')->once()->with('php')->andReturn($engine = m::mock(
-            EngineInterface::class
-        ));
-		$factory->getFinder()->shouldReceive('addExtension')->once()->with('php');
-		$factory->getDispatcher()->shouldReceive('dispatch');
-		$factory->addExtension('php', 'php');
-		$factory->name('view', 'foo');
-		$view = $factory->of('foo', ['data']);
-
-		$this->assertSame($engine, $view->getEngine());
-	}
-
-
 	public function testRawStringsMayBeReturnedFromRenderEach()
 	{
 		$this->assertEquals('foo', $this->getFactory()->renderEach('foo', [], 'item', 'raw|foo'));
@@ -346,22 +320,6 @@ class ViewFactoryTest extends BackwardCompatibleTestCase
 		$factory->flushSections();
 
 		$this->assertCount(0, $factory->getSections());
-	}
-
-
-	public function testMakeWithAlias()
-	{
-		$factory = $this->getFactory();
-		$factory->alias('real', 'alias');
-		$factory->getFinder()->shouldReceive('find')->once()->with('real')->andReturn('path.php');
-		$factory->getEngineResolver()->shouldReceive('resolve')->once()->with('php')->andReturn(m::mock(
-            EngineInterface::class
-        ));
-		$factory->getDispatcher()->shouldReceive('dispatch');
-
-		$view = $factory->make('alias');
-
-		$this->assertEquals('real', $view->getName());
 	}
 
 
