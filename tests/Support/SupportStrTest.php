@@ -196,4 +196,35 @@ class SupportStrTest extends TestCase
         $this->assertEquals('', Str::replace('Yo', 'Laravel', ''));
         $this->assertEquals('', Str::replace('Yo', 'Laravel', null));
     }
+
+	public function testFlushCacheClearsCaseCaches(): void
+	{
+		Str::flushCache();
+
+		Str::snake('FooBar');
+		Str::camel('foo_bar');
+		Str::studly('foo_bar');
+
+		try {
+			$this->assertNotEmpty($this->readStrCache('snakeCache'));
+			$this->assertNotEmpty($this->readStrCache('camelCache'));
+			$this->assertNotEmpty($this->readStrCache('studlyCache'));
+
+			Str::flushCache();
+
+			$this->assertSame([], $this->readStrCache('snakeCache'));
+			$this->assertSame([], $this->readStrCache('camelCache'));
+			$this->assertSame([], $this->readStrCache('studlyCache'));
+		} finally {
+			Str::flushCache();
+		}
+	}
+
+	private function readStrCache($name)
+	{
+		$reflection = new ReflectionProperty(Str::class, $name);
+		$reflection->setAccessible(true);
+
+		return $reflection->getValue();
+	}
 }
