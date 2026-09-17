@@ -20,13 +20,23 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
 
 ---
 
+> **Status sync (2026-09-17, dari git/PR):** `[x]` = fork-tighten sudah merged ke `master` (≤ tag `4.2.93`;
+> app-conform mengikuti di RC `framework-4.2.9x-rc1`) · `[~]` = in-flight/partial · `[ ]` = belum mulai.
+> **Catatan penomoran:** commit gelombang awal pakai skema `3.x` (3.3b/3.4/3.5/3.6/3.7/3.8) yang dipetakan
+> **by-semantic** ke task `2.x` doc ini: `3.3b`→1.3 Collection, `3.4`→2.12 Session, `3.5`→2.7/2.10/2.13
+> (Config/Filesystem/Log), `3.6`→2.2 Cache, `3.7`→2.4 Events, `3.8`→2.6 Console. **2.8 Routing** ada di
+> `pre-release/4.2.95` — belum merge ke master (`[~]`).
+
 ## Wave 0 — Enabler (sekali kerja)
 
-- [ ] **0.1 — WAF di edge** `[ops · S]`
+- [x] **0.1 — WAF di edge** `[ops · S]`
   - Why: tutup surface security core 4.2 tak terpatch **sekarang**; beli waktu.
   - Done when: trafik produksi lewat WAF; dashboard menampilkan hit rule.
+  - Status (2026-09-17): **dikonfirmasi tim infra — WAF sudah ada.** Owner = infra (di luar lane
+    migrasi ini) & tak mem-block task lain. Bukti = testimoni tim infra, belum di-cross-check ke
+    dashboard dari sisi dev (AWS WAF di ALB invisible dari header, jadi tak bisa diverif dari luar).
 
-- [ ] **0.2 — Demote ratchet CI ke pola non-type + guard pasca-swap** `[fork · S]`
+- [x] **0.2 — Demote ratchet CI ke pola non-type + guard pasca-swap** `[fork · S]`
   - Why: enforcement pindah ke type (PHP+Psalm) **bila removal**. Ratchet tetap untuk yang **tak**
     bisa jadi type, **plus** dua guard yang strictness fork-nya menguap saat swap.
   - Steps: pangkas `ci/convergence-ratchet.sh` → sisakan pola: helper global `str_*`/`array_*`,
@@ -35,7 +45,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
     di command app** (Console fire-only pasca-swap §7D).
   - Done when: ratchet hanya cek pola non-type + 2 guard pasca-swap; sisanya dihapus dari daftar.
 
-- [ ] **0.3 — Pastikan Psalm jalan di CI app + siapkan 2 custom rule** `[app · S]`
+- [~] **0.3 — Pastikan Psalm jalan di CI app + siapkan 2 custom rule** `[app · S]`
   - Why: enforcement statis butuh Psalm hijau di `dicoding` (sudah ada) sebagai baseline; 2 pola
     non-self-liquidating perlu Psalm-rule permanen.
   - Steps: catat baseline Psalm; siapkan (draft) custom Psalm-rule/plugin: (1) bare-int arg pada
@@ -49,7 +59,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
 
 > Ini yang **memutus SCC-1** dan memungkinkan pola berulang jalan. Kerjakan berurutan.
 
-- [ ] **1.0 — Split fork monolitik → struktur `illuminate/*`-shaped + replace-map** `[fork · L]`
+- [x] **1.0 — Split fork monolitik → struktur `illuminate/*`-shaped + replace-map** `[fork · L]`
   - Why: real `illuminate/*` v13 = banyak package; namespace `Illuminate\*` collide **DAN** fork &
     stock sama-sama `laravel/framework` yang `replace` illuminate/* → tak bisa co-install → swap
     **per-cluster** + edit `replace` tiap langkah.
@@ -62,7 +72,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
     (contracts/collections/macroable/conditionable/reflection/pipeline) → introduce = copy source.
   - Done when: peta split + `replace`-map + urutan pembukaan terdokumentasi; tiap komponen fork dipetakan ke package v13 target.
 
-- [ ] **1.1 — Introduce `Contracts`** `[fork · M]` `B1` · blocked-by: 1.0
+- [x] **1.1 — Introduce `Contracts`** `[fork · M]` `B1` · blocked-by: 1.0
   - Why: `Contracts` **tak ada di tree fork**; **memutus SCC-1**. Prasyarat semua rename namespace.
   - Steps: copy `src/Illuminate/Contracts/*` verbatim dari `../framework` (semua 33 subdomain);
     composer require **PSR-only** (⚠️ **JANGAN** tambah `illuminate/*` → false cycle dari 5 type-hint cross-import).
@@ -70,7 +80,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: **by presence** — begitu komponen type-hint `Contracts\X`, PHP+Psalm tangkap consumer non-conform.
   - Done when: `Illuminate\Contracts\*` tersedia; komponen bisa refer interface.
 
-- [ ] **1.2 — Introduce leaf traits/util (COPY SOURCE, fisik di tree Support)** `[fork · S]` `B1/B2` · blocked-by: 1.1
+- [x] **1.2 — Introduce leaf traits/util (COPY SOURCE, fisik di tree Support)** `[fork · S]` `B1/B2` · blocked-by: 1.1
   - Steps: `Macroable` (rename `MacroableTrait`→`Macroable`, `B2`); `Conditionable` +
     `HigherOrderWhenProxy` verbatim (`B1`); `Reflector` superset + `ReflectsClosures` (`B1`).
     **Copy SOURCE ke tree Support fork** — **JANGAN** `composer require illuminate/macroable|conditionable`
@@ -78,7 +88,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: `use ...\MacroableTrait` → trait-not-found (PHP+Psalm).
   - Done when: idiom `->when()/::macro()`/`Reflector` tersedia dengan shape L13; ~4 site internal `use MacroableTrait` di-rename.
 
-- [ ] **1.3 — Introduce `Collections` shape (COPY SOURCE ke tree Support fork)** `[fork · L]` `B1` · blocked-by: 1.1, 1.2
+- [x] **1.3 — Introduce `Collections` shape (COPY SOURCE ke tree Support fork)** `[fork · L]` `B1` · blocked-by: 1.1, 1.2
   - Why: `Collection` dipisah dari Support di v13 (namespace `Illuminate\Support\Collection` tetap).
     **Fork tak `replace` collections**, dan real `illuminate/collections:^13` mengirim
     `Illuminate\Support\{Collection,Arr,Enumerable}` yang **collide** dengan `src/Illuminate/Support/Collection.php`
@@ -89,10 +99,15 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: **bukan type** (superset) → **behavior-parity test** (`random/first/groupBy/sortBy` edge).
   - Done when: surface Collection = L13 (source di tree fork); parity test hijau. (Real `illuminate/collections` swap ditunda ke 4.2.)
 
-- [ ] **1.4 — Alihkan Facade/binding konkret → interface Contracts** `[fork · L]` `B1` · blocked-by: 1.1
+- [x] **1.4 — Alihkan Facade/binding konkret → interface Contracts** `[fork · L]` `B1` · blocked-by: 1.1
   - Why: memutus SCC-1 (`Support\Facades\Response`→Http konkret, `CapsuleManagerTrait`→Container konkret).
   - Steps: Facade resolve via container/kontrak; binding type-hint `Contracts\*`.
   - Done when: grep SCC-1 cycle (Support→Http/Container konkret) hilang.
+  - Verify (2026-09-17): **done** — kedua edge SCC-1 sudah kontrak: `Response` facade resolve via
+    `Contracts\Routing\ResponseFactory` (accessor kembalikan contract class-string; ref `Http\*` sisa cuma
+    PHPDoc `@method`), `CapsuleManagerTrait` type-hint `Contracts\Container\Container`. Sweep
+    `grep -rnE 'use Illuminate\\(Http|Container)\\' src/Illuminate/Support/ | grep -v Contracts` = **0 hit**.
+    → blocker Wave 4.1 SCC-1 cutover tersisa tinggal **2.5**.
 
 ---
 
@@ -104,7 +119,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
 > app adalah *konsekuensi* dari fork-tighten (dipaksa type), bukan task berdiri sendiri. Draft app
 > sempat dibuat lalu **di-drop** (2026-09-10); recoverable: `git cherry-pick 9edeba6f52b`.
 
-- [ ] **2.2 — 🔴 Cache: tighten TTL param di fork → app dipaksa konform + guard permanen** `[fork+app · M]` `B3` · blocked-by: 1.1, 0.3
+- [x] **2.2 — 🔴 Cache: tighten TTL param di fork → app dipaksa konform + guard permanen** `[fork+app · M]` `B3` · blocked-by: 1.1, 0.3
   - Why: L13 baca int TTL = **detik**, fork 4.2 = **menit** → bare int senyap **60× lebih pendek**
     pasca-swap. Interval absolut (`Carbon`) aman di kedua versi. Fork-tighten = *driver* yang **memaksa**
     migrasi app; strictness fork **menguap saat swap** (stock `Repository.php:367`/`Contracts/Cache/Repository.php:29`
@@ -131,7 +146,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
     (tambah `many()/putMany()` bila perlu). Alias mati saat swap.
   - Done when: grep `StoreInterface` di app = 0; custom store implement contract.
 
-- [ ] **2.4 — Events `fire()` → `dispatch()`** `[fork+app · M]` `B2` · blocked-by: 1.1
+- [x] **2.4 — Events `fire()` → `dispatch()`** `[fork+app · M]` `B2` · blocked-by: 1.1
   - Steps: `[fork]` `Events\Dispatcher`: add `dispatch()` canonical + `fire()` deprecated alias;
     rename `queue()`→`push()`, `forgetQueued()`→`forgetPushed()`; drop `$priority` (line 62);
     implement L13 `DispatcherContract`. Lalu hapus `fire()/queue()/firing()/forgetQueued()`.
@@ -150,7 +165,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
     NOT type-expressible** → grep/Psalm-rule + human review cegah "fix" balik ke `pluck()` salah makna.
   - Done when: grep `->lists(|SoftDeletingTrait|ArrayableInterface` app = 0; pluck/value review selesai; Psalm hijau.
 
-- [ ] **2.6 — Console `fire()` → `handle()` + `$signature` (fork temp-abstract)** `[fork+app · L]` `B2` · blocked-by: 1.1, 0.3
+- [x] **2.6 — Console `fire()` → `handle()` + `$signature` (fork temp-abstract)** `[fork+app · L]` `B2` · blocked-by: 1.1, 0.3
   - Why koreksi: **stock 13 BUKAN abstract** — `Command.php:289` `method_exists($this,'handle')?'handle':'__invoke'`
     → `fire()`-only jatuh ke `__invoke` missing = runtime `BadMethodCall`, **bukan** unimplemented-abstract/Psalm.
     Maka fork bikin `handle()` **abstract sementara** hanya untuk **me-ratchet ~308 rewrite**; guard
@@ -166,7 +181,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
     **Pasca-swap = grep + boot-smoke** (stock jatuh ke `__invoke`).
   - Done when: grep `function fire(` app command = 0; artisan.php → Kernel; boot-smoke tiap command hijau; Psalm hijau.
 
-- [ ] **2.7 — Config `getEnvironment()` → `App::environment()`** `[fork+app · M]` `B2` · blocked-by: 1.1
+- [x] **2.7 — Config `getEnvironment()` → `App::environment()`** `[fork+app · M]` `B2` · blocked-by: 1.1
   - Steps: `[fork]` `Config/Repository.php` hapus `getEnvironment()` (line 346) + loader/package-cascade
     (`getLoader/setLoader/package/afterLoading/addNamespace/hasGroup`); ctor `(LoaderInterface,$env)`→`(array)`;
     implement `Contracts\Config\Repository`; add typed getter `string()/integer()/…`. `[app]` ~48 site
@@ -174,7 +189,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: `getEnvironment()` = method-not-found; ctor pass loader = TypeError.
   - Done when: grep `getEnvironment(` app = 0; Psalm hijau.
 
-- [ ] **2.8 — Routing filters → middleware** `[fork+app · XL]` `B2` · blocked-by: 1.1, 1.2 (Pipeline)
+- [~] **2.8 — Routing filters → middleware** `[fork+app · XL]` `B2` · blocked-by: 1.1, 1.2 (Pipeline)
   - Steps: `[fork]` (1) **dulu** introduce `Http\Kernel` + middleware dispatch (Pipeline) agar middleware
     jalan saat filter masih ada. (2) hapus `Router::filter/before/after/when/whenRegex/callFilter` +
     `RouteFiltererInterface`, `controller()/controllers()`, drop `HttpKernelInterface`. Keep
@@ -185,7 +200,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Note swap: `illuminate/routing:^13` **hard-require** `illuminate/session` (SCC-1) → routing swap butuh SCC-1 selesai.
   - Done when: grep `Route::filter|->before\(|->after\(` app = 0; route-array grep bersih; boot hijau.
 
-- [ ] **2.9 — Encryption: strict-mode contract** `[fork+app · S]` `B2` · blocked-by: 1.1
+- [x] **2.9 — Encryption: strict-mode contract** `[fork+app · S]` `B2` · blocked-by: 1.1
   - Steps: `[fork]` hapus `setKey()`; implement `Contracts\Encryption\{Encrypter,StringEncrypter}`;
     relokasi `DecryptException/EncryptException` ke `Contracts\Encryption` (`class_alias` bridge);
     throw `EncryptException` (bukan `\RuntimeException`); drop dead Symfony import + `symfony/security-core`.
@@ -193,21 +208,21 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: `setKey()` = method-not-found. **cipher default = config assertion / boot-guard, bukan type**.
   - Done when: `setKey` di app = 0 (sudah); cipher config pinned; Psalm hijau.
 
-- [ ] **2.10 — Filesystem `FileNotFoundException` → Contracts** `[fork+app · S]` `B2` · blocked-by: 1.1
+- [x] **2.10 — Filesystem `FileNotFoundException` → Contracts** `[fork+app · S]` `B2` · blocked-by: 1.1
   - Steps: `[fork]` relokasi ke `Contracts\Filesystem\FileNotFoundException` + `class_alias` dari FQCN lama
     (`@deprecated` → Psalm `DeprecatedClass`); provider `bindShared('files')`→`singleton`. `[app]` repoint
     11 import produksi (aliasable/deferrable). **Jangan** introduce Storage/flysystem di sini.
   - Enforcement: alias jaga catch lama; `@deprecated` surface 11 import untuk dimigrasi.
   - Done when: 11 import repoint (atau alias jalan); Psalm hijau. (Catatan: `DicodingUtils\...FileNotFoundException` app **tak** tersentuh.)
 
-- [ ] **2.11 — Hashing `HasherInterface` → contract** `[fork+app · S]` `B2` · blocked-by: 1.1
+- [x] **2.11 — Hashing `HasherInterface` → contract** `[fork+app · S]` `B2` · blocked-by: 1.1
   - Steps: `[fork]` `HasherInterface` extend `Contracts\Hashing\Hasher` (bridge); rebind `'hash'` ke
     HashManager; register contract. `[app]` 4 site (`ApplicationGateway`, `UserPasswordUpdateSpecification`
     + 2 test) → `Illuminate\Contracts\Hashing\Hasher`. `[ops]` verify `hashing.driver`=bcrypt fallback.
   - Enforcement: setelah delete `HasherInterface`, hint/`make(HasherInterface::class)` = unresolvable.
   - Done when: 4 site migrasi ke contract; Psalm hijau.
 
-- [ ] **2.12 — Cookie/Session: widen jar + siapkan middleware** `[fork · M]` `B2` · blocked-by: 1.1, 2.9
+- [x] **2.12 — Cookie/Session: widen jar + siapkan middleware** `[fork · M]` `B2` · blocked-by: 1.1, 2.9
   - Steps: `[fork]` **Cookie**: widen `queued/hasQueued/unqueue/setDefaultPathAndDomain` (additive optional
     param); add `CookieValuePrefix`; siapkan `Middleware/EncryptCookies`+`AddQueuedCookiesToResponse`
     (constructor-typed `Contracts\Encryption\Encrypter`) — **rewrite Guard/Queue decorator → middleware
@@ -217,7 +232,7 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: `implements` Symfony `SessionInterface` / bag call = TypeError/method-not-found (app: 0).
   - Done when: jar/store shape = L13; middleware disiapkan (aktif saat kernel flip); app data-API tak tersentuh.
 
-- [ ] **2.13 — Log: `Writer`→`Logger`, `getMonolog`→`getLogger`** `[fork+app · M]` `B1(+B2 tail)` · blocked-by: 1.1, 2.7(Config)
+- [x] **2.13 — Log: `Writer`→`Logger`, `getMonolog`→`getLogger`** `[fork+app · M]` `B1(+B2 tail)` · blocked-by: 1.1, 2.7(Config)
   - Steps: `[fork]` rename class `Writer`→`Logger`, `getMonolog()`→`getLogger()`; `write($level,$message,array $context=[]):void`;
     hapus `useFiles/useDailyFiles/useErrorLog` (pindah ke LogManager); bind `'log'` ke LogManager singleton;
     ctor `(Psr\Log\LoggerInterface, Contracts\Events\Dispatcher)`. `[app]` 3 `getMonolog()` caller
@@ -226,14 +241,14 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
   - Enforcement: `getMonolog()`/`use Writer` = not-found. **Monolog API di caller = NOT type** → manual.
   - Done when: 335 `Log::` PSR-3 utuh; 3 getMonolog caller di-rewrite; Psalm hijau.
 
-- [ ] **2.14 — View: hapus named-view sugar + rename internal** `[fork+app · S]` `B1` · blocked-by: SCC-1 (nanti)
+- [x] **2.14 — View: hapus named-view sugar + rename internal** `[fork+app · S]` `B1` · blocked-by: SCC-1 (nanti)
   - Steps: `[fork]` hapus `Factory::of()/name()/alias()` (line 153/165/177); rename `flushSections`→`flushState`.
     **Keep** `BladeCompiler::extend()/createMatcher()` (jangan strip pre-swap). `[app]` 2 `Blade::extend`
     (`DicodingServiceProvider` :180/:186) → `Blade::directive()`. `[ops]` flush `storage/framework/views` di swap.
   - Enforcement: `of/name/alias` = method-not-found. **`Blade::extend` callback = NOT type** → manual/grep.
   - Done when: 2 Blade::extend → directive; Psalm hijau.
 
-- [ ] **2.15 — Pagination: rename getter + reshape Factory/Presenter** `[fork+app · M]` `B2` · blocked-by: 1.1
+- [x] **2.15 — Pagination: rename getter + reshape Factory/Presenter** `[fork+app · M]` `B2` · blocked-by: 1.1
   - Steps: `[fork]` rename `getCurrentPage`→`currentPage` (+ lastPage/firstItem/lastItem/total/perPage),
     `getItems()`→`items()`; hapus Factory object + Presenter/BootstrapPresenter; ctor Paginator drop `$factory`.
     `[app]` `PaginationPresenter.php` → Blade view; `Factory::class->setCurrentPage` (`ParentComments...` :83)
