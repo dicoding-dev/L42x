@@ -45,8 +45,9 @@ class Application extends \Symfony\Component\Console\Application {
 
 		$console = with($console = new static('Laravel Framework', $app::VERSION))
 								->setLaravel($app)
-								->setExceptionHandler($app['exception'])
-								->setAutoExit(false);
+								->setExceptionHandler($app['exception']);
+
+		$console->setAutoExit(false);
 
 		$app->instance('artisan', $console);
 
@@ -108,7 +109,7 @@ class Application extends \Symfony\Component\Console\Application {
 	 * @return \Symfony\Component\Console\Command\Command
 	 */
 	#[\Override]
-    public function add(SymfonyCommand $command)
+    public function add(SymfonyCommand $command): ?SymfonyCommand
 	{
 		if ($command instanceof Command)
 		{
@@ -225,20 +226,6 @@ class Application extends \Symfony\Component\Console\Application {
 	public function setLaravel($laravel)
 	{
 		$this->laravel = $laravel;
-
-		return $this;
-	}
-
-	/**
-	 * Set whether the Console app should auto-exit when done.
-	 *
-	 * @param  bool  $boolean
-	 * @return $this
-	 */
-	#[\Override]
-    public function setAutoExit($boolean)
-	{
-		parent::setAutoExit($boolean);
 
 		return $this;
 	}
