@@ -45,13 +45,19 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
     di command app** (Console fire-only pasca-swap §7D).
   - Done when: ratchet hanya cek pola non-type + 2 guard pasca-swap; sisanya dihapus dari daftar.
 
-- [~] **0.3 — Pastikan Psalm jalan di CI app + siapkan 2 custom rule** `[app · S]`
+- [x] **0.3 — Pastikan Psalm jalan di CI app + siapkan 2 custom rule** `[app · S]`
   - Why: enforcement statis butuh Psalm hijau di `dicoding` (sudah ada) sebagai baseline; 2 pola
     non-self-liquidating perlu Psalm-rule permanen.
   - Steps: catat baseline Psalm; siapkan (draft) custom Psalm-rule/plugin: (1) bare-int arg pada
     `Cache::put/add/remember` = error; (2) command class tanpa `handle()` = error. Rule aktif penuh
     saat komponen di-tighten (2.2 / 2.6).
   - Done when: Psalm baseline app tercatat; 2 rule ter-draft; siap menangkap `UndefinedMethod`/`TooManyArguments`.
+  - Verify (2026-09-17): **done** — ponytail call: bukan Psalm-plugin (nol pola plugin di app buat
+    dimirror + Psalm buta ke facade `Cache::`), tapi **grep-ratchet** (roadmap izinin "Psalm-rule/ratchet").
+    (1) Cache guard `ci/check-cache-ttl.sh` **aktif di app master** (PR dicoding#5823, merged; step CI hijau,
+    negative-check terbukti). (2) Console guard `ci/check-console-handle.sh` **drafted** di branch
+    `console-handle-conform`, aktif bareng sweep 2.6. Baseline `psalm-laravel-baseline.xml` committed &
+    current. Psalm CI job (`if:false`) sengaja dibiarin off (di luar scope; re-enable = lever terpisah).
 
 ---
 
