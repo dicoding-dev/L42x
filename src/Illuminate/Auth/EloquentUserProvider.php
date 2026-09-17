@@ -1,6 +1,6 @@
 <?php namespace Illuminate\Auth;
 
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Str;
 
 class EloquentUserProvider implements UserProviderInterface {
@@ -8,7 +8,7 @@ class EloquentUserProvider implements UserProviderInterface {
 	/**
 	 * The hasher implementation.
 	 *
-	 * @var \Illuminate\Hashing\HasherInterface
+	 * @var \Illuminate\Contracts\Hashing\Hasher
 	 */
 	protected $hasher;
 
@@ -22,11 +22,11 @@ class EloquentUserProvider implements UserProviderInterface {
 	/**
 	 * Create a new database user provider.
 	 *
-	 * @param  \Illuminate\Hashing\HasherInterface  $hasher
+	 * @param  \Illuminate\Contracts\Hashing\Hasher  $hasher
 	 * @param  string  $model
 	 * @return void
 	 */
-	public function __construct(HasherInterface $hasher, $model)
+	public function __construct(Hasher $hasher, $model)
 	{
 		$this->model = $model;
 		$this->hasher = $hasher;

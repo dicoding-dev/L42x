@@ -1132,7 +1132,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'events'         => 'Illuminate\Events\Dispatcher',
 			'files'          => 'Illuminate\Filesystem\Filesystem',
 			'form'           => 'Illuminate\Html\FormBuilder',
-			'hash'           => 'Illuminate\Hashing\HasherInterface',
+			'hash'           => 'Illuminate\Contracts\Hashing\Hasher',
 			'html'           => 'Illuminate\Html\HtmlBuilder',
 			'translator'     => 'Illuminate\Translation\Translator',
 			'log'            => 'Illuminate\Log\Logger',
@@ -1158,6 +1158,14 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		// BC: Log\Writer renamed to Log\Logger (task 3.5); keep old name resolvable.
 		$this->alias('log', 'Illuminate\Log\Writer');
+
+		// Encrypter now implements the L13 contracts (task 2.9); resolve them to 'encrypter'.
+		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\Encrypter');
+		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\StringEncrypter');
+
+		// BC: Hashing\HasherInterface → Contracts\Hashing\Hasher (task 2.11); keep old name resolvable.
+		// class_alias covers use/typehint/instanceof; make()/autowiring by the old name needs this.
+		$this->alias('hash', 'Illuminate\Hashing\HasherInterface');
 	}
 
 }

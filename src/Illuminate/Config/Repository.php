@@ -247,7 +247,7 @@ class Repository extends NamespacedItemResolver implements ArrayAccess, ConfigCo
 
 		$this->afterLoading($namespace, function($me, $group, $items) use ($package)
 		{
-			$env = $me->getEnvironment();
+			$env = $me->environment;
 
 			$loader = $me->getLoader();
 
@@ -340,16 +340,6 @@ class Repository extends NamespacedItemResolver implements ArrayAccess, ConfigCo
 	public function setLoader(LoaderInterface $loader)
 	{
 		$this->loader = $loader;
-	}
-
-	/**
-	 * Get the current configuration environment.
-	 *
-	 * @return string
-	 */
-	public function getEnvironment()
-	{
-		return $this->environment;
 	}
 
 	/**

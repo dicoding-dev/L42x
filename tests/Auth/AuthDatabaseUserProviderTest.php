@@ -3,7 +3,7 @@
 use Illuminate\Auth\GenericUser;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Database\Connection;
-use Illuminate\Hashing\HasherInterface;
+use Illuminate\Contracts\Hashing\Hasher;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 
@@ -21,7 +21,7 @@ class AuthDatabaseUserProviderTest extends BackwardCompatibleTestCase
         $conn = m::mock(Connection::class);
         $conn->shouldReceive('table')->once()->with('foo')->andReturn($conn);
         $conn->shouldReceive('find')->once()->with(1)->andReturn(['id' => 1, 'name' => 'Dayle']);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$provider = new Illuminate\Auth\DatabaseUserProvider($conn, $hasher, 'foo');
 		$user = $provider->retrieveByID(1);
 
@@ -36,7 +36,7 @@ class AuthDatabaseUserProviderTest extends BackwardCompatibleTestCase
 		$conn = m::mock(Connection::class);
 		$conn->shouldReceive('table')->once()->with('foo')->andReturn($conn);
 		$conn->shouldReceive('find')->once()->with(1)->andReturn(null);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$provider = new Illuminate\Auth\DatabaseUserProvider($conn, $hasher, 'foo');
 		$user = $provider->retrieveByID(1);
 
@@ -50,7 +50,7 @@ class AuthDatabaseUserProviderTest extends BackwardCompatibleTestCase
 		$conn->shouldReceive('table')->once()->with('foo')->andReturn($conn);
 		$conn->shouldReceive('where')->once()->with('username', 'dayle');
 		$conn->shouldReceive('first')->once()->andReturn(['id' => 1, 'name' => 'taylor']);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$provider = new Illuminate\Auth\DatabaseUserProvider($conn, $hasher, 'foo');
 		$user = $provider->retrieveByCredentials(['username' => 'dayle', 'password' => 'foo']);
 
@@ -66,7 +66,7 @@ class AuthDatabaseUserProviderTest extends BackwardCompatibleTestCase
 		$conn->shouldReceive('table')->once()->with('foo')->andReturn($conn);
 		$conn->shouldReceive('where')->once()->with('username', 'dayle');
 		$conn->shouldReceive('first')->once()->andReturn(null);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$provider = new Illuminate\Auth\DatabaseUserProvider($conn, $hasher, 'foo');
 		$user = $provider->retrieveByCredentials(['username' => 'dayle']);
 
@@ -77,7 +77,7 @@ class AuthDatabaseUserProviderTest extends BackwardCompatibleTestCase
 	public function testCredentialValidation()
 	{
 		$conn = m::mock(Connection::class);
-		$hasher = m::mock(HasherInterface::class);
+		$hasher = m::mock(Hasher::class);
 		$hasher->shouldReceive('check')->once()->with('plain', 'hash')->andReturn(true);
 		$provider = new Illuminate\Auth\DatabaseUserProvider($conn, $hasher, 'foo');
 		$user = m::mock(UserInterface::class);

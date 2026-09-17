@@ -28,7 +28,6 @@ PATTERNS=(
   "array_first_last:::\\b(array_first|array_last)\\("
   "route_uses_string:::['\"]uses['\"][[:space:]]*=>"
   "event_fire:::->fire\\("
-  "config_getEnvironment:::getEnvironment\\("
   "where_raw:::->whereRaw\\("
   "eloquent_lists:::->lists\\("
   "macroable_trait:::MacroableTrait"

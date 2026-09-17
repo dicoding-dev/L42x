@@ -1,6 +1,8 @@
 <?php namespace Illuminate\Hashing;
 
-class BcryptHasher implements HasherInterface {
+use Illuminate\Contracts\Hashing\Hasher as HasherContract;
+
+class BcryptHasher implements HasherContract {
 
 	/**
 	 * Default crypt cost factor.
@@ -8,6 +10,17 @@ class BcryptHasher implements HasherInterface {
 	 * @var int
 	 */
 	protected $rounds = 10;
+
+	/**
+	 * Get information about the given hashed value.
+	 *
+	 * @param  string  $hashedValue
+	 * @return array
+	 */
+	public function info($hashedValue)
+	{
+		return password_get_info($hashedValue);
+	}
 
 	/**
 	 * Hash the given value.
