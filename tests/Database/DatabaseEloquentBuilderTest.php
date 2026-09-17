@@ -157,6 +157,26 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
 	}
 
 
+	public function testValueMethodWithModelFound()
+	{
+		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
+		$mockModel = new StdClass;
+		$mockModel->name = 'foo';
+		$builder->shouldReceive('first')->with(['name'])->andReturn($mockModel);
+
+		$this->assertEquals('foo', $builder->value('name'));
+	}
+
+
+	public function testValueMethodWithModelNotFound()
+	{
+		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
+		$builder->shouldReceive('first')->with(['name'])->andReturn(null);
+
+		$this->assertNull($builder->value('name'));
+	}
+
+
 	public function testChunkExecuteCallbackOverPaginatedRequest()
 	{
 		$builder = m::mock('Illuminate\Database\Eloquent\Builder[forPage,get]', [$this->getMockQueryBuilder()]);
