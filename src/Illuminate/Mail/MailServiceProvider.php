@@ -129,7 +129,7 @@ class MailServiceProvider extends ServiceProvider {
             if (! $scheme) {
                 $scheme = ! empty($config['encryption']) && $config['encryption'] === 'tls'
                     ? (($config['port'] == 465) ? 'smtps' : 'smtp')
-                    : '';
+                    : 'smtp';
             }
 
             /** @var EsmtpTransport $transport */
