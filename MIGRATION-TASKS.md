@@ -311,9 +311,27 @@ kerjakan sampai "Done when" terpenuhi, centang, lanjut. Tiap task **independen &
 > Namespace `Illuminate\*` collide + fork/stock sama-sama `laravel/framework` yang `replace`
 > illuminate/* → **tak bisa co-install**. Swap **per-cluster**: tiap langkah **hapus entry dari
 > blok `replace` fork** lalu `composer require illuminate/<pkg>:^13`. Interim = fork +
-> `illuminate/<swapped>:^13` individual. Prasyarat tiap swap: Wave 1–2 komponen terkait ✅.
+> `illuminate/<swapped>:^13` individual. Prasyarat tiap swap: Wave 1–2 komponen terkait ✅
+> **DAN 4.0 (vendor floor L13) sudah landas** — tanpa itu tak ada `illuminate/*:^13` yang resolvable.
 
-- [ ] **4.1 — SCC-1 core cutover (satu window)** `[fork · XL]` · blocked-by: 1.1–1.4, 2.2, 2.4, 2.5, 2.9, 2.10, 2.12, 2.13
+- [ ] **4.0 — 🔴 Enabler: bump vendor floor fork ke L13 (Symfony 7 / carbon 3 / monolog 3)** `[fork · XL]` · blocked-by: — (prasyarat SEMUA swap Wave 4)
+  - Why (VERIFIED 2026-09-17, empiris di `migration/4.1-scc1-core-cutover`): interim-state Wave 4
+    (`fork` + `illuminate/<pkg>:^13`) **tak resolvable**. Fork pin `symfony/*: ~6.4`,
+    `nesbot/carbon: ^2.71`, `monolog/monolog: ^2.10`; floor L13.30.1 = `symfony/*: ^7.4||^8`,
+    `nesbot/carbon: ^3.8.4`, `monolog/monolog: ^3.10` + hard-require baru `brick/math`,
+    `league/flysystem: ^3.25`, `symfony/uid`, `league/uri: ^7.5`. `composer require illuminate/*:^13`
+    narik floor v13 → konflik constraint langsung dgn pin fork. **Gap roadmap:** daftar prereq 4.1
+    cuma reshape API internal (Cache/Events/pluck/…), tak pernah cakup bump vendor ini — Wave 0 juga
+    tidak (monolog 3 baru setengah diakui di 2.13; Symfony 6.4→7 & carbon 2→3 tak disebut sama sekali).
+  - Steps: bump `composer.json` fork → `symfony/*: ^7.4`, `nesbot/carbon: ^3`, `monolog/monolog: ^3`
+    (+ `brick/math`, `league/flysystem: ^3.25`, `symfony/uid`, `league/uri: ^7.5`, dev `phpunit ~11/12`);
+    port komponen fork yang **masih di-provide** & pakai Symfony langsung ke API Symfony 7 (Http/Console/
+    Routing/Session/Foundation/Mail — BC HttpFoundation/HttpKernel/Console); serap carbon 3 + monolog 3
+    (LogRecord/`Level` enum, sinkron dgn 2.13). Gate empiris = `./vendor/bin/phpunit` fork hijau
+    (baseline pra-bump 2026-09-17 = 1647 test hijau, exit 0).
+  - Done when: `composer update` fork resolve dgn floor v13; suite fork hijau; swap SCC-1 (4.1) jadi installable.
+
+- [ ] **4.1 — SCC-1 core cutover (satu window)** `[fork · XL]` · blocked-by: 4.0, 1.1–1.4, 2.2, 2.4, 2.5, 2.9, 2.10, 2.12, 2.13
   - Cluster: `contracts+reflection+support+container` (jangkar) + `http, session, cache, cookie,
     encryption, events, filesystem, redis, database` + **`bus`** (transitif hard-require `events`).
     Swap ke `illuminate/*` v13 **bersamaan**.
