@@ -1,6 +1,6 @@
 <?php namespace Illuminate\Database\Eloquent;
 
-class SoftDeletingScope implements ScopeInterface {
+class SoftDeletingScope implements Scope {
 
 	/**
 	 * All of the extensions to be added to the builder.

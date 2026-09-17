@@ -22,7 +22,7 @@ class DatabaseMigrationRepositoryTest extends BackwardCompatibleTestCase
         $connectionMock = m::mock(Connection::class);
 		$repo->getConnectionResolver()->shouldReceive('connection')->with(null)->andReturn($connectionMock);
 		$repo->getConnection()->shouldReceive('table')->once()->with('migrations')->andReturn($query);
-		$query->shouldReceive('lists')->once()->with('migration')->andReturn('bar');
+		$query->shouldReceive('pluck')->once()->with('migration')->andReturn('bar');
 
 		$this->assertEquals('bar', $repo->getRan());
 	}
