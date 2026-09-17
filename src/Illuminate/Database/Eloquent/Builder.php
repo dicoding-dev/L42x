@@ -176,6 +176,19 @@ class Builder {
 	}
 
 	/**
+	 * Get a single column's value from the first result of a query.
+	 *
+	 * @param  string  $column
+	 * @return mixed
+	 */
+	public function value($column)
+	{
+		$result = $this->first(array($column));
+
+		if ($result) return $result->{$column};
+	}
+
+	/**
 	 * Chunk the results of the query.
 	 *
 	 * @param  int  $count
