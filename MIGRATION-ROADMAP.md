@@ -160,6 +160,24 @@ Bukan hanya namespace `Illuminate\*` yang bertabrakan. **Fork dan stock keduanya
 - **Fase 5 gate:** `composer require laravel/framework:^13` **hanya** setelah blok `replace` fork
   **kosong** (0 entry tersisa) — kalau tidak, resolver deadlock antara dua `laravel/framework`.
 
+### 1b. Vendor-floor collision — prasyarat installability tiap swap (VERIFIED 2026-09-17)
+
+Selain replace-collision (§1a), swap-per-cluster punya prasyarat **kedua yang lebih dasar**: floor
+dependency fork harus ≥ floor L13. Terverifikasi empiris (`migration/4.1-scc1-core-cutover`):
+
+| dep | fork sekarang | L13.30.1 floor |
+|---|---|---|
+| `symfony/*` | `~6.4` | `^7.4.0 \|\| ^8.0.0` |
+| `nesbot/carbon` | `^2.71` | `^3.8.4` |
+| `monolog/monolog` | `^2.10` | `^3.10` |
+| baru (hard-require) | — | `brick/math`, `league/flysystem ^3.25`, `symfony/uid`, `league/uri ^7.5` |
+
+`illuminate/<pkg>:^13` menyeret floor v13 di atas → **konflik constraint langsung** dgn pin fork →
+interim-state `fork + illuminate/*:^13` **tak resolvable** sampai floor fork di-bump. Ini **bukan**
+tercakup daftar prereq 4.1 (semuanya reshape API internal) maupun Wave 0 → dicatat sebagai enabler
+**4.0** (bump Symfony 7 / carbon 3 / monolog 3 + port komponen fork yang masih pakai Symfony langsung).
+Konsekuensi: **4.0 mem-block SEMUA swap Wave 4**, bukan cuma SCC-1.
+
 ---
 
 ## 2. Dependency graph (bottom-up, per layer) — swap **bottom-up per cluster**
