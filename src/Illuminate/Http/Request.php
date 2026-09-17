@@ -591,7 +591,14 @@ class Request extends SymfonyRequest {
 
 		$request->content = $content;
 
-		$request->request = $request->getInputSource();
+		if ($request->isJson())
+		{
+			$request->request->replace($request->json()->all());
+		}
+		else
+		{
+			$request->request = $request->getInputSource();
+		}
 
 		return $request;
 	}

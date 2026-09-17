@@ -108,7 +108,7 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
 	 * @return mixed
 	 */
-	protected function execute(InputInterface $input, OutputInterface $output): mixed
+	protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // Prefer handle() (L13 idiom); fire() is the L4.2 fallback that dies at the Console swap.
         // ponytail: fork mirror of stock Command's handle-or-__invoke resolution; app-side is grep-guarded.
