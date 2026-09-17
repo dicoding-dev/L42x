@@ -15,7 +15,7 @@
         "filp/whoops": "~2.11",
         "ircmaxell/password-compat": "~1.0",
         "laravel/serializable-closure": "^1.2",
-        "monolog/monolog": "^2.10",
+        "monolog/monolog": "^3.10",
         "nesbot/carbon": "^3.8.4",
         "opis/closure": "~3.6",
         "pda/pheanstalk": "~4.0",
