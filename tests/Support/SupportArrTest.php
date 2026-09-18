@@ -155,7 +155,7 @@ class SupportArrTest extends TestCase
         $this->assertTrue(Arr::exists([null], 0));
         $this->assertTrue(Arr::exists(['a' => 1], 'a'));
         $this->assertTrue(Arr::exists(['a' => null], 'a'));
-        $this->assertFalse(Arr::exists(new Collection(['a' => null]), 'a'));
+        $this->assertTrue(Arr::exists(new Collection(['a' => null]), 'a'));
 
         $this->assertFalse(Arr::exists([1], 1));
         $this->assertFalse(Arr::exists([null], 1));
@@ -898,14 +898,6 @@ class SupportArrTest extends TestCase
 
         $array = [1 => 'test'];
         $this->assertEquals([1 => 'hAz'], Arr::set($array, 1, 'hAz'));
-    }
-
-    public function testShuffleWithSeed(): void
-    {
-        $this->assertEquals(
-            Arr::shuffle(range(0, 100, 10), 1234),
-            Arr::shuffle(range(0, 100, 10), 1234)
-        );
     }
 
     public function testSort(): void

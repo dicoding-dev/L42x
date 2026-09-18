@@ -13,6 +13,7 @@
         "php": ">=8.4.23",
         "d11wtq/boris": "~1.0",
         "filp/whoops": "~2.11",
+        "illuminate/collections": "^13",
         "illuminate/conditionable": "^13",
         "illuminate/contracts": "^13",
         "illuminate/macroable": "^13",

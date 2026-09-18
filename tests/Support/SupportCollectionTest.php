@@ -263,11 +263,11 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testListsWithArrayAndObjectValues(): void
+	public function testPluckWithArrayAndObjectValues(): void
     {
 		$data = new Collection([(object) ['name' => 'taylor', 'email' => 'foo'], ['name' => 'dayle', 'email' => 'bar']]);
-		$this->assertEquals(['taylor' => 'foo', 'dayle' => 'bar'], $data->lists('email', 'name'));
-		$this->assertEquals(['foo', 'bar'], $data->lists('email'));
+		$this->assertEquals(['taylor' => 'foo', 'dayle' => 'bar'], $data->pluck('email', 'name')->all());
+		$this->assertEquals(['foo', 'bar'], $data->pluck('email')->all());
 	}
 
 
@@ -340,13 +340,13 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testGetListValueWithAccessors(): void
+	public function testGetPluckValueWithAccessors(): void
     {
 		$model    = new TestAccessorEloquentTestStub(['some' => 'foo']);
 		$modelTwo = new TestAccessorEloquentTestStub(['some' => 'bar']);
 		$data     = new Collection([$model, $modelTwo]);
 
-		$this->assertEquals(['foo', 'bar'], $data->lists('some'));
+		$this->assertEquals(['foo', 'bar'], $data->pluck('some')->all());
 	}
 
 
@@ -440,7 +440,7 @@ class SupportCollectionTest extends BackwardCompatibleTestCase
         ]);
 
 		$c = $c->sortBy('foo.bar');
-		$this->assertEquals([2, 1], $c->lists('id'));
+		$this->assertEquals([2, 1], $c->pluck('id')->all());
 	}
 
 
@@ -513,6 +513,19 @@ class TestAccessorEloquentTestStub
 		}
 
 		return $this->$attribute;
+	}
+
+
+	public function __isset($attribute)
+	{
+		$accessor = 'get'.lcfirst((string) $attribute).'Attribute';
+
+		if (method_exists($this, $accessor))
+		{
+			return ! is_null($this->$accessor());
+		}
+
+		return isset($this->$attribute);
 	}
 
 

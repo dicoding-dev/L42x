@@ -82,7 +82,6 @@ class Collection extends BaseCollection {
 	 * @param  string  $key
 	 * @return static
 	 */
-	#[\Override]
     public function fetch($key)
 	{
 		return new static(array_fetch($this->toArray(), $key));
