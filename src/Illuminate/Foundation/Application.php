@@ -204,6 +204,20 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * Get the path to the resources directory.
+	 *
+	 * ponytail: v13 ServiceProviders (e.g. PaginationServiceProvider) call resourcePath();
+	 * the L4.2 fork Application lacks it. Remove once Foundation swaps to v13.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function resourcePath($path = '')
+	{
+		return $this['path.base'].DIRECTORY_SEPARATOR.'resources'.($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
 	 * Get the application bootstrap file.
 	 *
 	 * @return string
