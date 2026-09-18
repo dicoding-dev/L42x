@@ -13,6 +13,7 @@
         "php": ">=8.4.23",
         "d11wtq/boris": "~1.0",
         "filp/whoops": "~2.11",
+        "illuminate/contracts": "^13",
         "ircmaxell/password-compat": "~1.0",
         "laravel/serializable-closure": "^1.2",
         "monolog/monolog": "^3.10",
