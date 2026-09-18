@@ -64,6 +64,19 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	}
 
 	/**
+	 * ponytail: BC shim — exists so v13 component commands that declare
+	 * `#[\Override] configureDefaults()` (against the v13 console Command) can load under
+	 * the not-yet-swapped fork console. The fork configures via the constructor /
+	 * specifyParameters() instead, so this is a no-op. Remove at the console swap (task 4.2).
+	 *
+	 * @return void
+	 */
+	protected function configureDefaults()
+	{
+		//
+	}
+
+	/**
 	 * Specify the arguments and options on the command.
 	 *
 	 * @return void
