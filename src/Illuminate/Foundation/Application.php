@@ -204,6 +204,20 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * Get the path to the resources directory.
+	 *
+	 * ponytail: v13 ServiceProviders (e.g. PaginationServiceProvider) call resourcePath();
+	 * the L4.2 fork Application lacks it. Remove once Foundation swaps to v13.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function resourcePath($path = '')
+	{
+		return $this['path.base'].DIRECTORY_SEPARATOR.'resources'.($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
 	 * Get the application bootstrap file.
 	 *
 	 * @return string
@@ -441,7 +455,12 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		{
 			$this->booting(function() use ($instance)
 			{
-				$instance->boot();
+				// v13 ServiceProvider has no default boot(); call only when defined
+				// (mirrors the eager boot() loop). Via the container so boot() DI works.
+				if (method_exists($instance, 'boot'))
+				{
+					$this->call([$instance, 'boot']);
+				}
 			});
 		}
 	}
@@ -635,7 +654,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	{
 		if ($this->booted) return;
 
-		array_walk($this->serviceProviders, function($p) { $p->boot(); });
+		array_walk($this->serviceProviders, function($p) {
+			// v13 ServiceProvider has no default boot(); call only when defined (via
+			// the container so boot() method-injection keeps working).
+			if (method_exists($p, 'boot')) $this->call([$p, 'boot']);
+		});
 
 		$this->bootApplication();
 	}
@@ -1176,11 +1199,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'translator'     => 'Illuminate\Translation\Translator',
 			'log'            => 'Illuminate\Log\Logger',
 			'mailer'         => 'Illuminate\Mail\Mailer',
-			'paginator'      => 'Illuminate\Pagination\Factory',
 			'auth.reminder'  => 'Illuminate\Auth\Reminders\PasswordBroker',
 			'queue'          => 'Illuminate\Queue\QueueManager',
 			'redirect'       => 'Illuminate\Routing\Redirector',
-			'redis'          => 'Illuminate\Redis\Database',
+			'redis'          => 'Illuminate\Redis\RedisManager',
 			'request'        => 'Illuminate\Http\Request',
 			'router'         => 'Illuminate\Routing\Router',
 			'session'        => 'Illuminate\Session\SessionManager',
@@ -1205,6 +1227,22 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		// BC: Hashing\HasherInterface → Contracts\Hashing\Hasher (task 2.11); keep old name resolvable.
 		// class_alias covers use/typehint/instanceof; make()/autowiring by the old name needs this.
 		$this->alias('hash', 'Illuminate\Hashing\HasherInterface');
+
+		// L13 SCC-1 swap (task 4.1): the swapped components ship v13 contracts. Alias them to
+		// the core bindings so v13 code that type-hints the contracts resolves (the v13
+		// providers don't always register these against the fork's core aliases).
+		$this->alias('events', 'Illuminate\Contracts\Events\Dispatcher');
+		$this->alias('redis', 'Illuminate\Contracts\Redis\Factory');
+		$this->alias('cache', 'Illuminate\Contracts\Cache\Factory');
+		$this->alias('cache.store', 'Illuminate\Contracts\Cache\Repository');
+		$this->alias('config', 'Illuminate\Contracts\Config\Repository');
+		$this->alias('db', 'Illuminate\Database\ConnectionResolverInterface');
+
+		// ponytail: v13's Support\Facades\Artisan resolves Illuminate\Contracts\Console\Kernel.
+		// The fork has no console Kernel (task 4.2); 'artisan' is a lazy singleton
+		// (ArtisanServiceProvider), so alias the contract to it globally — works for the
+		// Artisan facade in web/console/tests (make()-only aliasing missed Artisan::call()).
+		$this->alias('artisan', 'Illuminate\Contracts\Console\Kernel');
 	}
 
 }
