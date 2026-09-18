@@ -34,7 +34,7 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 	{
 		$app = new Application;
 		$app->registerCoreContainerAliases();
-		$app->bindShared('hash', function() { return new Illuminate\Hashing\BcryptHasher; });
+		$app->singleton('hash', function() { return new Illuminate\Hashing\BcryptHasher; });
 
 		$this->assertInstanceOf(Illuminate\Contracts\Hashing\Hasher::class, $app->make(Illuminate\Contracts\Hashing\Hasher::class));
 		// BC: the pre-migration interface name must still resolve via make()/autowiring;
@@ -206,7 +206,7 @@ class ApplicationDeferredSharedServiceProviderStub extends Illuminate\Support\Se
 	protected $defer = true;
 	public function register()
 	{
-		$this->app->bindShared('foo', function() {
+		$this->app->singleton('foo', function() {
 			return new StdClass;
 		});
 	}
@@ -247,7 +247,7 @@ class ApplicationMultiProviderStub extends Illuminate\Support\ServiceProvider {
 	protected $defer = true;
 	public function register()
 	{
-		$this->app->bindShared('foo', function() { return 'foo'; });
-		$this->app->bindShared('bar', function($app) { return $app['foo'].'bar'; });
+		$this->app->singleton('foo', function() { return 'foo'; });
+		$this->app->singleton('bar', function($app) { return $app['foo'].'bar'; });
 	}
 }

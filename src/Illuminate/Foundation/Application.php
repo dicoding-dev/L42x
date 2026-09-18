@@ -2,7 +2,7 @@
 
 use Closure;
 use Illuminate\Support\Arr;
-use Illuminate\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Http\MiddlewareBuilder;
 use ReflectionException;
 use Illuminate\Http\Request;
