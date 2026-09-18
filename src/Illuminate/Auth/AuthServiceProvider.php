@@ -18,7 +18,7 @@ class AuthServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('auth', function($app)
+		$this->app->singleton('auth', function($app)
 		{
 			// Once the authentication service has actually been requested by the developer
 			// we will set a variable in the application indicating such. This helps us
