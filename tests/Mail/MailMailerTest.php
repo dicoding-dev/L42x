@@ -213,7 +213,7 @@ class MailMailerTest extends BackwardCompatibleTestCase
                 $this->calledTimes++;
             }
         };
-        $container['FooMailer'] = $container->share(fn() => $fooMailer);
+        $container->singleton('FooMailer', fn() => $fooMailer);
 
 		$mailer->send('foo', ['data'], 'FooMailer');
 

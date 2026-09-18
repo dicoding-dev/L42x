@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Exception\ExceptionDisplayerInterface;
 use Illuminate\Exception\Handler;
 use Illuminate\Http\JsonResponse;

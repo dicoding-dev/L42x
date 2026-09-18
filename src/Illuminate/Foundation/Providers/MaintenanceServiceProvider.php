@@ -20,12 +20,12 @@ class MaintenanceServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('command.up', function()
+		$this->app->singleton('command.up', function()
 		{
 			return new UpCommand;
 		});
 
-		$this->app->bindShared('command.down', function()
+		$this->app->singleton('command.down', function()
 		{
 			return new DownCommand;
 		});

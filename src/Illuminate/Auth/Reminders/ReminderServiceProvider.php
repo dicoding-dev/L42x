@@ -36,7 +36,7 @@ class ReminderServiceProvider extends ServiceProvider {
 	 */
 	protected function registerPasswordBroker()
 	{
-		$this->app->bindShared('auth.reminder', function($app)
+		$this->app->singleton('auth.reminder', function($app)
 		{
 			// The reminder repository is responsible for storing the user e-mail addresses
 			// and password reset tokens. It will be used to verify the tokens are valid
@@ -65,7 +65,7 @@ class ReminderServiceProvider extends ServiceProvider {
 	 */
 	protected function registerReminderRepository()
 	{
-		$this->app->bindShared('auth.reminder.repository', function($app)
+		$this->app->singleton('auth.reminder.repository', function($app)
 		{
 			$connection = $app['db']->connection();
 
@@ -89,17 +89,17 @@ class ReminderServiceProvider extends ServiceProvider {
 	 */
 	protected function registerCommands()
 	{
-		$this->app->bindShared('command.auth.reminders', function($app)
+		$this->app->singleton('command.auth.reminders', function($app)
 		{
 			return new RemindersTableCommand($app['files']);
 		});
 
-		$this->app->bindShared('command.auth.reminders.clear', function()
+		$this->app->singleton('command.auth.reminders.clear', function()
 		{
 			return new ClearRemindersCommand;
 		});
 
-		$this->app->bindShared('command.auth.reminders.controller', function($app)
+		$this->app->singleton('command.auth.reminders.controller', function($app)
 		{
 			return new RemindersControllerCommand($app['files']);
 		});

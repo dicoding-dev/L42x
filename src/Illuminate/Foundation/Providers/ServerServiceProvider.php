@@ -19,7 +19,7 @@ class ServerServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('command.serve', function()
+		$this->app->singleton('command.serve', function()
 		{
 			return new ServeCommand;
 		});

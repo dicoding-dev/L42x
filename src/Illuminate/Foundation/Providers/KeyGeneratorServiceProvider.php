@@ -19,7 +19,7 @@ class KeyGeneratorServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('command.key.generate', function($app)
+		$this->app->singleton('command.key.generate', function($app)
 		{
 			return new KeyGenerateCommand($app['files']);
 		});

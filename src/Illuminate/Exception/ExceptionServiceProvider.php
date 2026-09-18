@@ -38,7 +38,7 @@ class ExceptionServiceProvider extends ServiceProvider {
 	 */
 	protected function registerHandler()
 	{
-		$this->app['exception'] = $this->app->share(function($app)
+		$this->app->singleton('exception', function($app)
 		{
 			return new Handler($app, $app['exception.plain'], $app['exception.debug']);
 		});
@@ -51,7 +51,7 @@ class ExceptionServiceProvider extends ServiceProvider {
 	 */
 	protected function registerPlainDisplayer()
 	{
-		$this->app['exception.plain'] = $this->app->share(function($app)
+		$this->app->singleton('exception.plain', function($app)
 		{
 			// If the application is running in a console environment, we will just always
 			// use the debug handler as there is no point in the console ever returning
@@ -76,7 +76,7 @@ class ExceptionServiceProvider extends ServiceProvider {
 	{
 		$this->registerWhoops();
 
-		$this->app['exception.debug'] = $this->app->share(function($app)
+		$this->app->singleton('exception.debug', function($app)
 		{
 			return new WhoopsDisplayer($app['whoops'], $app->runningInConsole());
 		});
@@ -91,7 +91,7 @@ class ExceptionServiceProvider extends ServiceProvider {
 	{
 		$this->registerWhoopsHandler();
 
-		$this->app['whoops'] = $this->app->share(function($app)
+		$this->app->singleton('whoops', function($app)
 		{
 			// We will instruct Whoops to not exit after it displays the exception as it
 			// will otherwise run out before we can do anything else. We just want to
@@ -113,7 +113,7 @@ class ExceptionServiceProvider extends ServiceProvider {
 	{
 		if ($this->shouldReturnJson())
 		{
-			$this->app['whoops.handler'] = $this->app->share(function()
+			$this->app->singleton('whoops.handler', function()
 			{
 				return new JsonResponseHandler;
 			});
@@ -151,7 +151,7 @@ class ExceptionServiceProvider extends ServiceProvider {
 	 */
 	protected function registerPrettyWhoopsHandler()
 	{
-		$this->app['whoops.handler'] = $this->app->share(function()
+		$this->app->singleton('whoops.handler', function()
 		{
 			with($handler = new PrettyPageHandler)->setEditor('sublime');
 

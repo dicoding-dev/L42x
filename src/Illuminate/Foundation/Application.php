@@ -2,7 +2,7 @@
 
 use Closure;
 use Illuminate\Support\Arr;
-use Illuminate\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Http\MiddlewareBuilder;
 use ReflectionException;
 use Illuminate\Http\Request;
@@ -470,6 +470,45 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		}
 
 		return parent::make($abstract, $parameters, $raiseEvents);
+	}
+
+	/**
+	 * Register a shared binding.
+	 *
+	 * ponytail: transitional BC shim for the L4 container API removed by
+	 * illuminate/container v13. Kept so third-party/vendor providers that still
+	 * call bindShared()/share() on the app (spatie/laravel-blade-x,
+	 * laracasts/commander, tomgrohl/laravel4-php71-encrypter, barryvdh/laravel-ide-helper)
+	 * keep booting. Remove at the Foundation swap (task 4.5); fork src already uses singleton().
+	 *
+	 * @param  string    $abstract
+	 * @param  \Closure  $closure
+	 * @return void
+	 */
+	public function bindShared($abstract, Closure $closure): void
+	{
+		$this->singleton($abstract, $closure);
+	}
+
+	/**
+	 * Wrap a closure so the resolved instance is memoized. BC shim; see bindShared().
+	 *
+	 * @param  \Closure  $closure
+	 * @return \Closure
+	 */
+	public function share(Closure $closure): Closure
+	{
+		return function ($container) use ($closure)
+		{
+			static $object;
+
+			if (is_null($object))
+			{
+				$object = $closure($container);
+			}
+
+			return $object;
+		};
 	}
 
 	/**
