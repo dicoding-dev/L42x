@@ -23,6 +23,27 @@ class Application extends \Symfony\Component\Console\Application {
 	protected $laravel;
 
 	/**
+	 * Callbacks to run when a console application is starting.
+	 *
+	 * ponytail: BC shim for v13 Support\ServiceProvider::commands(), which calls
+	 * Illuminate\Console\Application::starting(). Remove when console swaps to v13 (task 4.2/4.3).
+	 *
+	 * @var callable[]
+	 */
+	protected static $startingCallbacks = array();
+
+	/**
+	 * Register a callback to run when the console application is starting.
+	 *
+	 * @param  callable  $callback
+	 * @return void
+	 */
+	public static function starting($callback)
+	{
+		static::$startingCallbacks[] = $callback;
+	}
+
+	/**
 	 * Create and boot a new Console application.
 	 *
 	 * @param  \Illuminate\Foundation\Application  $app
@@ -50,6 +71,11 @@ class Application extends \Symfony\Component\Console\Application {
 		$console->setAutoExit(false);
 
 		$app->instance('artisan', $console);
+
+		foreach (static::$startingCallbacks as $callback)
+		{
+			$callback($console);
+		}
 
 		return $console;
 	}
