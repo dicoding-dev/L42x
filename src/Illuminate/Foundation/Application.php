@@ -635,7 +635,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	{
 		if ($this->booted) return;
 
-		array_walk($this->serviceProviders, function($p) { $p->boot(); });
+		array_walk($this->serviceProviders, function($p) {
+			// v13 ServiceProvider has no default boot(); call only when defined (via
+			// the container so boot() method-injection keeps working).
+			if (method_exists($p, 'boot')) $this->call([$p, 'boot']);
+		});
 
 		$this->bootApplication();
 	}

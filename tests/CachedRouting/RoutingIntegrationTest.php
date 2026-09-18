@@ -95,8 +95,9 @@ class RoutingIntegrationTest extends TestCase
 
         $this->app['files'] = new Filesystem;
         $this->app['cache'] = new CacheManager($this->app);
-        $this->app['config']['cache.driver'] = 'file';
-        $this->app['config']['cache.path'] = self::$cachePath = sys_get_temp_dir() . '/l42x-route-cache-' . uniqid();
+        self::$cachePath = sys_get_temp_dir() . '/l42x-route-cache-' . uniqid();
+        $this->app['config']['cache.default'] = 'file';
+        $this->app['config']['cache.stores.file'] = ['driver' => 'file', 'path' => self::$cachePath];
 
         $this->app['session'] = new SessionManager($this->app);
         $this->app['config']['session.driver'] = 'array';
