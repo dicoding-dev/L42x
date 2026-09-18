@@ -72,6 +72,11 @@ class Application extends \Symfony\Component\Console\Application {
 
 		$app->instance('artisan', $console);
 
+		// ponytail: v13's Artisan facade resolves Illuminate\Contracts\Console\Kernel, which
+		// the fork (no console Kernel yet, task 4.2) doesn't bind. Point it at this console
+		// application so the facade works. Remove at the console swap.
+		$app->alias('artisan', 'Illuminate\Contracts\Console\Kernel');
+
 		foreach (static::$startingCallbacks as $callback)
 		{
 			$callback($console);
