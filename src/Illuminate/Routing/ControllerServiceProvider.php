@@ -32,7 +32,7 @@ class ControllerServiceProvider extends ServiceProvider {
 	 */
 	protected function registerGenerator()
 	{
-		$this->app->bindShared('command.controller.make', function($app)
+		$this->app->singleton('command.controller.make', function($app)
 		{
 			// The controller generator is responsible for building resourceful controllers
 			// quickly and easily for the developers via the Artisan CLI. We'll go ahead

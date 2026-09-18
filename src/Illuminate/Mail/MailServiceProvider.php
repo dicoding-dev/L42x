@@ -27,7 +27,7 @@ class MailServiceProvider extends ServiceProvider {
 	{
 		$me = $this;
 
-		$this->app->bindShared('mailer', function($app) use ($me)
+		$this->app->singleton('mailer', function($app) use ($me)
 		{
 			$me->registerSymfonyMailer();
 
@@ -190,7 +190,7 @@ class MailServiceProvider extends ServiceProvider {
 	 */
 //	protected function registerMailgunTransport(array $config): void
 //	{
-//		$this->app->bindShared('symfony.transport', function() use ($config)
+//		$this->app->singleton('symfony.transport', function() use ($config)
 //		{
 //            $factory = new MailgunTransportFactory(null, $this->getHttpClient($config));
 //
@@ -215,7 +215,7 @@ class MailServiceProvider extends ServiceProvider {
 	 */
 	protected function registerLogTransport(array $config): void
 	{
-		$this->app->bindShared('symfony.transport', fn($app) => new LogTransport($app->make('Psr\Log\LoggerInterface')));
+		$this->app->singleton('symfony.transport', fn($app) => new LogTransport($app->make('Psr\Log\LoggerInterface')));
 	}
 
 //    /**
