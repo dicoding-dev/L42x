@@ -1184,7 +1184,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'auth.reminder'  => 'Illuminate\Auth\Reminders\PasswordBroker',
 			'queue'          => 'Illuminate\Queue\QueueManager',
 			'redirect'       => 'Illuminate\Routing\Redirector',
-			'redis'          => 'Illuminate\Redis\Database',
+			'redis'          => 'Illuminate\Redis\RedisManager',
 			'request'        => 'Illuminate\Http\Request',
 			'router'         => 'Illuminate\Routing\Router',
 			'session'        => 'Illuminate\Session\SessionManager',
@@ -1209,6 +1209,16 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		// BC: Hashing\HasherInterface → Contracts\Hashing\Hasher (task 2.11); keep old name resolvable.
 		// class_alias covers use/typehint/instanceof; make()/autowiring by the old name needs this.
 		$this->alias('hash', 'Illuminate\Hashing\HasherInterface');
+
+		// L13 SCC-1 swap (task 4.1): the swapped components ship v13 contracts. Alias them to
+		// the core bindings so v13 code that type-hints the contracts resolves (the v13
+		// providers don't always register these against the fork's core aliases).
+		$this->alias('events', 'Illuminate\Contracts\Events\Dispatcher');
+		$this->alias('redis', 'Illuminate\Contracts\Redis\Factory');
+		$this->alias('cache', 'Illuminate\Contracts\Cache\Factory');
+		$this->alias('cache.store', 'Illuminate\Contracts\Cache\Repository');
+		$this->alias('config', 'Illuminate\Contracts\Config\Repository');
+		$this->alias('db', 'Illuminate\Database\ConnectionResolverInterface');
 	}
 
 }
