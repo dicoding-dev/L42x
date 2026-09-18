@@ -1219,6 +1219,12 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('cache.store', 'Illuminate\Contracts\Cache\Repository');
 		$this->alias('config', 'Illuminate\Contracts\Config\Repository');
 		$this->alias('db', 'Illuminate\Database\ConnectionResolverInterface');
+
+		// ponytail: v13's Support\Facades\Artisan resolves Illuminate\Contracts\Console\Kernel.
+		// The fork has no console Kernel (task 4.2); 'artisan' is a lazy singleton
+		// (ArtisanServiceProvider), so alias the contract to it globally — works for the
+		// Artisan facade in web/console/tests (make()-only aliasing missed Artisan::call()).
+		$this->alias('artisan', 'Illuminate\Contracts\Console\Kernel');
 	}
 
 }
