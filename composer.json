@@ -17,6 +17,7 @@
         "illuminate/conditionable": "^13",
         "illuminate/contracts": "^13",
         "illuminate/macroable": "^13",
+        "illuminate/reflection": "^13",
         "ircmaxell/password-compat": "~1.0",
         "laravel/serializable-closure": "^1.2",
         "monolog/monolog": "^3.10",
