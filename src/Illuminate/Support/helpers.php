@@ -105,7 +105,16 @@ if ( ! function_exists('array_build'))
 	 */
 	function array_build($array, Closure $callback)
 	{
-		return Arr::build($array, $callback);
+		$results = array();
+
+		foreach ($array as $key => $value)
+		{
+			[$innerKey, $innerValue] = call_user_func($callback, $key, $value);
+
+			$results[$innerKey] = $innerValue;
+		}
+
+		return $results;
 	}
 }
 
@@ -164,7 +173,22 @@ if ( ! function_exists('array_fetch'))
 	 */
 	function array_fetch($array, $key)
 	{
-		return Arr::fetch($array, $key);
+		foreach (explode('.', $key) as $segment)
+		{
+			$results = array();
+
+			foreach ($array as $value)
+			{
+				if (array_key_exists($segment, $value = (array) $value))
+				{
+					$results[] = $value[$segment];
+				}
+			}
+
+			$array = array_values($results);
+		}
+
+		return array_values($results);
 	}
 }
 
