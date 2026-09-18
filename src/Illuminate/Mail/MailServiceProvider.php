@@ -120,7 +120,7 @@ class MailServiceProvider extends ServiceProvider {
 	 */
 	protected function registerSmtpTransport(array $config): void
 	{
-		$this->app['symfony.transport'] = $this->app->share(function($app) use ($config)
+		$this->app->singleton('symfony.transport', function($app) use ($config)
 		{
             $factory = new EsmtpTransportFactory();
 
@@ -166,7 +166,7 @@ class MailServiceProvider extends ServiceProvider {
 	 */
 	protected function registerSendmailTransport(array $config): void
 	{
-		$this->app['symfony.transport'] = $this->app->share(fn($app) => new SendmailTransport(
+		$this->app->singleton('symfony.transport', fn($app) => new SendmailTransport(
             $config['path'] ?? $app['config']->get('mail.sendmail')
         ));
 	}
@@ -179,7 +179,7 @@ class MailServiceProvider extends ServiceProvider {
 	 */
 	protected function registerMailTransport(array $config): void
 	{
-		$this->app['symfony.transport'] = $this->app->share(fn() => new SendmailTransport());
+		$this->app->singleton('symfony.transport', fn() => new SendmailTransport());
 	}
 
 	/**

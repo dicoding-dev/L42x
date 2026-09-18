@@ -27,7 +27,7 @@ class RoutingServiceProvider extends ServiceProvider {
 	 */
 	protected function registerRouter()
 	{
-		$this->app['router'] = $this->app->share(function($app)
+		$this->app->singleton('router', function($app)
 		{
 			$router = new Router($app['events'], $app);
 
@@ -50,7 +50,7 @@ class RoutingServiceProvider extends ServiceProvider {
 	 */
 	protected function registerUrlGenerator()
 	{
-		$this->app['url'] = $this->app->share(function($app)
+		$this->app->singleton('url', function($app)
 		{
 			// The URL generator needs the route collection that exists on the router.
 			// Keep in mind this is an object, so we're passing by references here
@@ -71,7 +71,7 @@ class RoutingServiceProvider extends ServiceProvider {
 	 */
 	protected function registerRedirector()
 	{
-		$this->app['redirect'] = $this->app->share(function($app)
+		$this->app->singleton('redirect', function($app)
 		{
 			$redirector = new Redirector($app['url']);
 
@@ -94,7 +94,7 @@ class RoutingServiceProvider extends ServiceProvider {
 	 */
 	protected function registerResponseFactory()
 	{
-		$this->app[\Illuminate\Contracts\Routing\ResponseFactory::class] = $this->app->share(function($app)
+		$this->app->singleton(\Illuminate\Contracts\Routing\ResponseFactory::class, function($app)
 		{
 			return new ResponseFactory($app);
 		});
