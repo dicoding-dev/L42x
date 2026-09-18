@@ -5,7 +5,7 @@ use Closure;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\MessageBag;
 use Illuminate\View\Engines\EngineInterface;
-use Illuminate\Support\Contracts\MessageProviderInterface;
+use Illuminate\Contracts\Support\MessageProvider as MessageProviderInterface;
 use Illuminate\Support\Contracts\ArrayableInterface as Arrayable;
 
 class View implements ArrayAccess, Renderable
