@@ -1363,14 +1363,14 @@ class Builder {
 		// otherwise we can just give these values back without a specific key.
 		$results = new Collection($this->get($columns));
 
-		$values = $results->fetch($columns[0])->all();
+		$values = $results->pluck($columns[0])->all();
 
 		// If a key was specified and we have results, we will go ahead and combine
 		// the values with the keys of all of the records so that the values can
 		// be accessed by the key of the rows instead of simply being numeric.
 		if ( ! is_null($key) && count($results) > 0)
 		{
-			$keys = $results->fetch($key)->all();
+			$keys = $results->pluck($key)->all();
 
 			return array_combine($keys, $values);
 		}

@@ -39,6 +39,11 @@ class Container implements ArrayAccess, ContainerContract {
 	protected array $instances = [];
 
 	/**
+	 * The registered scoped instances.
+	 */
+	protected array $scopedInstances = [];
+
+	/**
 	 * The registered type aliases.
 	 */
 	protected array $aliases = [];
@@ -372,6 +377,36 @@ class Container implements ArrayAccess, ContainerContract {
     {
         if (! $this->bound($abstract)) {
             $this->singleton($abstract, $concrete);
+        }
+    }
+
+    /**
+     * Register a scoped binding in the container.
+     *
+     * @param  \Closure|string  $abstract
+     * @param  \Closure|string|null  $concrete
+     * @return void
+     */
+    public function scoped($abstract, $concrete = null): void
+    {
+        if (! in_array($abstract, $this->scopedInstances, true)) {
+            $this->scopedInstances[] = $abstract;
+        }
+
+        $this->singleton($abstract, $concrete);
+    }
+
+    /**
+     * Register a scoped binding if it hasn't already been registered.
+     *
+     * @param  \Closure|string  $abstract
+     * @param  \Closure|string|null  $concrete
+     * @return void
+     */
+    public function scopedIf($abstract, $concrete = null): void
+    {
+        if (! $this->bound($abstract)) {
+            $this->scoped($abstract, $concrete);
         }
     }
 

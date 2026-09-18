@@ -177,13 +177,13 @@ class DatabaseEloquentCollectionTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testLists()
+	public function testPluck()
 	{
 		$data = new Collection(
             [(object) ['name' => 'taylor', 'email' => 'foo'], (object) ['name' => 'dayle', 'email' => 'bar']]
         );
-		$this->assertEquals(['taylor' => 'foo', 'dayle' => 'bar'], $data->lists('email', 'name'));
-		$this->assertEquals(['foo', 'bar'], $data->lists('email'));
+		$this->assertEquals(['taylor' => 'foo', 'dayle' => 'bar'], $data->pluck('email', 'name')->all());
+		$this->assertEquals(['foo', 'bar'], $data->pluck('email')->all());
 	}
 
 
