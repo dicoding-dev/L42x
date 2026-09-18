@@ -441,7 +441,12 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		{
 			$this->booting(function() use ($instance)
 			{
-				$instance->boot();
+				// v13 ServiceProvider has no default boot(); call only when defined
+				// (mirrors the eager boot() loop). Via the container so boot() DI works.
+				if (method_exists($instance, 'boot'))
+				{
+					$this->call([$instance, 'boot']);
+				}
 			});
 		}
 	}
