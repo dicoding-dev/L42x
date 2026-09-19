@@ -22,6 +22,30 @@ class Client extends HttpKernelBrowser {
 	}
 
 	/**
+	 * v13 Request::convertUploadedFiles() re-wraps each file via UploadedFile::createFromBase()
+	 * with test=false, so a plain Symfony upload fails isValid()/mimes under tests. Handing back
+	 * Illuminate\Http\UploadedFile instances lets that instanceof check preserve the test flag.
+	 */
+	#[\Override]
+	protected function filterFiles(array $files): array
+	{
+		return $this->toTestUploadedFiles(parent::filterFiles($files));
+	}
+
+	private function toTestUploadedFiles(array $files): array
+	{
+		foreach ($files as $key => $file) {
+			if (is_array($file)) {
+				$files[$key] = $this->toTestUploadedFiles($file);
+			} elseif ($file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+				$files[$key] = \Illuminate\Http\UploadedFile::createFromBase($file, true);
+			}
+		}
+
+		return $files;
+	}
+
+	/**
 	 * Get the request parameters from a BrowserKit request.
 	 *
 	 * @param  \Symfony\Component\BrowserKit\Request  $request
