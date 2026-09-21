@@ -137,23 +137,23 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testPluckMethodWithModelFound()
+public function testValueMethodWithModelFound()
 	{
 		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
 		$mockModel = new StdClass;
 		$mockModel->name = 'foo';
 		$builder->shouldReceive('first')->with(['name'])->andReturn($mockModel);
 
-		$this->assertEquals('foo', $builder->pluck('name'));
+		$this->assertEquals('foo', $builder->value('name'));
 	}
 
 
-	public function testPluckMethodWithModelNotFound()
+	public function testValueMethodWithModelNotFound()
 	{
 		$builder = m::mock('Illuminate\Database\Eloquent\Builder[first]', [$this->getMockQueryBuilder()]);
 		$builder->shouldReceive('first')->with(['name'])->andReturn(null);
 
-		$this->assertNull($builder->pluck('name'));
+		$this->assertNull($builder->value('name'));
 	}
 
 
@@ -181,7 +181,7 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
 	public function testListsReturnsTheMutatedAttributesOfAModel()
 	{
 		$builder = $this->getBuilder();
-		$builder->getQuery()->shouldReceive('lists')->with('name', '')->andReturn(['bar', 'baz']);
+		$builder->getQuery()->shouldReceive('pluck')->with('name', '')->andReturn(['bar', 'baz']);
 		$builder->setModel($this->getMockModel());
 		$builder->getModel()->shouldReceive('hasGetMutator')->with('name')->andReturn(true);
 		$builder->getModel()->shouldReceive('newFromBuilder')->with(['name' => 'bar'])->andReturn(new EloquentBuilderTestListsStub(
@@ -191,18 +191,18 @@ class DatabaseEloquentBuilderTest extends BackwardCompatibleTestCase
             ['name' => 'baz']
         ));
 
-		$this->assertEquals(['foo_bar', 'foo_baz'], $builder->lists('name'));
+		$this->assertEquals(['foo_bar', 'foo_baz'], $builder->pluck('name'));
 	}
 
 
 	public function testListsWithoutModelGetterJustReturnTheAttributesFoundInDatabase()
 	{
 		$builder = $this->getBuilder();
-		$builder->getQuery()->shouldReceive('lists')->with('name', '')->andReturn(['bar', 'baz']);
+		$builder->getQuery()->shouldReceive('pluck')->with('name', '')->andReturn(['bar', 'baz']);
 		$builder->setModel($this->getMockModel());
 		$builder->getModel()->shouldReceive('hasGetMutator')->with('name')->andReturn(false);
 
-		$this->assertEquals(['bar', 'baz'], $builder->lists('name'));
+		$this->assertEquals(['bar', 'baz'], $builder->pluck('name'));
 	}
 
 
@@ -589,7 +589,7 @@ class EloquentBuilderTestScopeStub extends Illuminate\Database\Eloquent\Model {
 }
 
 class EloquentBuilderTestWithTrashedStub extends Illuminate\Database\Eloquent\Model {
-	use Illuminate\Database\Eloquent\SoftDeletingTrait;
+	use Illuminate\Database\Eloquent\SoftDeletes;
 	protected string $table = 'table';
 	#[\Override]
     public function getKeyName(): string { return 'foo'; }
@@ -597,7 +597,7 @@ class EloquentBuilderTestWithTrashedStub extends Illuminate\Database\Eloquent\Mo
 
 class EloquentBuilderTestNestedStub extends Illuminate\Database\Eloquent\Model {
 	protected string $table = 'table';
-	use Illuminate\Database\Eloquent\SoftDeletingTrait;
+	use Illuminate\Database\Eloquent\SoftDeletes;
 }
 
 class EloquentBuilderTestListsStub {
