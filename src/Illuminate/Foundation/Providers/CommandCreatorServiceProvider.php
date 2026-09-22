@@ -19,7 +19,7 @@ class CommandCreatorServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('command.command.make', function($app)
+		$this->app->singleton('command.command.make', function($app)
 		{
 			return new CommandMakeCommand($app['files']);
 		});

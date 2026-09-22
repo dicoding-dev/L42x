@@ -18,7 +18,7 @@ class PaginationServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('paginator', function($app)
+		$this->app->singleton('paginator', function($app)
 		{
 			$paginator = new Factory($app['request'], $app['view'], $app['translator']);
 

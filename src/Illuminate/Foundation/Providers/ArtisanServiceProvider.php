@@ -21,17 +21,17 @@ class ArtisanServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bindShared('artisan', function($app)
+		$this->app->singleton('artisan', function($app)
 		{
 			return new Artisan($app);
 		});
 
-		$this->app->bindShared('command.changes', function()
+		$this->app->singleton('command.changes', function()
 		{
 			return new ChangesCommand;
 		});
 
-		$this->app->bindShared('command.environment', function()
+		$this->app->singleton('command.environment', function()
 		{
 			return new EnvironmentCommand;
 		});
