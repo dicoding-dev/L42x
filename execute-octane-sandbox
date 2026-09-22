@@ -1,0 +1,66 @@
+#!/usr/bin/env sh
+
+set -eu
+
+IMAGE_NAME="${IMAGE_NAME:-l42x-octane-sandbox}"
+CONTAINER_NAME="${CONTAINER_NAME:-l42x-octane-sandbox-dev}"
+DOCKERFILE="${DOCKERFILE:-Dockerfile.octane-sandbox}"
+WORKDIR="${WORKDIR:-/app}"
+HOST_DIR="${HOST_DIR:-$(pwd)}"
+
+if [ "$#" -eq 0 ]; then
+    set -- composer test
+fi
+
+if [ "$1" = stop ]; then
+    if docker ps -a --format '{{.Names}}' | grep -Fxq "$CONTAINER_NAME"; then
+        docker stop "$CONTAINER_NAME" >/dev/null
+        echo "$CONTAINER_NAME stopped"
+    else
+        echo "$CONTAINER_NAME is not running"
+    fi
+    exit 0
+fi
+
+if [ "$1" = build ]; then
+    docker build -f "$DOCKERFILE" -t "$IMAGE_NAME" .
+    exit 0
+fi
+
+if [ "$1" = composer-test ]; then
+    shift
+    set -- composer test "$@"
+fi
+
+if [ "$1" = ai:test ]; then
+    shift
+    set -- php -dxdebug.mode=off -dpcov.enabled=0 vendor/bin/phpunit --colors=always -c phpunit.xml "$@"
+fi
+
+if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+    docker build -f "$DOCKERFILE" -t "$IMAGE_NAME" .
+fi
+
+if [ -t 0 ] && [ -t 1 ]; then
+    DOCKER_EXEC_FLAGS="-it"
+else
+    DOCKER_EXEC_FLAGS="-i"
+fi
+
+if docker ps --format '{{.Names}}' | grep -Fxq "$CONTAINER_NAME"; then
+    exec docker exec $DOCKER_EXEC_FLAGS "$CONTAINER_NAME" "$@"
+fi
+
+if docker ps -a --format '{{.Names}}' | grep -Fxq "$CONTAINER_NAME"; then
+    docker start "$CONTAINER_NAME" >/dev/null
+    exec docker exec $DOCKER_EXEC_FLAGS "$CONTAINER_NAME" "$@"
+fi
+
+docker run -d \
+    --name "$CONTAINER_NAME" \
+    -v "$HOST_DIR:$WORKDIR" \
+    -w "$WORKDIR" \
+    "$IMAGE_NAME" \
+    sleep infinity >/dev/null
+
+exec docker exec $DOCKER_EXEC_FLAGS "$CONTAINER_NAME" "$@"

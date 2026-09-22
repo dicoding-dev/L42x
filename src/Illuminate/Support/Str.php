@@ -31,6 +31,18 @@ class Str
 	protected static array $studlyCache = [];
 
 	/**
+	 * Flush the cached snake-, camel-, and studly-cased strings.
+	 *
+	 * @return void
+	 */
+	public static function flushCache()
+	{
+		static::$snakeCache = [];
+		static::$camelCache = [];
+		static::$studlyCache = [];
+	}
+
+	/**
 	 * Transliterate a UTF-8 value to ASCII.
 	 *
 	 * @param string $value
