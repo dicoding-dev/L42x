@@ -1305,6 +1305,12 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		// the Factory contract; alias it to the 'view' binding.
 		$this->alias('view', 'Illuminate\Contracts\View\Factory');
 
+		// v13 component rendering autowires the Application/Container contracts;
+		// mirror v13's 'app' alias cluster (task 4.3).
+		$this->alias('app', 'Illuminate\Contracts\Foundation\Application');
+		$this->alias('app', 'Illuminate\Contracts\Container\Container');
+		$this->alias('app', 'Psr\Container\ContainerInterface');
+
 		// ponytail: v13's Support\Facades\Artisan resolves Illuminate\Contracts\Console\Kernel.
 		// The fork has no console Kernel (task 4.2); 'artisan' is a lazy singleton
 		// (ArtisanServiceProvider), so alias the contract to it globally — works for the
