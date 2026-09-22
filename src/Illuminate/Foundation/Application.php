@@ -147,6 +147,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->instance('request', $request);
 
 		$this->instance('Illuminate\Container\Container', $this);
+
+		// v13 code resolves the container via the static Container::getInstance()
+		// (e.g. BladeCompiler::anonymousComponentPath); register the app as the
+		// global instance so those calls hit the real bindings/aliases (task 4.3).
+		static::setInstance($this);
 	}
 
 	/**
