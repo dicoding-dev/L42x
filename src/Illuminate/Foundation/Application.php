@@ -802,7 +802,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @param  \Symfony\Component\HttpFoundation\Response  $response
 	 * @return void
 	 */
-	public function terminate(SymfonyRequest $request, SymfonyResponse $response)
+	public function terminate(SymfonyRequest $request, SymfonyResponse $response): void
 	{
 		$this->callFinishCallbacks($request, $response);
 

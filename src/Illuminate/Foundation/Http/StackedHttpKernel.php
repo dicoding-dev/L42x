@@ -23,7 +23,7 @@ class StackedHttpKernel implements HttpKernelInterface, TerminableInterface
         return $this->app->handle($request, $type, $catch);
     }
 
-    public function terminate(Request $request, Response $response)
+    public function terminate(Request $request, Response $response): void
     {
         $prevKernel = null;
 

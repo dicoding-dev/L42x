@@ -1,6 +1,6 @@
 <?php namespace Illuminate\Log;
 
-use Monolog\Logger;
+use Monolog\Logger as MonologLogger;
 use Illuminate\Support\ServiceProvider;
 
 class LogServiceProvider extends ServiceProvider {
@@ -20,7 +20,7 @@ class LogServiceProvider extends ServiceProvider {
 	public function register()
 	{
 		$logger = new Logger(
-			new Logger($this->app['env']), $this->app['events']
+			new MonologLogger($this->app['env']), $this->app['events']
 		);
 
 		// Once we have an instance of the logger we'll bind it as an instance into

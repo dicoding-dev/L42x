@@ -25,16 +25,18 @@ class FoundationArtisanTest extends BackwardCompatibleTestCase
         $artisan->expects($this->once())->method('getArtisan')->willReturn(
             $console = m::mock('Illuminate\Console\Application[find]')
         );
-        $console->shouldReceive('find')->once()->with('foo')->andReturn($command = m::mock('StdClass'));
+        $console->shouldReceive('find')->once()->with('foo')->andReturn($command = m::mock(\Symfony\Component\Console\Command\Command::class));
 		$command->shouldReceive('run')->once()->with(m::type(ArrayInput::class), m::type(
             NullOutput::class
-        ))->andReturnUsing(function($input, $output)
+        ))->andReturnUsing(function($input, $output) use (&$captured)
 		{
-			return $input;
+			$captured = $input;
+
+			return 0;
 		});
 
-		$input = $artisan->call('foo', ['--bar' => 'baz']);
-		$this->assertEquals('baz', $input->getParameterOption('--bar'));
+		$artisan->call('foo', ['--bar' => 'baz']);
+		$this->assertEquals('baz', $captured->getParameterOption('--bar'));
 	}
 
 }
