@@ -62,6 +62,14 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $finishCallbacks = array();
 
 	/**
+	 * ponytail: v13 terminating-callback shim (v13 ServiceProviders register
+	 * these; fork Foundation predates the API). Remove at task 4.5 foundation swap.
+	 *
+	 * @var array
+	 */
+	protected $terminatingCallbacks = array();
+
+	/**
 	 * The array of shutdown callbacks.
 	 *
 	 * @var array
@@ -604,6 +612,19 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * Register a terminating callback (v13 API; see $terminatingCallbacks).
+	 *
+	 * @param  callable  $callback
+	 * @return $this
+	 */
+	public function terminating(callable $callback)
+	{
+		$this->terminatingCallbacks[] = $callback;
+
+		return $this;
+	}
+
+	/**
 	 * Register a "shutdown" callback.
 	 *
 	 * @param  callable  $callback
@@ -867,6 +888,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function terminate(SymfonyRequest $request, SymfonyResponse $response): void
 	{
 		$this->callFinishCallbacks($request, $response);
+
+		foreach ($this->terminatingCallbacks as $terminating)
+		{
+			$this->call($terminating);
+		}
 
 		$this->shutdown();
 	}
