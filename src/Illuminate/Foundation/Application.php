@@ -617,6 +617,19 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * ponytail: v13 Foundation exposes getNamespace() (root PSR-4 namespace) which
+	 * v13's ComponentTagCompiler calls to locate CLASS components. The app uses only
+	 * anonymous components, so the value is never matched — return a benign default
+	 * instead of parsing composer.json. Remove at task 4.5 foundation swap.
+	 *
+	 * @return string
+	 */
+	public function getNamespace()
+	{
+		return 'App\\';
+	}
+
+	/**
 	 * Register a terminating callback (v13 API; see $terminatingCallbacks).
 	 *
 	 * @param  callable  $callback
