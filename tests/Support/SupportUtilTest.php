@@ -2,7 +2,6 @@
 
 namespace Illuminate\Tests\Support;
 
-use Illuminate\Pagination\Factory;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Util;
 use L4\Tests\BackwardCompatibleTestCase;
@@ -42,11 +41,7 @@ class SupportUtilTest extends BackwardCompatibleTestCase
      */
     public function isEmptyOnEmptyPaginatorObject(): void
     {
-        $pagination = new Paginator(
-            $this->prophesize(Factory::class)->reveal(),
-            [],
-            0
-        );
+        $pagination = new Paginator([], 15);
 
         $this->assertTrue(Util::isEmpty($pagination));
     }
@@ -56,11 +51,7 @@ class SupportUtilTest extends BackwardCompatibleTestCase
      */
     public function isEmptyOnNonEmptyPaginatorObject(): void
     {
-        $pagination = new Paginator(
-            $this->prophesize(Factory::class)->reveal(),
-            ['1', '2', '3'],
-            3
-        );
+        $pagination = new Paginator(['1', '2', '3'], 15);
 
         $this->assertFalse(Util::isEmpty($pagination));
     }
