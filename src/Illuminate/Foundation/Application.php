@@ -218,6 +218,35 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * Get the base path of the installation.
+	 *
+	 * ponytail: v13 console commands (e.g. MigrateMakeCommand) call basePath();
+	 * the L4.2 fork Application lacks it. Remove once Foundation swaps to v13.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function basePath($path = '')
+	{
+		return $this['path.base'].($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
+	 * Get the path to the database directory.
+	 *
+	 * ponytail: v13's migrate command resolves migrations via databasePath();
+	 * the L4.2 fork keeps migrations under app/database (bound as 'path'), so this
+	 * points there rather than the v13 base/database default. Remove at the console swap.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function databasePath($path = '')
+	{
+		return $this['path'].DIRECTORY_SEPARATOR.'database'.($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
 	 * Get the application bootstrap file.
 	 *
 	 * @return string
