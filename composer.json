@@ -32,6 +32,7 @@
         "illuminate/reflection": "^13",
         "illuminate/session": "^13",
         "illuminate/support": "^13",
+        "illuminate/view": "^13",
         "ircmaxell/password-compat": "~1.0",
         "laravel/serializable-closure": "^2.0.10",
         "monolog/monolog": "^3.10",
@@ -69,7 +70,6 @@
         "illuminate/routing": "self.version",
         "illuminate/translation": "self.version",
         "illuminate/validation": "self.version",
-        "illuminate/view": "self.version",
         "illuminate/workbench": "self.version"
     },
     "require-dev": {
