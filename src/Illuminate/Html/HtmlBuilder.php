@@ -336,6 +336,8 @@ class HtmlBuilder {
 	{
 		if (is_numeric($key)) $key = $value;
 
+		if (is_array($value)) $value = implode(' ', $value);
+
 		if ( ! is_null($value)) return $key.'="'.e($value).'"';
 	}
 
