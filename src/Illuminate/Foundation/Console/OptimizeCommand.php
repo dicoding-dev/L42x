@@ -52,18 +52,16 @@ class OptimizeCommand extends Command {
 
 		if ($this->option('psr'))
 		{
-			$process = $this->composer->dumpAutoloads();
+			$this->composer->dumpAutoloads();
 		}
         elseif ($this->option('apcu'))
         {
-            $process = $this->composer->dumpAutoloads('--optimize --apcu');
+            $this->composer->dumpAutoloads('--optimize --apcu');
         }
 		else
 		{
-			$process = $this->composer->dumpOptimized();
+			$this->composer->dumpOptimized();
 		}
-
-        $this->info("Executed: {$process->getCommandLine()}");
 
 		if ($this->option('force') || ! $this->laravel['config']['app.debug'])
 		{
