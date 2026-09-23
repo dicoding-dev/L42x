@@ -45,7 +45,7 @@ class RemindersControllerCommand extends Command {
 	 *
 	 * @return void
 	 */
-	public function fire()
+	public function handle()
 	{
 		$destination = $this->getPath() . '/RemindersController.php';
 

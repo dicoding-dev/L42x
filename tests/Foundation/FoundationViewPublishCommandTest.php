@@ -19,6 +19,7 @@ class FoundationViewPublishCommandTest extends BackwardCompatibleTestCase
             $pub = m::mock(ViewPublisher::class)
         );
         $pub->shouldReceive('publishPackage')->once()->with('foo');
+        $command->setLaravel(tap(new Illuminate\Foundation\Application, fn($a) => $a->instance('env', 'testing')));
         $command->run(
             new Symfony\Component\Console\Input\ArrayInput(['package' => 'foo']),
             new Symfony\Component\Console\Output\NullOutput

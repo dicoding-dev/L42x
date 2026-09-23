@@ -47,7 +47,7 @@ class WorkbenchMakeCommand extends Command {
 	 *
 	 * @return void
 	 */
-	public function fire()
+	public function handle()
 	{
 		$workbench = $this->runCreator($this->buildPackage());
 

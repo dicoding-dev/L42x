@@ -40,9 +40,20 @@ class Artisan {
 
 		$this->app->loadDeferredProviders();
 
-		$this->artisan = ConsoleApplication::make($this->app);
+		// v13's Console\Application self-bootstraps in its constructor (dispatches ArtisanStarting
+		// and runs the starting() callbacks registered by ServiceProvider::commands()). It has no
+		// make()/start()/boot(). ponytail: the L4.2 static bootstrap — rebinding 'artisan' to the
+		// console so the Artisan facade in start/artisan.php resolves it, then loading that file —
+		// is inlined here until the Foundation Kernel lands (task 4.5).
+		$console = new ConsoleApplication($this->app, $this->app['events'], $this->app::VERSION);
 
-		return $this->artisan->boot();
+		$this->app->instance('artisan', $console);
+
+		$path = $this->app['path'].'/start/artisan.php';
+
+		if (file_exists($path)) require $path;
+
+		return $this->artisan = $console;
 	}
 
 	/**

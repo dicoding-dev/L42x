@@ -23,7 +23,7 @@ class DownCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		touch($this->laravel['config']['app.manifest'].'/down');
 
