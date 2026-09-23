@@ -65,7 +65,7 @@ class RoutesCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		if (count($this->routes) == 0)
 		{

@@ -23,7 +23,7 @@ class ClearCompiledCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		if (file_exists($path = $this->laravel['path.base'].'/bootstrap/compiled.php'))
 		{

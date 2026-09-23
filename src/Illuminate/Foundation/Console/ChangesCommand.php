@@ -24,7 +24,7 @@ class ChangesCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		list($version, $changes) = $this->getChangeVersion($this->getChangesArray());
 

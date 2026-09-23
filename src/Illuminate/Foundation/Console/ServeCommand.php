@@ -24,7 +24,7 @@ class ServeCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$this->checkPhpVersion();
 
