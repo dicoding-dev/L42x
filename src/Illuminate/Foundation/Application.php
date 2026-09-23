@@ -377,7 +377,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		// If the application has already booted, we will call this boot method on
 		// the provider class so it has an opportunity to do its boot logic and
 		// will be ready for any usage by the developer's application logics.
-		if ($this->booted) $provider->boot();
+		// v13 ServiceProvider has no default boot(); guard + container-call to
+		// mirror boot() so deferred providers (e.g. RedisServiceProvider) resolved
+		// after boot don't fatal on a missing boot() method.
+		if ($this->booted && method_exists($provider, 'boot')) $this->call([$provider, 'boot']);
 
 		return $provider;
 	}
