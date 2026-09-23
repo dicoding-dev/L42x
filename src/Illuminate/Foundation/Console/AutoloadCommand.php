@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Foundation\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Foundation\Composer;
+use Illuminate\Support\Composer;
 use Symfony\Component\Finder\Finder;
 
 class AutoloadCommand extends Command {
@@ -45,7 +45,7 @@ class AutoloadCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$this->call('optimize');
 

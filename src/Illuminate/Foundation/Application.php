@@ -231,6 +231,20 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * Get the base path of the installation.
+	 *
+	 * ponytail: v13 ServiceProviders (e.g. database's MigrationServiceProvider) call basePath();
+	 * the L4.2 fork Application lacks it. Remove once Foundation swaps to v13.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function basePath($path = '')
+	{
+		return $this['path.base'].($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
 	 * Get the application bootstrap file.
 	 *
 	 * @return string

@@ -23,7 +23,7 @@ class UpCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		@unlink($this->laravel['config']['app.manifest'].'/down');
 
