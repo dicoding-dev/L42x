@@ -59,6 +59,10 @@ class MailServiceProvider extends ServiceProvider {
 
 			return $mailer;
 		});
+
+		// ponytail: v13 Support\Facades\Mail resolves 'mail.manager'; fork Mail is unswapped and
+		// binds 'mailer'. Alias so Mail::send() works. Remove when Mail swaps to illuminate/mail:^13.
+		$this->app->alias('mailer', 'mail.manager');
 	}
 
 	/**
@@ -244,7 +248,7 @@ class MailServiceProvider extends ServiceProvider {
 	#[\Override]
     public function provides(): array
 	{
-		return ['mailer', 'symfony.transport'];
+		return ['mailer', 'mail.manager', 'symfony.transport'];
 	}
 
 }

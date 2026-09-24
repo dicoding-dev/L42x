@@ -40,6 +40,17 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	protected $name;
 
 	/**
+	 * The name and signature of the console command.
+	 *
+	 * ponytail: BC shim — lets v13-style commands (illuminate/database etc.)
+	 * declare their definition via the `$signature` DSL while running on the
+	 * not-yet-swapped fork console. Remove at the console swap (task 4.2).
+	 *
+	 * @var string|null
+	 */
+	protected $signature;
+
+	/**
 	 * The console command description.
 	 *
 	 * @var string
@@ -53,6 +64,15 @@ class Command extends \Symfony\Component\Console\Command\Command {
 	 */
 	public function __construct()
 	{
+		// A v13-style command carries a `$signature` instead of name/getOptions();
+		// parse it so its arguments and options (e.g. migrate's --force) register.
+		if (isset($this->signature))
+		{
+			$this->configureUsingFluentDefinition();
+
+			return;
+		}
+
 		parent::__construct($this->name);
 
 		// We will go ahead and set the name, description, and parameters on console
@@ -61,6 +81,39 @@ class Command extends \Symfony\Component\Console\Command\Command {
 		$this->setDescription($this->description);
 
 		$this->specifyParameters();
+	}
+
+	/**
+	 * Configure the console command using a fluent definition.
+	 *
+	 * ponytail: BC shim mirroring v13's signature-driven configuration. Remove at
+	 * the console swap (task 4.2).
+	 *
+	 * @return void
+	 */
+	protected function configureUsingFluentDefinition()
+	{
+		list($name, $arguments, $options) = Parser::parse($this->signature);
+
+		parent::__construct($name);
+
+		$this->setDescription((string) $this->description);
+
+		$this->getDefinition()->addArguments($arguments);
+		$this->getDefinition()->addOptions($options);
+	}
+
+	/**
+	 * ponytail: BC shim — exists so v13 component commands that declare
+	 * `#[\Override] configureDefaults()` (against the v13 console Command) can load under
+	 * the not-yet-swapped fork console. The fork configures via the constructor /
+	 * specifyParameters() instead, so this is a no-op. Remove at the console swap (task 4.2).
+	 *
+	 * @return void
+	 */
+	protected function configureDefaults()
+	{
+		//
 	}
 
 	/**

@@ -23,6 +23,27 @@ class Application extends \Symfony\Component\Console\Application {
 	protected $laravel;
 
 	/**
+	 * Callbacks to run when a console application is starting.
+	 *
+	 * ponytail: BC shim for v13 Support\ServiceProvider::commands(), which calls
+	 * Illuminate\Console\Application::starting(). Remove when console swaps to v13 (task 4.2/4.3).
+	 *
+	 * @var callable[]
+	 */
+	protected static $startingCallbacks = array();
+
+	/**
+	 * Register a callback to run when the console application is starting.
+	 *
+	 * @param  callable  $callback
+	 * @return void
+	 */
+	public static function starting($callback)
+	{
+		static::$startingCallbacks[] = $callback;
+	}
+
+	/**
 	 * Create and boot a new Console application.
 	 *
 	 * @param  \Illuminate\Foundation\Application  $app
@@ -50,6 +71,11 @@ class Application extends \Symfony\Component\Console\Application {
 		$console->setAutoExit(false);
 
 		$app->instance('artisan', $console);
+
+		foreach (static::$startingCallbacks as $callback)
+		{
+			$callback($console);
+		}
 
 		return $console;
 	}
@@ -153,7 +179,19 @@ class Application extends \Symfony\Component\Console\Application {
 
 		foreach ($commands as $command)
 		{
-			$this->resolve($command);
+			try
+			{
+				$this->resolve($command);
+			}
+			catch (\Throwable $e)
+			{
+				// ponytail: some v13 components (session/cache/…) register console commands
+				// that extend v13 console base classes absent from the not-yet-swapped fork
+				// console. Skip the ones that can't load so artisan still boots; they return
+				// with the console swap (task 4.2). Commands that load fine still register.
+				error_log('[l13] skipped unresolvable console command '
+					. (is_string($command) ? $command : gettype($command)) . ': ' . $e->getMessage());
+			}
 		}
 	}
 

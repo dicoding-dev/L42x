@@ -69,6 +69,20 @@ class ConsoleApplicationTest extends BackwardCompatibleTestCase
 	}
 
 
+	public function testSignatureCommandRegistersArgumentsAndOptions()
+	{
+		// ponytail: guards the fork BC shim that lets v13-style ($signature) commands
+		// register their definition on the not-yet-swapped console (task 4.2).
+		$command = new ConsoleSignatureStub;
+
+		$this->assertEquals('stub:sig', $command->getName());
+		$this->assertTrue($command->getDefinition()->hasArgument('name'));
+		$this->assertTrue($command->getDefinition()->hasOption('force'));
+		$this->assertFalse($command->getDefinition()->getOption('force')->acceptValue());
+		$this->assertTrue($command->getDefinition()->getOption('database')->acceptValue());
+	}
+
+
 	public function testExecuteResolvesHandleThenFallsBackToFire()
 	{
 		$execute = new \ReflectionMethod(\Illuminate\Console\Command::class, 'execute');
@@ -97,4 +111,10 @@ class ConsoleFireStub extends \Illuminate\Console\Command
 {
 	protected $name = 'stub:fire';
 	public function fire() { $_SERVER['__console.ran'] = 'fire'; }
+}
+
+class ConsoleSignatureStub extends \Illuminate\Console\Command
+{
+	protected $signature = 'stub:sig {name} {--force} {--database=}';
+	public function handle() {}
 }

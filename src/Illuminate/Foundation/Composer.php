@@ -3,7 +3,14 @@
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
-class Composer {
+/**
+ * ponytail: extends v13's Support\Composer so `$app['composer']` satisfies the
+ * Illuminate\Support\Composer type hint of v13's MigrateMakeCommand (make:migration),
+ * which otherwise fails to construct and is skipped at artisan boot. The fork keeps its
+ * own Process-returning dumpAutoloads()/dumpOptimized() used by `artisan optimize`.
+ * Remove at the console swap (task 4.2).
+ */
+class Composer extends \Illuminate\Support\Composer {
 
 	/**
 	 * The filesystem instance.
@@ -39,7 +46,7 @@ class Composer {
      *
      * @return Process
      */
-	public function dumpAutoloads(string $extra = ''): Process
+	public function dumpAutoloads($extra = '', $composerBinary = null): Process
     {
         $command = trim($this->findComposer().' dump-autoload '.$extra);
 
@@ -55,7 +62,7 @@ class Composer {
 	 *
 	 * @return Process
 	 */
-	public function dumpOptimized(): Process
+	public function dumpOptimized($composerBinary = null): Process
     {
 		return $this->dumpAutoloads('--optimize');
 	}
@@ -65,7 +72,7 @@ class Composer {
 	 *
 	 * @return string
 	 */
-	protected function findComposer()
+	public function findComposer($composerBinary = null)
 	{
 		if ($this->files->exists($this->workingPath.'/composer.phar'))
 		{
@@ -80,9 +87,9 @@ class Composer {
 	 * @param string[] $commands
 	 * @return \Symfony\Component\Process\Process
 	 */
-	protected function getProcess(array $commands = []): Process
+	protected function getProcess(array $command, array $env = []): Process
     {
-		return (new Process($commands, $this->workingPath))->setTimeout(null);
+		return (new Process($command, $this->workingPath))->setTimeout(null);
 	}
 
 	/**
