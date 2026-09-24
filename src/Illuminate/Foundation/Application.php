@@ -62,6 +62,14 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $finishCallbacks = array();
 
 	/**
+	 * ponytail: v13 terminating-callback shim (v13 ServiceProviders register
+	 * these; fork Foundation predates the API). Remove at task 4.5 foundation swap.
+	 *
+	 * @var array
+	 */
+	protected $terminatingCallbacks = array();
+
+	/**
 	 * The array of shutdown callbacks.
 	 *
 	 * @var array
@@ -139,6 +147,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->instance('request', $request);
 
 		$this->instance('Illuminate\Container\Container', $this);
+
+		// v13 code resolves the container via the static Container::getInstance()
+		// (e.g. BladeCompiler::anonymousComponentPath); register the app as the
+		// global instance so those calls hit the real bindings/aliases (task 4.3).
+		static::setInstance($this);
 	}
 
 	/**
@@ -636,6 +649,32 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * ponytail: v13 Foundation exposes getNamespace() (root PSR-4 namespace) which
+	 * v13's ComponentTagCompiler calls to locate CLASS components. The app uses only
+	 * anonymous components, so the value is never matched — return a benign default
+	 * instead of parsing composer.json. Remove at task 4.5 foundation swap.
+	 *
+	 * @return string
+	 */
+	public function getNamespace()
+	{
+		return 'App\\';
+	}
+
+	/**
+	 * Register a terminating callback (v13 API; see $terminatingCallbacks).
+	 *
+	 * @param  callable  $callback
+	 * @return $this
+	 */
+	public function terminating(callable $callback)
+	{
+		$this->terminatingCallbacks[] = $callback;
+
+		return $this;
+	}
+
+	/**
 	 * Register a "shutdown" callback.
 	 *
 	 * @param  callable  $callback
@@ -899,6 +938,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function terminate(SymfonyRequest $request, SymfonyResponse $response): void
 	{
 		$this->callFinishCallbacks($request, $response);
+
+		foreach ($this->terminatingCallbacks as $terminating)
+		{
+			$this->call($terminating);
+		}
 
 		$this->shutdown();
 	}
@@ -1269,6 +1313,16 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('cache.store', 'Illuminate\Contracts\Cache\Repository');
 		$this->alias('config', 'Illuminate\Contracts\Config\Repository');
 		$this->alias('db', 'Illuminate\Database\ConnectionResolverInterface');
+
+		// L13 view swap (task 4.3): v13 view internals (component rendering) resolve
+		// the Factory contract; alias it to the 'view' binding.
+		$this->alias('view', 'Illuminate\Contracts\View\Factory');
+
+		// v13 component rendering autowires the Application/Container contracts;
+		// mirror v13's 'app' alias cluster (task 4.3).
+		$this->alias('app', 'Illuminate\Contracts\Foundation\Application');
+		$this->alias('app', 'Illuminate\Contracts\Container\Container');
+		$this->alias('app', 'Psr\Container\ContainerInterface');
 
 		// ponytail: v13's Support\Facades\Artisan resolves Illuminate\Contracts\Console\Kernel.
 		// The fork has no console Kernel (task 4.2); 'artisan' is a lazy singleton
