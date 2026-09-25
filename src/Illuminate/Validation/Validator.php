@@ -8,7 +8,7 @@ use Illuminate\Support\Fluent;
 use Illuminate\Support\MessageBag;
 use Illuminate\Container\Container;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Illuminate\Contracts\Translation\Translator as TranslatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Illuminate\Support\Contracts\MessageProviderInterface;
 
@@ -1511,7 +1511,7 @@ class Validator implements MessageProviderInterface {
 
 		$customKey = "validation.custom.{$attribute}.{$lowerRule}";
 
-		$customMessage = $this->translator->trans($customKey);
+		$customMessage = $this->translator->get($customKey);
 
 		// First we check for a custom defined validation message for the attribute
 		// and rule. This allows the developer to specify specific messages for
@@ -1534,7 +1534,7 @@ class Validator implements MessageProviderInterface {
 		// messages out of the translator service for this validation rule.
 		$key = "validation.{$lowerRule}";
 
-		if ($key != ($value = $this->translator->trans($key)))
+		if ($key != ($value = $this->translator->get($key)))
 		{
 			return $value;
 		}
@@ -1585,7 +1585,7 @@ class Validator implements MessageProviderInterface {
 
 		$key = "validation.{$lowerRule}.{$type}";
 
-		return $this->translator->trans($key);
+		return $this->translator->get($key);
 	}
 
 	/**
@@ -1682,7 +1682,7 @@ class Validator implements MessageProviderInterface {
 		// We allow for the developer to specify language lines for each of the
 		// attributes allowing for more displayable counterparts of each of
 		// the attributes. This provides the ability for simple formats.
-		if (($line = $this->translator->trans($key)) !== $key)
+		if (($line = $this->translator->get($key)) !== $key)
 		{
 			return $line;
 		}
@@ -1709,7 +1709,7 @@ class Validator implements MessageProviderInterface {
 
 		$key = "validation.values.{$attribute}.{$value}";
 
-		if (($line = $this->translator->trans($key)) !== $key)
+		if (($line = $this->translator->get($key)) !== $key)
 		{
 			return $line;
 		}
