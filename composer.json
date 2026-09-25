@@ -17,6 +17,7 @@
         "illuminate/cache": "^13",
         "illuminate/collections": "^13",
         "illuminate/conditionable": "^13",
+        "illuminate/config": "^13",
         "illuminate/console": "^13",
         "illuminate/container": "^13",
         "illuminate/contracts": "^13",
@@ -59,7 +60,6 @@
     },
     "replace": {
         "illuminate/auth": "self.version",
-        "illuminate/config": "self.version",
         "illuminate/exception": "self.version",
         "illuminate/foundation": "self.version",
         "illuminate/hashing": "self.version",

@@ -130,11 +130,23 @@ with($envVariables = new EnvironmentVariables(
 |
 */
 
-$app->instance('config', $config = new Config(
+// v13 Config\Repository takes a pre-loaded array (no loader/env-cascade). Keep the
+// fork FileLoader for the L4.2 env-cascade + eagerly load every group into the array.
+$loader = $app->getConfigLoader();
 
-	$app->getConfigLoader(), $env
+$groups = [];
+foreach (array_merge(
+	glob($app['path'].'/config/*.php'),
+	glob($app['path'].'/config/'.$env.'/*.php')
+) as $file)
+{
+	$groups[basename($file, '.php')] = true;
+}
 
-));
+$items = array();
+foreach (array_keys($groups) as $group) $items[$group] = $loader->load($env, $group);
+
+$app->instance('config', $config = new Config($items));
 
 /*
 |--------------------------------------------------------------------------
