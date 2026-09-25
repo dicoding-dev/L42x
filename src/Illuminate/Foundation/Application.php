@@ -1273,7 +1273,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'hash'           => 'Illuminate\Contracts\Hashing\Hasher',
 			'html'           => 'Illuminate\Html\HtmlBuilder',
 			'translator'     => 'Illuminate\Translation\Translator',
-			'log'            => 'Illuminate\Log\Logger',
+			'log'            => 'Illuminate\Log\LogManager',
 			'mailer'         => 'Illuminate\Mail\Mailer',
 			'auth.reminder'  => 'Illuminate\Auth\Reminders\PasswordBroker',
 			'queue'          => 'Illuminate\Queue\QueueManager',
@@ -1292,9 +1292,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		{
 			$this->alias($key, $alias);
 		}
-
-		// BC: Log\Writer renamed to Log\Logger (task 3.5); keep old name resolvable.
-		$this->alias('log', 'Illuminate\Log\Writer');
 
 		// Encrypter now implements the L13 contracts (task 2.9); resolve them to 'encrypter'.
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\Encrypter');
