@@ -7,7 +7,7 @@ use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Illuminate\Contracts\Translation\Translator as TranslatorInterface;
 
 class ValidationValidatorTest extends BackwardCompatibleTestCase
 {
@@ -61,7 +61,7 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 	public function testHasNotFailedValidationRules()
 	{
 		$trans = $this->getTranslator();
-		$trans->shouldReceive('trans')->never();
+		$trans->shouldReceive('get')->never();
 		$v = new Validator($trans, ['foo' => 'taylor'], ['name' => 'Confirmed']);
 		$this->assertTrue($v->passes());
 		$this->assertEmpty($v->failed());
@@ -71,7 +71,7 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 	public function testSometimesCanSkipRequiredRules()
 	{
 		$trans = $this->getTranslator();
-		$trans->shouldReceive('trans')->never();
+		$trans->shouldReceive('get')->never();
 		$v = new Validator($trans, [], ['name' => 'sometimes|required']);
 		$this->assertTrue($v->passes());
 		$this->assertEmpty($v->failed());
@@ -81,7 +81,7 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 	public function testInValidatableRulesReturnsValid()
 	{
 		$trans = $this->getTranslator();
-		$trans->shouldReceive('trans')->never();
+		$trans->shouldReceive('get')->never();
 		$v = new Validator($trans, ['foo' => 'taylor'], ['name' => 'Confirmed']);
 		$this->assertTrue($v->passes());
 	}
@@ -1438,9 +1438,13 @@ class ValidationValidatorTest extends BackwardCompatibleTestCase
 
 	protected function getRealTranslator()
 	{
-		$trans = new Symfony\Component\Translation\Translator('en');
-		$trans->addLoader('array', new Symfony\Component\Translation\Loader\ArrayLoader);
-		return $trans;
+		// v13 Translator; shim addResource() (Symfony API these tests use) onto addLines().
+		return new class(new \Illuminate\Translation\ArrayLoader, 'en') extends \Illuminate\Translation\Translator {
+			public function addResource($format, array $messages, $locale, $domain = 'messages'): void
+			{
+				$this->addLines($messages, $locale);
+			}
+		};
 	}
 
 }

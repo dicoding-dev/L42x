@@ -2,7 +2,7 @@
 
 use Closure;
 use Illuminate\Container\Container;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Illuminate\Contracts\Translation\Translator as TranslatorInterface;
 
 class Factory {
 
