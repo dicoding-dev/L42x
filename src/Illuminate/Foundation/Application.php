@@ -214,6 +214,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		{
 			$this->instance("path.{$key}", realpath($value));
 		}
+
+		// ponytail: v13 TranslationServiceProvider reads path.lang (absent from L4.2 install
+		// paths). Bind it here; remove once Foundation swaps to v13 (bootstrap sets langPath).
+		$this->instance('path.lang', $this['path'].'/lang');
 	}
 
 	/**
@@ -1216,6 +1220,19 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function getLocale()
 	{
 		return $this['config']->get('app.locale');
+	}
+
+	/**
+	 * Get the current application fallback locale.
+	 *
+	 * ponytail: v13 TranslationServiceProvider calls getFallbackLocale(); the L4.2 fork
+	 * Application lacks it. Remove once Foundation swaps to v13.
+	 *
+	 * @return string
+	 */
+	public function getFallbackLocale()
+	{
+		return $this['config']->get('app.fallback_locale');
 	}
 
 	/**
