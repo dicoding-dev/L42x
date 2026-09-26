@@ -1299,10 +1299,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\Encrypter');
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\StringEncrypter');
 
-		// BC: Hashing\HasherInterface → Contracts\Hashing\Hasher (task 2.11); keep old name resolvable.
-		// class_alias covers use/typehint/instanceof; make()/autowiring by the old name needs this.
-		$this->alias('hash', 'Illuminate\Hashing\HasherInterface');
-
 		// L13 SCC-1 swap (task 4.1): the swapped components ship v13 contracts. Alias them to
 		// the core bindings so v13 code that type-hints the contracts resolves (the v13
 		// providers don't always register these against the fork's core aliases).
