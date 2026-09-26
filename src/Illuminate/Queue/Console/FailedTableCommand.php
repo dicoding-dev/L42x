@@ -44,7 +44,7 @@ class FailedTableCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$fullPath = $this->createBaseMigration();
 

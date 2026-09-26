@@ -23,7 +23,7 @@ class RestartCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$this->laravel['cache']->forever('illuminate:queue:restart', time());
 

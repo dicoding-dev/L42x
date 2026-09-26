@@ -22,7 +22,7 @@ class FlushFailedCommand extends Command {
 	 * Execute the console command.
 	 *
 	 */
-	public function fire()
+	public function handle()
 	{
 		$this->laravel['queue.failer']->flush();
 

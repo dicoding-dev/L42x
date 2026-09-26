@@ -46,7 +46,7 @@ class ListenCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$this->setListenerOptions();
 

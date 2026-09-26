@@ -23,7 +23,7 @@ class ListFailedCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$rows = array();
 
@@ -38,11 +38,7 @@ class ListFailedCommand extends Command {
             return 0;
 		}
 
-		$table = $this->getHelperSet()->get('table');
-
-		$table->setHeaders(array('ID', 'Connection', 'Queue', 'Class', 'Failed At'))
-              ->setRows($rows)
-              ->render($this->output);
+		$this->table(array('ID', 'Connection', 'Queue', 'Class', 'Failed At'), $rows);
 
         return 0;
 	}
