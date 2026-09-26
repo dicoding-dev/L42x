@@ -62,6 +62,18 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $finishCallbacks = array();
 
 	/**
+	 * ponytail: global before/after callbacks (App::before/App::after). L4.2 stored
+	 * these as router.before/after global filters; v13's Router has no global-filter
+	 * concept, so the app runs them itself around the route dispatch (see dispatch()).
+	 * Remove at task 4.5 foundation swap if global middleware replaces them.
+	 *
+	 * @var array
+	 */
+	protected $beforeCallbacks = array();
+
+	protected $afterCallbacks = array();
+
+	/**
 	 * ponytail: v13 terminating-callback shim (v13 ServiceProviders register
 	 * these; fork Foundation predates the API). Remove at task 4.5 foundation swap.
 	 *
@@ -612,7 +624,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	public function before($callback)
 	{
-		return $this['router']->before($callback);
+		$this->beforeCallbacks[] = $callback;
 	}
 
 	/**
@@ -623,7 +635,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	public function after($callback)
 	{
-		return $this['router']->after($callback);
+		$this->afterCallbacks[] = $callback;
 	}
 
 	/**
@@ -914,7 +926,23 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			$this['session']->start();
 		}
 
-		return $this['router']->dispatch($this->prepareRequest($request));
+		$request = $this->prepareRequest($request);
+
+		foreach ($this->beforeCallbacks as $callback)
+		{
+			$response = call_user_func($callback, $request);
+
+			if ( ! is_null($response)) return $this->prepareResponse($response, $request);
+		}
+
+		$response = $this['router']->dispatch($request);
+
+		foreach ($this->afterCallbacks as $callback)
+		{
+			call_user_func($callback, $request, $response);
+		}
+
+		return $response;
 	}
 
 	/**
