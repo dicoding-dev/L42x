@@ -54,6 +54,12 @@ class Artisan {
 
 		$this->app->instance('artisan', $console);
 
+		// Memoize before requiring start/artisan.php: that file calls Artisan::add() ~149x, and the
+		// Artisan facade has already cached THIS wrapper, so each add() re-enters __call()->getArtisan().
+		// Without the early memo it re-boots + re-requires artisan.php recursively (OOM). With it, the
+		// re-entrant getArtisan() short-circuits and add() forwards to the console instance.
+		$this->artisan = $console;
+
 		$path = $this->app['path'].'/start/artisan.php';
 
 		if (file_exists($path)) require $path;
