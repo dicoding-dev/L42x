@@ -90,9 +90,11 @@ class OptimizeCommand extends Command {
 		{
 			foreach ($this->laravel['files']->allFiles($path) as $file)
 			{
+				$viewPath = $file->getRealPath();
+
 				try
 				{
-					$engine = $this->laravel['view']->getEngineFromPath($file);
+					$engine = $this->laravel['view']->getEngineFromPath($viewPath);
 				}
 				catch (\InvalidArgumentException $e)
 				{
@@ -101,7 +103,7 @@ class OptimizeCommand extends Command {
 
 				if ($engine instanceof CompilerEngine)
 				{
-					$engine->getCompiler()->compile($file);
+					$engine->getCompiler()->compile($viewPath);
 				}
 			}
 		}
