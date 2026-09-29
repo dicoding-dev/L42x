@@ -2,6 +2,12 @@
 
 use Illuminate\Encryption\Encrypter;
 
+/**
+ * ponytail: after the queue swap (task 4.3) v13 queues closures as CallQueuedClosure;
+ * this class only drains closure jobs that L4.2 queued before the deploy (their payload
+ * names "IlluminateQueueClosure", which v13 fires like any "Class@fire" job). Remove
+ * once the queues are drained at cutover (task 5.1).
+ */
 class IlluminateQueueClosure {
 
 	/**
