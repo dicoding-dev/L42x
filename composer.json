@@ -69,8 +69,7 @@
         "illuminate/exception": "self.version",
         "illuminate/foundation": "self.version",
         "illuminate/html": "self.version",
-        "illuminate/mail": "self.version",
-        "illuminate/workbench": "self.version"
+        "illuminate/mail": "self.version"
     },
     "require-dev": {
         "aws/aws-sdk-php": "^3.322.9",
