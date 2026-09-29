@@ -11,6 +11,7 @@ use Illuminate\Config\FileLoader;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Bus\BusServiceProvider;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Routing\RoutingServiceProvider;
 use Illuminate\Exception\ExceptionServiceProvider;
@@ -173,10 +174,24 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	protected function registerBaseServiceProviders()
 	{
-		foreach (array('Event', 'Exception', 'Routing') as $name)
+		foreach (array('Event', 'Exception', 'Routing', 'Bus') as $name)
 		{
 			$this->{"register{$name}Provider"}();
 		}
+	}
+
+	/**
+	 * ponytail: L13 ships BusServiceProvider among its default providers. The v13 queue
+	 * runs closure and object jobs through CallQueuedHandler, which needs the Bus
+	 * dispatcher, so `Queue::push(Closure)` breaks without it (task 4.3 queue swap).
+	 * Registered here because the app lists its providers explicitly (no default set).
+	 * Remove at task 4.5 when the foundation swap brings the L13 default providers.
+	 *
+	 * @return void
+	 */
+	protected function registerBusProvider()
+	{
+		$this->register(new BusServiceProvider($this));
 	}
 
 	/**
@@ -1355,6 +1370,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		// L13 view swap (task 4.3): v13 view internals (component rendering) resolve
 		// the Factory contract; alias it to the 'view' binding.
 		$this->alias('view', 'Illuminate\Contracts\View\Factory');
+
+		// L13 queue swap (task 4.3): the Bus dispatcher's queue resolver and the queue
+		// commands resolve the queue contracts; mirror v13's queue alias cluster.
+		$this->alias('queue', 'Illuminate\Contracts\Queue\Factory');
+		$this->alias('queue', 'Illuminate\Contracts\Queue\Monitor');
+		$this->alias('queue.connection', 'Illuminate\Contracts\Queue\Queue');
+		$this->alias('queue.failer', 'Illuminate\Queue\Failed\FailedJobProviderInterface');
 
 		// v13 component rendering autowires the Application/Container contracts;
 		// mirror v13's 'app' alias cluster (task 4.3).

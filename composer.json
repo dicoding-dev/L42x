@@ -32,6 +32,7 @@
         "illuminate/macroable": "^13",
         "illuminate/pagination": "^13",
         "illuminate/pipeline": "^13",
+        "illuminate/queue": "^13",
         "illuminate/redis": "^13",
         "illuminate/reflection": "^13",
         "illuminate/routing": "^13",
@@ -45,7 +46,7 @@
         "monolog/monolog": "^3.10",
         "nesbot/carbon": "^3.8.4",
         "opis/closure": "~3.6",
-        "pda/pheanstalk": "~4.0",
+        "pda/pheanstalk": "^8.0",
         "predis/predis": "^2.4.1",
         "symfony/browser-kit": "^7.4",
         "symfony/console": "^7.4",
@@ -69,7 +70,6 @@
         "illuminate/foundation": "self.version",
         "illuminate/html": "self.version",
         "illuminate/mail": "self.version",
-        "illuminate/queue": "self.version",
         "illuminate/workbench": "self.version"
     },
     "require-dev": {
