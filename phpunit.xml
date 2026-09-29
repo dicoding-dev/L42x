@@ -21,7 +21,6 @@
     <exclude>
       <directory>./src/Illuminate/Pagination/views</directory>
       <file>./src/Illuminate/Foundation/start.php</file>
-      <file>./src/Illuminate/Foundation/Console/Optimize/config.php</file>
     </exclude>
   </coverage>
   <testsuites>
