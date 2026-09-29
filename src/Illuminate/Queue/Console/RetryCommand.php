@@ -24,7 +24,7 @@ class RetryCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$failed = $this->laravel['queue.failer']->find($this->argument('id'));
 

@@ -24,7 +24,7 @@ class ForgetFailedCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		if ($this->laravel['queue.failer']->forget($this->argument('id')))
 		{

@@ -36,7 +36,7 @@ class SubscribeCommand extends Command {
      *
 	 * @throws \RuntimeException
 	 */
-	public function fire()
+	public function handle()
 	{
 		$iron = $this->laravel['queue']->connection();
 

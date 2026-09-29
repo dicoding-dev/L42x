@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Foundation\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Foundation\Composer;
+use Illuminate\Support\Composer;
 use Illuminate\View\Engines\CompilerEngine;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -46,24 +46,22 @@ class OptimizeCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$this->info('Generating optimized class loader');
 
 		if ($this->option('psr'))
 		{
-			$process = $this->composer->dumpAutoloads();
+			$this->composer->dumpAutoloads();
 		}
         elseif ($this->option('apcu'))
         {
-            $process = $this->composer->dumpAutoloads('--optimize --apcu');
+            $this->composer->dumpAutoloads('--optimize --apcu');
         }
 		else
 		{
-			$process = $this->composer->dumpOptimized();
+			$this->composer->dumpOptimized();
 		}
-
-        $this->info("Executed: {$process->getCommandLine()}");
 
 		if ($this->option('force') || ! $this->laravel['config']['app.debug'])
 		{

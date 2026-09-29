@@ -49,7 +49,7 @@ class ConfigPublishCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		$package = $this->input->getArgument('package');
 

@@ -24,7 +24,7 @@ class TinkerCommand extends Command {
 	 *
 	 * @return int
      */
-	public function fire()
+	public function handle()
 	{
 		if ($this->supportsBoris())
 		{

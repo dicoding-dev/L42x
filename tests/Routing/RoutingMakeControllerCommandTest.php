@@ -23,6 +23,7 @@ class RoutingMakeControllerCommandTest extends BackwardCompatibleTestCase
             __DIR__,
             ['only' => [], 'except' => []]
         );
+        $command->setLaravel(tap(new Illuminate\Foundation\Application, fn($a) => $a->instance('env', 'testing')));
         $this->runCommand($command, ['name' => 'FooController']);
 	}
 
@@ -34,7 +35,10 @@ class RoutingMakeControllerCommandTest extends BackwardCompatibleTestCase
         ), __DIR__);
 		$gen->shouldReceive('make')->once()->with('FooController', __DIR__.'/foo/bar', ['only' => ['foo', 'bar'], 'except' => ['baz', 'boom']]
         );
-		$command->setLaravel(['path.base' => __DIR__.'/foo']);
+		$laravel = new Illuminate\Foundation\Application;
+		$laravel->instance('path.base', __DIR__.'/foo');
+		$laravel->instance('env', 'testing');
+		$command->setLaravel($laravel);
 		$this->runCommand($command, ['name' => 'FooController', '--only' => 'foo,bar', '--except' => 'baz,boom', '--path' => 'bar']
         );
 	}
