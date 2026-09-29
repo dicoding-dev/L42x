@@ -84,14 +84,7 @@ class RoutingIntegrationTest extends TestCase
 
         $this->app['path.storage'] = __DIR__;
 
-        $loader = $this->createMock('Illuminate\Config\LoaderInterface');
-
-        $loader->method('load')->willReturn([]);
-        $loader->method('exists')->willReturn(true);
-        $loader->method('getNamespaces')->willReturn([]);
-        $loader->method('cascadePackage')->willReturn([]);
-
-        $this->app['config'] = new Repository($loader, $this->app['env']);
+        $this->app['config'] = new Repository();
 
         $this->app['files'] = new Filesystem;
         $this->app['cache'] = new CacheManager($this->app);
