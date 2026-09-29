@@ -7,7 +7,7 @@ class ValidationFactoryTest extends BackwardCompatibleTestCase {
 
 	public function testMakeMethodCreatesValidValidator()
 	{
-		$translator = $this->prophesize(Symfony\Contracts\Translation\TranslatorInterface::class);
+		$translator = $this->prophesize(Illuminate\Contracts\Translation\Translator::class);
 		$factory = new Factory($translator->reveal());
 		$validator = $factory->make(['foo' => 'bar'], ['baz' => 'boom']);
 		$this->assertEquals($translator->reveal(), $validator->getTranslator());
@@ -41,7 +41,7 @@ class ValidationFactoryTest extends BackwardCompatibleTestCase {
 	public function testCustomResolverIsCalled()
 	{
 		unset($_SERVER['__validator.factory']);
-		$translator = $this->prophesize(Symfony\Contracts\Translation\TranslatorInterface::class);
+		$translator = $this->prophesize(Illuminate\Contracts\Translation\Translator::class);
 		$factory = new Factory($translator->reveal());
 		$factory->resolver(function($translator, $data, $rules)
 		{
