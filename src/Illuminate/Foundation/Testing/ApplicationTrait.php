@@ -2,6 +2,7 @@
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Testing\TestResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile as SymfonyUploadedFile;
 
 trait ApplicationTrait {
 
@@ -41,76 +42,138 @@ trait ApplicationTrait {
 	 * @param  string  $method
 	 * @param  string  $uri
 	 * @param  array   $parameters
+	 * @param  array   $cookies
 	 * @param  array   $files
 	 * @param  array   $server
-	 * @param  string  $content
-	 * @param  bool	$changeHistory
+	 * @param  string|null  $content
 	 * @return \Illuminate\Testing\TestResponse
 	 */
-	public function call($method, $uri, $parameters = [], $files = [], $server = [], $content = null, $changeHistory = true)
+	public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
 	{
-		$this->client->request($method, $uri, $parameters, $files, $server, $content, $changeHistory);
+		$files = array_merge($files, $this->extractFilesFromDataArray($parameters));
+
+		$this->client->withRequestCookies($cookies)->request($method, $uri, $parameters, $files, $server, $content);
 
 		return TestResponse::fromBaseResponse($this->client->getResponse(), $this->client->getRequest());
 	}
 
 	/**
-	 * Call the given HTTPS URI and return the Response.
+	 * Visit the given URI with a GET request.
 	 *
-	 * @param  string  $method
 	 * @param  string  $uri
-	 * @param  array   $parameters
-	 * @param  array   $files
-	 * @param  array   $server
-	 * @param  string  $content
-	 * @param  bool	$changeHistory
+	 * @param  array   $headers
 	 * @return \Illuminate\Testing\TestResponse
 	 */
-	public function callSecure($method, $uri, $parameters = [], $files = [], $server = [], $content = null, $changeHistory = true)
+	public function get($uri, array $headers = [])
 	{
-		$uri = 'https://localhost/'.ltrim($uri, '/');
-
-		return $this->call($method, $uri, $parameters, $files, $server, $content, $changeHistory);
+		return $this->call('GET', $uri, [], [], [], $this->transformHeadersToServerVars($headers));
 	}
 
 	/**
-	 * Call a controller action and return the Response.
+	 * Visit the given URI with a POST request.
 	 *
-	 * @param  string  $method
-	 * @param  string  $action
-	 * @param  array   $wildcards
-	 * @param  array   $parameters
-	 * @param  array   $files
-	 * @param  array   $server
-	 * @param  string  $content
-	 * @param  bool	$changeHistory
+	 * @param  string  $uri
+	 * @param  array   $data
+	 * @param  array   $headers
 	 * @return \Illuminate\Testing\TestResponse
 	 */
-	public function action($method, $action, $wildcards = array(), $parameters = array(), $files = array(), $server = array(), $content = null, $changeHistory = true)
+	public function post($uri, array $data = [], array $headers = [])
 	{
-		$uri = $this->app['url']->action($action, $wildcards, true);
-
-		return $this->call($method, $uri, $parameters, $files, $server, $content, $changeHistory);
+		return $this->call('POST', $uri, $data, [], [], $this->transformHeadersToServerVars($headers));
 	}
 
 	/**
-	 * Call a named route and return the Response.
+	 * Visit the given URI with a PUT request.
 	 *
-	 * @param  string  $method
-	 * @param  string  $name
-	 * @param  array   $routeParameters
-	 * @param  array   $parameters
-	 * @param  array   $files
-	 * @param  array   $server
-	 * @param  string  $content
-	 * @param  bool	$changeHistory
+	 * @param  string  $uri
+	 * @param  array   $data
+	 * @param  array   $headers
 	 * @return \Illuminate\Testing\TestResponse
 	 */
-	public function route($method, $name, $routeParameters = array(), $parameters = array(), $files = array(), $server = array(), $content = null, $changeHistory = true)
+	public function put($uri, array $data = [], array $headers = [])
 	{
-		$uri = $this->app['url']->route($name, $routeParameters);
+		return $this->call('PUT', $uri, $data, [], [], $this->transformHeadersToServerVars($headers));
+	}
 
-		return $this->call($method, $uri, $parameters, $files, $server, $content, $changeHistory);
+	/**
+	 * Visit the given URI with a PATCH request.
+	 *
+	 * @param  string  $uri
+	 * @param  array   $data
+	 * @param  array   $headers
+	 * @return \Illuminate\Testing\TestResponse
+	 */
+	public function patch($uri, array $data = [], array $headers = [])
+	{
+		return $this->call('PATCH', $uri, $data, [], [], $this->transformHeadersToServerVars($headers));
+	}
+
+	/**
+	 * Visit the given URI with a DELETE request.
+	 *
+	 * @param  string  $uri
+	 * @param  array   $data
+	 * @param  array   $headers
+	 * @return \Illuminate\Testing\TestResponse
+	 */
+	public function delete($uri, array $data = [], array $headers = [])
+	{
+		return $this->call('DELETE', $uri, $data, [], [], $this->transformHeadersToServerVars($headers));
+	}
+
+	/**
+	 * Transform headers array to array of $_SERVER vars with HTTP_* format.
+	 *
+	 * @param  array  $headers
+	 * @return array
+	 */
+	protected function transformHeadersToServerVars(array $headers)
+	{
+		$server = [];
+
+		foreach ($headers as $name => $value)
+		{
+			$name = strtr(strtoupper($name), '-', '_');
+
+			if ( ! str_starts_with($name, 'HTTP_') && $name !== 'CONTENT_TYPE' && $name !== 'REMOTE_ADDR')
+			{
+				$name = 'HTTP_'.$name;
+			}
+
+			$server[$name] = $value;
+		}
+
+		return $server;
+	}
+
+	/**
+	 * Extract the file uploads from the given data array.
+	 *
+	 * @param  array  $data
+	 * @return array
+	 */
+	protected function extractFilesFromDataArray(&$data)
+	{
+		$files = [];
+
+		foreach ($data as $key => $value)
+		{
+			if ($value instanceof SymfonyUploadedFile)
+			{
+				$files[$key] = $value;
+
+				unset($data[$key]);
+			}
+
+			if (is_array($value))
+			{
+				$files[$key] = $this->extractFilesFromDataArray($value);
+
+				$data[$key] = $value;
+			}
+		}
+
+		return $files;
 	}
 
 	/**
