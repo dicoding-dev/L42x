@@ -1,6 +1,6 @@
 <?php namespace Illuminate\Foundation\Testing;
 
-use Illuminate\Auth\UserInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Testing\TestResponse;
 
 trait ApplicationTrait {
@@ -157,13 +157,13 @@ trait ApplicationTrait {
 	/**
 	 * Set the currently logged in user for the application.
 	 *
-	 * @param  \Illuminate\Auth\UserInterface  $user
-	 * @param  string  $driver
+	 * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+	 * @param  string|null  $driver
 	 * @return void
 	 */
-	public function be(UserInterface $user, $driver = null)
+	public function be(Authenticatable $user, $driver = null)
 	{
-		$this->app['auth']->driver($driver)->setUser($user);
+		$this->app['auth']->guard($driver)->setUser($user);
 	}
 
 	/**
