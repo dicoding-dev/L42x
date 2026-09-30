@@ -1,6 +1,7 @@
 <?php namespace Illuminate\Foundation\Testing;
 
 use Illuminate\Auth\UserInterface;
+use Illuminate\Testing\TestResponse;
 
 trait ApplicationTrait {
 
@@ -44,13 +45,13 @@ trait ApplicationTrait {
 	 * @param  array   $server
 	 * @param  string  $content
 	 * @param  bool	$changeHistory
-	 * @return \Illuminate\Http\Response
+	 * @return \Illuminate\Testing\TestResponse
 	 */
 	public function call($method, $uri, $parameters = [], $files = [], $server = [], $content = null, $changeHistory = true)
 	{
 		$this->client->request($method, $uri, $parameters, $files, $server, $content, $changeHistory);
 
-		return $this->client->getResponse();
+		return TestResponse::fromBaseResponse($this->client->getResponse(), $this->client->getRequest());
 	}
 
 	/**
@@ -63,7 +64,7 @@ trait ApplicationTrait {
 	 * @param  array   $server
 	 * @param  string  $content
 	 * @param  bool	$changeHistory
-	 * @return \Illuminate\Http\Response
+	 * @return \Illuminate\Testing\TestResponse
 	 */
 	public function callSecure($method, $uri, $parameters = [], $files = [], $server = [], $content = null, $changeHistory = true)
 	{
@@ -83,7 +84,7 @@ trait ApplicationTrait {
 	 * @param  array   $server
 	 * @param  string  $content
 	 * @param  bool	$changeHistory
-	 * @return \Illuminate\Http\Response
+	 * @return \Illuminate\Testing\TestResponse
 	 */
 	public function action($method, $action, $wildcards = array(), $parameters = array(), $files = array(), $server = array(), $content = null, $changeHistory = true)
 	{
@@ -103,7 +104,7 @@ trait ApplicationTrait {
 	 * @param  array   $server
 	 * @param  string  $content
 	 * @param  bool	$changeHistory
-	 * @return \Illuminate\Http\Response
+	 * @return \Illuminate\Testing\TestResponse
 	 */
 	public function route($method, $name, $routeParameters = array(), $parameters = array(), $files = array(), $server = array(), $content = null, $changeHistory = true)
 	{
