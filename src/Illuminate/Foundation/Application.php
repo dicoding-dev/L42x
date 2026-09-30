@@ -1319,7 +1319,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'app'            => 'Illuminate\Foundation\Application',
 			'artisan'        => 'Illuminate\Console\Application',
 			'auth'           => 'Illuminate\Auth\AuthManager',
-			'auth.reminder.repository' => 'Illuminate\Auth\Reminders\ReminderRepositoryInterface',
 			'blade.compiler' => 'Illuminate\View\Compilers\BladeCompiler',
 			'cache'          => 'Illuminate\Cache\CacheManager',
 			'cache.store'    => 'Illuminate\Cache\Repository',
@@ -1335,7 +1334,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 			'translator'     => 'Illuminate\Translation\Translator',
 			'log'            => 'Illuminate\Log\LogManager',
 			'mailer'         => 'Illuminate\Mail\Mailer',
-			'auth.reminder'  => 'Illuminate\Auth\Reminders\PasswordBroker',
 			'queue'          => 'Illuminate\Queue\QueueManager',
 			'redirect'       => 'Illuminate\Routing\Redirector',
 			'redis'          => 'Illuminate\Redis\RedisManager',
@@ -1384,6 +1382,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('mail.manager', 'Illuminate\Contracts\Mail\Factory');
 		$this->alias('mailer', 'Illuminate\Contracts\Mail\Mailer');
 		$this->alias('mailer', 'Illuminate\Contracts\Mail\MailQueue');
+
+		// L13 auth swap (task 4.5): the Auth facade, guards and middleware resolve the
+		// auth contracts; mirror v13's auth alias cluster.
+		$this->alias('auth', 'Illuminate\Contracts\Auth\Factory');
+		$this->alias('auth.driver', 'Illuminate\Contracts\Auth\Guard');
 
 		// v13 component rendering autowires the Application/Container contracts;
 		// mirror v13's 'app' alias cluster (task 4.3).
