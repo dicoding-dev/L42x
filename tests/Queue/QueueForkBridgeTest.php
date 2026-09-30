@@ -69,7 +69,7 @@ class QueueForkBridgeTest extends TestCase
 	{
 		$exception = new RuntimeException('job failed');
 		$handler = $this->prophesize(Handler::class);
-		$handler->handleConsole($exception)->shouldBeCalledOnce();
+		$handler->report($exception)->shouldBeCalledOnce();
 
 		$app = $this->makeApplication();
 		$app->instance('exception', $handler->reveal());

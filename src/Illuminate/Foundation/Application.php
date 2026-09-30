@@ -16,7 +16,6 @@ use Illuminate\Events\EventServiceProvider;
 use Illuminate\Routing\RoutingServiceProvider;
 use Illuminate\Exception\ExceptionServiceProvider;
 use Illuminate\Config\FileEnvironmentVariablesLoader;
-use Symfony\Component\ErrorHandler\Error\FatalError;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -1115,56 +1114,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		}
 
 		throw new HttpException($code, $message, null, $headers);
-	}
-
-	/**
-	 * Register a 404 error handler.
-	 *
-	 * @param  \Closure  $callback
-	 * @return void
-	 */
-	public function missing(Closure $callback)
-	{
-		$this->error(function(NotFoundHttpException $e) use ($callback)
-		{
-			return call_user_func($callback, $e);
-		});
-	}
-
-	/**
-	 * Register an application error handler.
-	 *
-	 * @param  \Closure  $callback
-	 * @return void
-	 */
-	public function error(Closure $callback)
-	{
-		$this['exception']->error($callback);
-	}
-
-	/**
-	 * Register an error handler at the bottom of the stack.
-	 *
-	 * @param  \Closure  $callback
-	 * @return void
-	 */
-	public function pushError(Closure $callback)
-	{
-		$this['exception']->pushError($callback);
-	}
-
-	/**
-	 * Register an error handler for fatal errors.
-	 *
-	 * @param  \Closure  $callback
-	 * @return void
-	 */
-	public function fatal(Closure $callback)
-	{
-		$this->error(function(FatalError $e) use ($callback)
-		{
-			return call_user_func($callback, $e);
-		});
 	}
 
 	/**
