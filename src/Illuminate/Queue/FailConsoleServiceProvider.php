@@ -1,6 +1,8 @@
 <?php namespace Illuminate\Queue;
 
+use Illuminate\Mail\Mailer;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Exception\ExceptionHandlerAdapter;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Queue\Console\WorkCommand;
@@ -56,6 +58,8 @@ class FailConsoleServiceProvider extends ServiceProvider {
 		{
 			$this->bindWorkerExceptionHandler($app);
 
+			$this->registerLegacyQueuedMail();
+
 			return new WorkCommand($app['queue.worker'], $app['cache.store']);
 		});
 
@@ -94,6 +98,33 @@ class FailConsoleServiceProvider extends ServiceProvider {
 		$app->singleton(ExceptionHandler::class, function($app)
 		{
 			return new ExceptionHandlerAdapter($app['exception']);
+		});
+	}
+
+	/**
+	 * ponytail: jobs pushed by the fork's Mail::queue() before the mail swap (task 2.16)
+	 * name 'mailer@handleQueuedMessage', which v13's Mailer lacks. Register it as a
+	 * Mailer macro while the worker is built so those jobs still drain after the deploy.
+	 * Remove once no fork-queued mail can be left (task 5.1 drains the queues).
+	 *
+	 * @return void
+	 */
+	protected function registerLegacyQueuedMail()
+	{
+		if (Mailer::hasMacro('handleQueuedMessage')) return;
+
+		Mailer::macro('handleQueuedMessage', function(Job $job, array $data)
+		{
+			$callback = $data['callback'];
+
+			if (is_string($callback) && str_contains($callback, 'SerializableClosure'))
+			{
+				$callback = unserialize($callback)->getClosure();
+			}
+
+			$this->send($data['view'], $data['data'], $callback);
+
+			$job->delete();
 		});
 	}
 
