@@ -106,7 +106,7 @@ class AuthPasswordBrokerTest extends BackwardCompatibleTestCase
 
         $broker = $this->getBroker($mocks = [
             ...$this->getMocks(),
-            'mailer' => new Mailer($factoryView, $transport = new ArrayTransport())
+            'mailer' => new Mailer('array', $factoryView, $transport = new ArrayTransport())
         ]);
         $mocks['mailer']->alwaysFrom('sender@mail.com');
 

@@ -29,6 +29,7 @@
         "illuminate/hashing": "^13",
         "illuminate/http": "^13",
         "illuminate/log": "^13",
+        "illuminate/mail": "^13",
         "illuminate/macroable": "^13",
         "illuminate/pagination": "^13",
         "illuminate/pipeline": "^13",
@@ -68,8 +69,7 @@
         "illuminate/auth": "self.version",
         "illuminate/exception": "self.version",
         "illuminate/foundation": "self.version",
-        "illuminate/html": "self.version",
-        "illuminate/mail": "self.version"
+        "illuminate/html": "self.version"
     },
     "require-dev": {
         "aws/aws-sdk-php": "^3.322.9",
