@@ -5,6 +5,8 @@ use Illuminate\Exception\ExceptionDisplayerInterface;
 use Illuminate\Exception\Handler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Contracts\ResponsePreparerInterface;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\WithoutErrorHandler;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -22,6 +24,7 @@ class HandlerTest extends TestCase
     private ObjectProphecy|ExceptionDisplayerInterface $plainDisplayer;
     private ObjectProphecy|ExceptionDisplayerInterface $debugDisplayer;
 
+    #[WithoutErrorHandler]
     public function testHandleErrorExceptionArguments(): void
     {
 		$error = null;
@@ -38,6 +41,7 @@ class HandlerTest extends TestCase
 	}
 
 
+	#[WithoutErrorHandler]
 	public function testHandleErrorOptionalArguments(): void
     {
 		$error = null;
@@ -50,9 +54,7 @@ class HandlerTest extends TestCase
 		$this->assertSame(0, $error->getLine(), 'error handler should use correct default line');
 	}
 
-    /**
-     * @test
-     */
+    #[Test]
     public function handleExceptions(): void
     {
         $handler = $this->getHandler();
@@ -70,9 +72,7 @@ class HandlerTest extends TestCase
         self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not resolved"}', $response->getContent());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function handlingHttpException(): void
     {
         $handler = $this->getHandler();
@@ -90,9 +90,7 @@ class HandlerTest extends TestCase
         self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not found"}', $response->getContent());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function whenVeryBasicHandlerIsUsedButTypeHintedHandlerReturnsResponse(): void
     {
         $handler = $this->getHandler();
@@ -117,9 +115,7 @@ class HandlerTest extends TestCase
         self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"not found"}', $response->getContent());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function whenBasicErrorHandlerIsUsed(): void
     {
         $handler = $this->getHandler();
@@ -144,9 +140,7 @@ class HandlerTest extends TestCase
         self::assertJsonStringEqualsJsonString('{"from_console":false,"message":"Error"}', $response->getContent());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function whenHandlerDoesNotReturnResponse(): void
     {
         $handler = $this->getHandler();
@@ -161,9 +155,7 @@ class HandlerTest extends TestCase
         $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function whenHandlerDoesNotReturnResponseInProduction(): void
     {
         $handler = $this->getHandler(self::DEBUG_DISABLED);
@@ -178,9 +170,7 @@ class HandlerTest extends TestCase
         $this->plainDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function whenHandlerThrows(): void
     {
         $handler = $this->getHandler();
@@ -195,9 +185,7 @@ class HandlerTest extends TestCase
         $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function whenHandlerThrowsInProduction(): void
     {
         $handler = $this->getHandler(self::DEBUG_DISABLED);

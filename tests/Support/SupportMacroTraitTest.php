@@ -15,9 +15,9 @@ class SupportMacroTraitTest extends BackwardCompatibleTestCase
 
     private function createObjectForTrait()
     {
-        $traitName = 'Illuminate\Support\Traits\MacroableTrait';
-
-        return $this->getObjectForTrait($traitName);
+        return new class {
+            use Illuminate\Support\Traits\MacroableTrait;
+        };
     }
 
 
