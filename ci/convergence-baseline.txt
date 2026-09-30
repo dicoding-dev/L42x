@@ -8,5 +8,5 @@ eloquent_lists=0
 macroable_trait=5
 softdeleting_trait=0
 legacy_contracts=3
-pagination_getters=1
+pagination_getters=0
 route_filters=0
