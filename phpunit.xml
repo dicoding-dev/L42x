@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          backupGlobals="false"
-         backupStaticAttributes="false"
+         backupStaticProperties="false"
          beStrictAboutTestsThatDoNotTestAnything="false"
          bootstrap="phpunit.php"
          colors="true"
-         convertDeprecationsToExceptions="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
+         failOnDeprecation="true"
+         failOnNotice="true"
+         failOnWarning="true"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
-         verbose="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage processUncoveredFiles="true">
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd">
+  <testsuites>
+    <testsuite name="Laravel Test Suite">
+      <directory suffix="Test.php">./tests</directory>
+    </testsuite>
+  </testsuites>
+  <source>
     <include>
       <directory suffix=".php">./src</directory>
     </include>
@@ -22,12 +25,7 @@
       <directory>./src/Illuminate/Pagination/views</directory>
       <file>./src/Illuminate/Foundation/start.php</file>
     </exclude>
-  </coverage>
-  <testsuites>
-    <testsuite name="Laravel Test Suite">
-      <directory suffix="Test.php">./tests</directory>
-    </testsuite>
-  </testsuites>
+  </source>
   <php>
     <ini name="display_errors" value="On" />
     <ini name="display_startup_errors" value="On" />

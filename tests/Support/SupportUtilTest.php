@@ -5,6 +5,7 @@ namespace Illuminate\Tests\Support;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Util;
 use L4\Tests\BackwardCompatibleTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class SupportUtilTest extends BackwardCompatibleTestCase
 {
@@ -16,9 +17,7 @@ class SupportUtilTest extends BackwardCompatibleTestCase
         }));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function isValueEmpty(): void
     {
         $this->assertTrue(Util::isEmpty(null));
@@ -36,9 +35,7 @@ class SupportUtilTest extends BackwardCompatibleTestCase
         $this->assertFalse(Util::isEmpty(1.1));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function isEmptyOnEmptyPaginatorObject(): void
     {
         $pagination = new Paginator([], 15);
@@ -46,9 +43,7 @@ class SupportUtilTest extends BackwardCompatibleTestCase
         $this->assertTrue(Util::isEmpty($pagination));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function isEmptyOnNonEmptyPaginatorObject(): void
     {
         $pagination = new Paginator(['1', '2', '3'], 15);
