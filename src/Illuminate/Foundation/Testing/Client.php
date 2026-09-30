@@ -7,6 +7,26 @@ use Symfony\Component\BrowserKit\Request as DomRequest;
 class Client extends HttpKernelBrowser {
 
 	/**
+	 * The cookies to send with the next request only, on top of the cookie jar's.
+	 *
+	 * @var array
+	 */
+	protected $requestCookies = array();
+
+	/**
+	 * Send the given cookies with the next request only.
+	 *
+	 * @param  array  $cookies
+	 * @return $this
+	 */
+	public function withRequestCookies(array $cookies)
+	{
+		$this->requestCookies = $cookies;
+
+		return $this;
+	}
+
+	/**
 	 * Convert a BrowserKit request into a Illuminate request.
 	 *
 	 * @param  \Symfony\Component\BrowserKit\Request  $request
@@ -14,7 +34,11 @@ class Client extends HttpKernelBrowser {
 	#[\Override]
     protected function filterRequest(DomRequest $request): \Symfony\Component\HttpFoundation\Request
     {
-		$httpRequest = Application::onRequest('create', $this->getRequestParameters($request));
+		$parameters = $this->getRequestParameters($request);
+		$parameters[3] = array_replace($parameters[3], $this->requestCookies);
+		$this->requestCookies = array();
+
+		$httpRequest = Application::onRequest('create', $parameters);
 
 		$httpRequest->files->replace($this->filterFiles($httpRequest->files->all()));
 
