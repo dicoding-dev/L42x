@@ -44,7 +44,7 @@ class FoundationTestingResponseTest extends TestCase
 
 		$this->assertInstanceOf(TestResponse::class, $response);
 		$this->assertSame($this->client->response, $response->baseResponse);
-		$this->assertSame(array('GET', '/hello', array('q' => 'x'), array(), array(), null, true), $this->client->requests[0]);
+		$this->assertSame(array('GET', '/hello', array('q' => 'x'), array(), array(), null), $this->client->requests[0]);
 		$this->assertSame('hello', $response->getContent());
 		$this->assertSame(200, $response->getStatusCode());
 		$this->assertSame('bar', $response->headers->get('X-Foo'));
@@ -107,7 +107,12 @@ class FoundationTestingResponseClient
 
 	public $requests = array();
 
-	public function request($method, $uri, $parameters = array(), $files = array(), $server = array(), $content = null, $changeHistory = true)
+	public function withRequestCookies(array $cookies)
+	{
+		return $this;
+	}
+
+	public function request($method, $uri, $parameters = array(), $files = array(), $server = array(), $content = null)
 	{
 		$this->requests[] = func_get_args();
 		$this->request = Request::create($uri, $method, $parameters);
