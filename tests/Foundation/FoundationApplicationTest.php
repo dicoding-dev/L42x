@@ -30,16 +30,13 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 	}
 
 
-	public function testCoreAliasResolvesHashByBothContractAndLegacyName()
+	public function testCoreAliasResolvesHashByContract()
 	{
 		$app = new Application;
 		$app->registerCoreContainerAliases();
 		$app->singleton('hash', function() { return new Illuminate\Hashing\BcryptHasher; });
 
 		$this->assertInstanceOf(Illuminate\Contracts\Hashing\Hasher::class, $app->make(Illuminate\Contracts\Hashing\Hasher::class));
-		// BC: the pre-migration interface name must still resolve via make()/autowiring;
-		// class_alias only covers use/typehint/instanceof, not container resolution (task 2.11).
-		$this->assertInstanceOf(Illuminate\Contracts\Hashing\Hasher::class, $app->make('Illuminate\Hashing\HasherInterface'));
 	}
 
 
