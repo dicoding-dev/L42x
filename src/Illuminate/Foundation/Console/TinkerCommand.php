@@ -63,7 +63,7 @@ class TinkerCommand extends Command {
 
 		$this->laravel->make('artisan')->setCatchExceptions(false);
 
-		$this->laravel->error(function() { return ''; });
+		$this->laravel['exception']->renderable(function(\Throwable $e) { return ''; });
 	}
 
 	/**
