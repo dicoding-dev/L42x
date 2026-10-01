@@ -64,9 +64,7 @@ class KeyGenerateCommand extends Command {
 	 */
 	protected function getKeyFile()
 	{
-		$env = $this->option('env') ? $this->option('env').'/' : '';
-
-		$contents = $this->files->get($path = $this->laravel['path']."/config/{$env}app.php");
+		$contents = $this->files->get($path = $this->laravel->configPath('app.php'));
 
 		return array($path, $contents);
 	}
