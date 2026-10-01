@@ -50,6 +50,20 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $hasBeenBootstrapped = false;
 
 	/**
+	 * The custom environment path defined by the developer.
+	 *
+	 * @var string|null
+	 */
+	protected $environmentPath;
+
+	/**
+	 * The environment file to load during bootstrapping.
+	 *
+	 * @var string
+	 */
+	protected $environmentFile = '.env';
+
+	/**
 	 * The array of booting callbacks.
 	 *
 	 * @var array
@@ -263,6 +277,62 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->instance('path.storage', $path);
 
 		return $this;
+	}
+
+	/**
+	 * Get the path to the environment file directory.
+	 *
+	 * @return string
+	 */
+	public function environmentPath()
+	{
+		return $this->environmentPath ?: $this['path.base'];
+	}
+
+	/**
+	 * Set the directory for the environment file.
+	 *
+	 * @param  string  $path
+	 * @return $this
+	 */
+	public function useEnvironmentPath($path)
+	{
+		$this->environmentPath = $path;
+
+		return $this;
+	}
+
+	/**
+	 * Set the environment file to be loaded during bootstrapping.
+	 *
+	 * @param  string  $file
+	 * @return $this
+	 */
+	public function loadEnvironmentFrom($file)
+	{
+		$this->environmentFile = $file;
+
+		return $this;
+	}
+
+	/**
+	 * Get the environment file the application is using.
+	 *
+	 * @return string
+	 */
+	public function environmentFile()
+	{
+		return $this->environmentFile ?: '.env';
+	}
+
+	/**
+	 * Get the fully qualified path to the environment file.
+	 *
+	 * @return string
+	 */
+	public function environmentFilePath()
+	{
+		return $this->environmentPath().DIRECTORY_SEPARATOR.$this->environmentFile();
 	}
 
 	/**
