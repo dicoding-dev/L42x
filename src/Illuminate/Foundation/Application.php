@@ -1151,6 +1151,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\Encrypter');
 		$this->alias('encrypter', 'Illuminate\Contracts\Encryption\StringEncrypter');
 
+		// v13's cookie middleware (AddQueuedCookiesToResponse) resolves the jar by its contracts (task 4.5).
+		$this->alias('cookie', 'Illuminate\Contracts\Cookie\Factory');
+		$this->alias('cookie', 'Illuminate\Contracts\Cookie\QueueingFactory');
+
 		// L13 SCC-1 swap (task 4.1): the swapped components ship v13 contracts. Alias them to
 		// the core bindings so v13 code that type-hints the contracts resolves (the v13
 		// providers don't always register these against the fork's core aliases).

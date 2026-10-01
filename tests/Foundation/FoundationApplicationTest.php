@@ -144,6 +144,17 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 	}
 
 
+	public function testTheCookieJarResolvesThroughItsContracts()
+	{
+		$app = new Application;
+		$app->registerCoreContainerAliases();
+		$app->instance('cookie', $jar = new Illuminate\Cookie\CookieJar);
+
+		$this->assertSame($jar, $app->make(Illuminate\Contracts\Cookie\Factory::class));
+		$this->assertSame($jar, $app->make(Illuminate\Contracts\Cookie\QueueingFactory::class));
+	}
+
+
     public function testEnvironment()
     {
         $app = new Application;
