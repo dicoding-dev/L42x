@@ -1378,6 +1378,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('queue.connection', 'Illuminate\Contracts\Queue\Queue');
 		$this->alias('queue.failer', 'Illuminate\Queue\Failed\FailedJobProviderInterface');
 
+		// L13 mail swap (task 2.16): the Mail facade and SendQueuedMailable resolve the
+		// mail contracts; mirror v13's mail alias cluster.
+		$this->alias('mail.manager', 'Illuminate\Mail\MailManager');
+		$this->alias('mail.manager', 'Illuminate\Contracts\Mail\Factory');
+		$this->alias('mailer', 'Illuminate\Contracts\Mail\Mailer');
+		$this->alias('mailer', 'Illuminate\Contracts\Mail\MailQueue');
+
 		// v13 component rendering autowires the Application/Container contracts;
 		// mirror v13's 'app' alias cluster (task 4.3).
 		$this->alias('app', 'Illuminate\Contracts\Foundation\Application');
