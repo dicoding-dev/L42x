@@ -63,22 +63,6 @@ $app->instance('app', $app);
 
 /*
 |--------------------------------------------------------------------------
-| Check For The Test Environment
-|--------------------------------------------------------------------------
-|
-| If the "unitTesting" variable is set, it means we are running the unit
-| tests for the application and should override this environment here
-| so we use the right configuration. The flag gets set by TestCase.
-|
-*/
-
-if (isset($unitTesting))
-{
-	$app['env'] = $env = $testEnvironment;
-}
-
-/*
-|--------------------------------------------------------------------------
 | Load The Illuminate Facades
 |--------------------------------------------------------------------------
 |
