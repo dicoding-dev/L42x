@@ -1,12 +1,12 @@
 # convergence baseline — dihasilkan dari: src
 # regenerate: ci/convergence-ratchet.sh --init src   (hanya setelah count TURUN)
 array_first_last=0
-route_uses_string=5
-event_fire=3
-where_raw=1
-eloquent_lists=6
-macroable_trait=12
-softdeleting_trait=2
-legacy_contracts=37
-pagination_getters=10
-route_filters=4
+route_uses_string=0
+event_fire=0
+where_raw=0
+eloquent_lists=0
+macroable_trait=5
+softdeleting_trait=0
+legacy_contracts=3
+pagination_getters=1
+route_filters=0
