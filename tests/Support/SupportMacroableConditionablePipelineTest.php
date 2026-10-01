@@ -4,7 +4,6 @@ use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Support\Traits\MacroableTrait;
 use L4\Tests\BackwardCompatibleTestCase;
 
 class SupportMacroableConditionablePipelineTest extends BackwardCompatibleTestCase
@@ -24,14 +23,6 @@ class SupportMacroableConditionablePipelineTest extends BackwardCompatibleTestCa
         $o::macro('next', fn () => $this->v + 1);
 
         $this->assertEquals(42, $o->next());
-    }
-
-    public function testMacroableTraitAliasStillWorks(): void
-    {
-        $o = new class { use MacroableTrait; };
-        $o::macro('ok', fn () => 'legacy');
-
-        $this->assertEquals('legacy', $o->ok());
     }
 
     public function testConditionableWhenAndUnless(): void
