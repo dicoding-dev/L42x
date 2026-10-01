@@ -1,6 +1,5 @@
 <?php namespace Illuminate\Foundation\Providers;
 
-use Illuminate\Foundation\Artisan;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\Console\ChangesCommand;
 use Illuminate\Foundation\Console\EnvironmentCommand;
@@ -21,11 +20,6 @@ class ArtisanServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->singleton('artisan', function($app)
-		{
-			return new Artisan($app);
-		});
-
 		$this->app->singleton('command.changes', function()
 		{
 			return new ChangesCommand;
@@ -47,7 +41,7 @@ class ArtisanServiceProvider extends ServiceProvider {
 	#[\Override]
     public function provides()
 	{
-		return array('artisan', 'command.changes', 'command.environment');
+		return array('command.changes', 'command.environment');
 	}
 
 }

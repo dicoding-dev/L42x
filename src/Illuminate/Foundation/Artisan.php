@@ -30,6 +30,32 @@ class Artisan {
 	}
 
 	/**
+	 * Bootstrap the application for Artisan commands, as v13's console Kernel does.
+	 *
+	 * @return void
+	 */
+	public function bootstrap()
+	{
+		$this->app->bootstrapWithStartScript();
+	}
+
+	/**
+	 * Run an incoming console command, as v13's console Kernel does.
+	 *
+	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
+	 * @param  \Symfony\Component\Console\Output\OutputInterface|null  $output
+	 * @return int
+	 */
+	public function handle($input, $output = null)
+	{
+		$this->bootstrap();
+
+		$this->app->setRequestForConsoleEnvironment();
+
+		return $this->getArtisan()->run($input, $output);
+	}
+
+	/**
 	 * Get the Artisan console instance.
 	 *
 	 * @return \Illuminate\Console\Application
