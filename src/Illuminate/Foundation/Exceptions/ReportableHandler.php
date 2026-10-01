@@ -4,7 +4,7 @@ use Illuminate\Support\Traits\ReflectsClosures;
 use Throwable;
 
 /**
- * v13's reportable callback wrapper (task 4.5), used by Illuminate\Exception\Handler.
+ * v13's reportable callback wrapper (task 4.5), used by Foundation\Exceptions\Handler.
  */
 class ReportableHandler {
 

@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Exception\PlainDisplayer;
+use Illuminate\Foundation\Exceptions\Displayers\PlainDisplayer;
 use L4\Tests\BackwardCompatibleTestCase;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
