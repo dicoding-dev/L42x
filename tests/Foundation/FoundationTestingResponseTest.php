@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\ApplicationTrait;
-use Illuminate\Foundation\Testing\AssertionsTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FoundationTestingResponseTest extends TestCase
 {
-	use ApplicationTrait, AssertionsTrait;
+	use ApplicationTrait;
 
 	protected function setUp(): void
 	{
@@ -50,15 +49,6 @@ class FoundationTestingResponseTest extends TestCase
 		$this->assertSame(200, $response->getStatusCode());
 		$this->assertSame('bar', $response->headers->get('X-Foo'));
 		$response->assertOk()->assertSee('hello')->assertHeader('X-Foo', 'bar');
-	}
-
-	public function testLegacyAssertionsStillReadTheClientResponse()
-	{
-		$this->client->response = new Response('created', 201);
-
-		$this->call('POST', '/things');
-
-		$this->assertResponseStatus(201);
 	}
 
 	public function testFailedFluentAssertionIsAPhpunitFailure()

@@ -2,7 +2,7 @@
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase {
 
-	use ApplicationTrait, AssertionsTrait;
+	use ApplicationTrait;
 
 	/**
 	 * Setup the test environment.
