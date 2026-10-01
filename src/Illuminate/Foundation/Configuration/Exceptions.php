@@ -1,6 +1,6 @@
 <?php namespace Illuminate\Foundation\Configuration;
 
-use Illuminate\Exception\Handler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Arr;
 
 /**
@@ -13,7 +13,7 @@ class Exceptions {
 	/**
 	 * Create a new exception handling configuration instance.
 	 *
-	 * @param  \Illuminate\Exception\Handler  $handler
+	 * @param  \Illuminate\Foundation\Exceptions\Handler  $handler
 	 * @return void
 	 */
 	public function __construct(public Handler $handler)

@@ -68,7 +68,6 @@
         "voku/portable-ascii": "2.0.3"
     },
     "replace": {
-        "illuminate/exception": "self.version",
         "illuminate/foundation": "self.version"
     },
     "require-dev": {

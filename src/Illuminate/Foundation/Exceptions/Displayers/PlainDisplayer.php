@@ -1,4 +1,4 @@
-<?php namespace Illuminate\Exception;
+<?php namespace Illuminate\Foundation\Exceptions\Displayers;
 
 use Exception;
 use Symfony\Component\HttpFoundation\Response;
