@@ -3,7 +3,6 @@
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Foundation\Http\MiddlewareBuilder;
 use ReflectionException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -73,13 +72,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $terminatingCallbacks = array();
 
 	/**
-	 * All of the developer defined middlewares.
-	 *
-	 * @var array
-	 */
-	protected $middlewares = array();
-
-	/**
 	 * All of the registered service providers.
 	 *
 	 * @var array
@@ -118,8 +110,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->registerBaseBindings($request ?: $this->createNewRequest());
 
 		$this->registerBaseServiceProviders();
-
-		$this->registerBaseMiddlewares();
 	}
 
 	/**
@@ -690,20 +680,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
-	 * Register a function for determining when to use array sessions.
-	 *
-	 * @param  \Closure  $callback
-	 * @return void
-	 */
-	public function useArraySessions(Closure $callback)
-	{
-		$this->bind('session.reject', function() use ($callback)
-		{
-			return $callback;
-		});
-	}
-
-	/**
 	 * Determine if the application has booted.
 	 *
 	 * @return bool
@@ -782,86 +758,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	{
 		$request = $request ?: $this['request'];
 
-		$response = with($stack = $this->getStackedClient())->handle($request);
+		$response = $this->handle($request);
 
 		$response->send();
 
-		$stack->terminate($request, $response);
-	}
-
-	/**
-	 * Get the stacked HTTP kernel for the application.
-	 *
-	 * @return  \Symfony\Component\HttpKernel\HttpKernelInterface
-	 */
-	protected function getStackedClient()
-	{
-		$sessionReject = $this->bound('session.reject') ? $this['session.reject'] : null;
-
-		$client = (new MiddlewareBuilder())
-                    ->push('Illuminate\Cookie\Guard', $this['encrypter'])
-                    ->push('Illuminate\Cookie\Queue', $this['cookie'])
-                    ->push('Illuminate\Session\Middleware', $this['session'], $sessionReject);
-
-		$this->mergeCustomMiddlewares($client);
-
-		return $client->resolve($this);
-	}
-
-    /**
-     * Merge the developer defined middlewares onto the stack.
-     *
-     * @param MiddlewareBuilder $stack
-     * @return void
-     */
-	protected function mergeCustomMiddlewares(MiddlewareBuilder $stack)
-	{
-		foreach ($this->middlewares as $middleware)
-		{
-			[$class, $parameters] = array_values($middleware);
-
-			array_unshift($parameters, $class);
-
-			call_user_func_array($stack->push(...), $parameters);
-		}
-	}
-
-	/**
-	 * Register the default, but optional middlewares.
-	 *
-	 * @return void
-	 */
-	protected function registerBaseMiddlewares()
-	{
-		//
-	}
-
-	/**
-	 * Add a HttpKernel middleware onto the stack.
-	 *
-	 * @param  string  $class
-	 * @param  array  $parameters
-	 * @return $this
-	 */
-	public function middleware($class, array $parameters = array())
-	{
-		$this->middlewares[] = compact('class', 'parameters');
-
-		return $this;
-	}
-
-	/**
-	 * Remove a custom middleware from the application.
-	 *
-	 * @param  string  $class
-	 * @return void
-	 */
-	public function forgetMiddleware($class)
-	{
-		$this->middlewares = array_filter($this->middlewares, function($m) use ($class)
-		{
-			return $m['class'] != $class;
-		});
+		$this->terminate($request, $response);
 	}
 
 	/**
@@ -886,7 +787,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 			$this->boot();
 
-			return $this->dispatch($request);
+			return $this->dispatch($request, $catch);
 		}
 		catch (\Exception $e)
 		{
@@ -906,19 +807,50 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * Handle the given request and get the response.
 	 *
 	 * @param  \Illuminate\Http\Request  $request
+	 * @param  bool  $catch
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function dispatch(Request $request)
+	public function dispatch(Request $request, $catch = true)
 	{
 		if ($this->runningUnitTests() && ! $this['session']->isStarted())
 		{
 			$this['session']->start();
 		}
 
-		return (new Pipeline($this))
+		return $this->globalMiddlewarePipeline($catch && ! $this->runningUnitTests())
 			->send($this->prepareRequest($request))
 			->through($this->shouldSkipMiddleware() ? array() : $this->globalMiddleware)
 			->then(fn ($request) => $this['router']->dispatch($request));
+	}
+
+	/**
+	 * ponytail: the pipeline for the global middleware stack. Like v13's Http\Kernel
+	 * (where Routing\Pipeline renders through the bound ExceptionHandler), an exception
+	 * is reported and rendered at the stage that threw it, so the middleware around it
+	 * (session, cookies) still handles the error response. Outside tests only: the
+	 * fork's tests expect exceptions to reach them, and binding the ExceptionHandler
+	 * contract would also change the route pipeline. Remove at task 4.5 foundation swap.
+	 *
+	 * @param  bool  $renderExceptions
+	 * @return \Illuminate\Routing\Pipeline
+	 */
+	protected function globalMiddlewarePipeline($renderExceptions)
+	{
+		return new class($this, $renderExceptions) extends Pipeline {
+
+			public function __construct(Application $app, private bool $renderExceptions)
+			{
+				parent::__construct($app);
+			}
+
+			protected function handleException($passable, \Throwable $e)
+			{
+				if ( ! $this->renderExceptions) throw $e;
+
+				return $this->handleCarry($this->container['exception']->handleException($e));
+			}
+
+		};
 	}
 
 	/**

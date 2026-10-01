@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Foundation\Application;
-use Illuminate\Http\FrameGuard;
 use Illuminate\Support\ServiceProvider;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
@@ -49,15 +48,6 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
 		$app->register($provider);
 
 		$this->assertArrayHasKey($class, $app->getLoadedProviders());
-	}
-
-
-	public function testForgetMiddleware()
-	{
-		$app = new ApplicationGetMiddlewaresStub;
-		$app->middleware(FrameGuard::class);
-		$app->forgetMiddleware(FrameGuard::class);
-		$this->assertCount(0, $app->getMiddlewares());
 	}
 
 
@@ -189,14 +179,6 @@ class ApplicationKernelExceptionHandlerStub extends Illuminate\Foundation\Applic
 
 	protected function setExceptionHandler(Closure $handler) { return $handler; }
 
-}
-
-class ApplicationGetMiddlewaresStub extends Illuminate\Foundation\Application
-{
-	public function getMiddlewares()
-	{
-		return $this->middlewares;
-	}
 }
 
 class ApplicationDeferredSharedServiceProviderStub extends Illuminate\Support\ServiceProvider {
