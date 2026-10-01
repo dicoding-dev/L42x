@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Config\FileLoader;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Routing\Pipeline;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Bus\BusServiceProvider;
 use Illuminate\Events\EventServiceProvider;
@@ -55,23 +56,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	protected $bootedCallbacks = array();
 
 	/**
-	 * The array of finish callbacks.
+	 * ponytail: the global middleware stack (v13 Http\Kernel::$middleware), run around
+	 * the route dispatch in place of L4.2's App::before/after/down hooks. The fork has
+	 * no HTTP Kernel, so the Application hosts it. Remove at task 4.5 foundation swap.
 	 *
 	 * @var array
 	 */
-	protected $finishCallbacks = array();
-
-	/**
-	 * ponytail: global before/after callbacks (App::before/App::after). L4.2 stored
-	 * these as router.before/after global filters; v13's Router has no global-filter
-	 * concept, so the app runs them itself around the route dispatch (see dispatch()).
-	 * Remove at task 4.5 foundation swap if global middleware replaces them.
-	 *
-	 * @var array
-	 */
-	protected $beforeCallbacks = array();
-
-	protected $afterCallbacks = array();
+	protected $globalMiddleware = array();
 
 	/**
 	 * ponytail: v13 terminating-callback shim (v13 ServiceProviders register
@@ -80,13 +71,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @var array
 	 */
 	protected $terminatingCallbacks = array();
-
-	/**
-	 * The array of shutdown callbacks.
-	 *
-	 * @var array
-	 */
-	protected $shutdownCallbacks = array();
 
 	/**
 	 * All of the developer defined middlewares.
@@ -646,36 +630,37 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
-	 * Register a "before" application filter.
+	 * Set the application's global middleware (v13 Http\Kernel API).
 	 *
-	 * @param  \Closure|string  $callback
-	 * @return void
+	 * @param  array  $middleware
+	 * @return $this
 	 */
-	public function before($callback)
+	public function setGlobalMiddleware(array $middleware)
 	{
-		$this->beforeCallbacks[] = $callback;
+		$this->globalMiddleware = $middleware;
+
+		return $this;
 	}
 
 	/**
-	 * Register an "after" application filter.
+	 * Get the application's global middleware (v13 Http\Kernel API).
 	 *
-	 * @param  \Closure|string  $callback
-	 * @return void
+	 * @return array
 	 */
-	public function after($callback)
+	public function getGlobalMiddleware()
 	{
-		$this->afterCallbacks[] = $callback;
+		return $this->globalMiddleware;
 	}
 
 	/**
-	 * Register a "finish" application filter.
+	 * Determine if middleware has been disabled for the application.
 	 *
-	 * @param  \Closure|string  $callback
-	 * @return void
+	 * @return bool
 	 */
-	public function finish($callback)
+	public function shouldSkipMiddleware()
 	{
-		$this->finishCallbacks[] = $callback;
+		return $this->bound('middleware.disable') &&
+			$this->make('middleware.disable') === true;
 	}
 
 	/**
@@ -702,24 +687,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->terminatingCallbacks[] = $callback;
 
 		return $this;
-	}
-
-	/**
-	 * Register a "shutdown" callback.
-	 *
-	 * @param  callable  $callback
-	 * @return void
-	 */
-	public function shutdown(?callable $callback = null)
-	{
-		if (is_null($callback))
-		{
-			$this->fireAppCallbacks($this->shutdownCallbacks);
-		}
-		else
-		{
-			$this->shutdownCallbacks[] = $callback;
-		}
 	}
 
 	/**
@@ -943,39 +910,19 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	public function dispatch(Request $request)
 	{
-		if ($this->isDownForMaintenance())
-		{
-			$response = $this['events']->until('illuminate.app.down');
-
-			if ( ! is_null($response)) return $this->prepareResponse($response, $request);
-		}
-
 		if ($this->runningUnitTests() && ! $this['session']->isStarted())
 		{
 			$this['session']->start();
 		}
 
-		$request = $this->prepareRequest($request);
-
-		foreach ($this->beforeCallbacks as $callback)
-		{
-			$response = call_user_func($callback, $request);
-
-			if ( ! is_null($response)) return $this->prepareResponse($response, $request);
-		}
-
-		$response = $this['router']->dispatch($request);
-
-		foreach ($this->afterCallbacks as $callback)
-		{
-			call_user_func($callback, $request, $response);
-		}
-
-		return $response;
+		return (new Pipeline($this))
+			->send($this->prepareRequest($request))
+			->through($this->shouldSkipMiddleware() ? array() : $this->globalMiddleware)
+			->then(fn ($request) => $this['router']->dispatch($request));
 	}
 
 	/**
-	 * Call the "finish" and "shutdown" callbacks assigned to the application.
+	 * Call the terminating callbacks assigned to the application.
 	 *
 	 * @param  \Symfony\Component\HttpFoundation\Request  $request
 	 * @param  \Symfony\Component\HttpFoundation\Response  $response
@@ -983,14 +930,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	public function terminate(SymfonyRequest $request, SymfonyResponse $response): void
 	{
-		$this->callFinishCallbacks($request, $response);
-
 		foreach ($this->terminatingCallbacks as $terminating)
 		{
 			$this->call($terminating);
 		}
-
-		$this->shutdown();
 	}
 
 	/**
@@ -1004,21 +947,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->instance('request', $request);
 
 		Facade::clearResolvedInstance('request');
-	}
-
-	/**
-	 * Call the "finish" callbacks assigned to the application.
-	 *
-	 * @param  \Symfony\Component\HttpFoundation\Request  $request
-	 * @param  \Symfony\Component\HttpFoundation\Response  $response
-	 * @return void
-	 */
-	public function callFinishCallbacks(SymfonyRequest $request, SymfonyResponse $response)
-	{
-		foreach ($this->finishCallbacks as $callback)
-		{
-			call_user_func($callback, $request, $response);
-		}
 	}
 
 	/**
@@ -1082,17 +1010,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function isDownForMaintenance()
 	{
 		return file_exists($this['config']['app.manifest'].'/down');
-	}
-
-	/**
-	 * Register a maintenance mode event listener.
-	 *
-	 * @param  \Closure  $callback
-	 * @return void
-	 */
-	public function down(Closure $callback)
-	{
-		$this['events']->listen('illuminate.app.down', $callback);
 	}
 
 	/**
