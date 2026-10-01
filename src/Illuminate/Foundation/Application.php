@@ -6,7 +6,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use ReflectionException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Config\FileLoader;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Routing\Pipeline;
@@ -245,6 +244,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		$this->instance('path.base', $basePath);
 		$this->instance('path', $basePath.'/app');
+		$this->instance('path.config', $basePath.'/config');
 		$this->instance('path.public', $basePath.'/public');
 		$this->instance('path.storage', $basePath.'/storage');
 		$this->instance('path.lang', $basePath.'/app/lang');
@@ -261,6 +261,30 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function useStoragePath($path)
 	{
 		$this->instance('path.storage', $path);
+
+		return $this;
+	}
+
+	/**
+	 * Get the path to the application configuration files.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function configPath($path = '')
+	{
+		return $this['path.config'].($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
+	 * Set the configuration directory.
+	 *
+	 * @param  string  $path
+	 * @return $this
+	 */
+	public function useConfigPath($path)
+	{
+		$this->instance('path.config', $path);
 
 		return $this;
 	}
@@ -827,6 +851,20 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
+	 * Register a callback to run after a bootstrapper.
+	 *
+	 * The start script fires it for the bootstrapper it runs, LoadConfiguration.
+	 *
+	 * @param  string  $bootstrapper
+	 * @param  \Closure  $callback
+	 * @return void
+	 */
+	public function afterBootstrapping($bootstrapper, Closure $callback)
+	{
+		$this['events']->listen('bootstrapped: '.$bootstrapper, $callback);
+	}
+
+	/**
 	 * Handle the incoming HTTP request and send the response to the browser.
 	 *
 	 * @param  \Illuminate\Http\Request  $request
@@ -1052,16 +1090,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		}
 
 		throw new HttpException($code, $message, null, $headers);
-	}
-
-	/**
-	 * Get the configuration loader instance.
-	 *
-	 * @return \Illuminate\Config\LoaderInterface
-	 */
-	public function getConfigLoader()
-	{
-		return new FileLoader(new Filesystem, $this['path'].'/config');
 	}
 
 	/**
