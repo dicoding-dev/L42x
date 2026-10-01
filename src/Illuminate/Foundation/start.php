@@ -46,7 +46,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Config\EnvironmentVariables;
-use Illuminate\Config\Repository as Config;
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,29 +108,15 @@ with($envVariables = new EnvironmentVariables(
 | Register The Configuration Repository
 |--------------------------------------------------------------------------
 |
-| The configuration repository is used to lazily load in the options for
-| this application from the configuration files. The files are easily
-| separated by their concerns so they do not become really crowded.
+| v13's LoadConfiguration loads every file in the configuration directory,
+| with no environment cascade. Callbacks registered with afterBootstrapping
+| run next, before any service provider registers.
 |
 */
 
-// v13 Config\Repository takes a pre-loaded array (no loader/env-cascade). Keep the
-// fork FileLoader for the L4.2 env-cascade + eagerly load every group into the array.
-$loader = $app->getConfigLoader();
+$app->make(LoadConfiguration::class)->bootstrap($app);
 
-$groups = [];
-foreach (array_merge(
-	glob($app['path'].'/config/*.php'),
-	glob($app['path'].'/config/'.$env.'/*.php')
-) as $file)
-{
-	$groups[basename($file, '.php')] = true;
-}
-
-$items = array();
-foreach (array_keys($groups) as $group) $items[$group] = $loader->load($env, $group);
-
-$app->instance('config', $config = new Config($items));
+$app['events']->dispatch('bootstrapped: '.LoadConfiguration::class, array($app));
 
 /*
 |--------------------------------------------------------------------------
@@ -147,20 +133,7 @@ $app->startExceptionHandling();
 
 if ($env != 'testing') ini_set('display_errors', 'Off');
 
-/*
-|--------------------------------------------------------------------------
-| Set The Default Timezone
-|--------------------------------------------------------------------------
-|
-| Here we will set the default timezone for PHP. PHP is notoriously mean
-| if the timezone is not explicitly set. This will be used by each of
-| the PHP date and date-time functions throughout the application.
-|
-*/
-
 $config = $app['config']['app'];
-
-date_default_timezone_set($config['timezone']);
 
 /*
 |--------------------------------------------------------------------------
