@@ -5,10 +5,12 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Artisan;
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -18,6 +20,7 @@ class FoundationApplicationBuilderTest extends TestCase
 	private string $base;
 	private int $errorReporting;
 	private string $displayErrors;
+	private string $timezone;
 	private int $bootstraps = 0;
 	private ?AliasLoader $aliasLoader = null;
 
@@ -25,28 +28,30 @@ class FoundationApplicationBuilderTest extends TestCase
 	{
 		$this->errorReporting = error_reporting();
 		$this->displayErrors = (string) ini_get('display_errors');
+		$this->timezone = date_default_timezone_get();
 		$this->aliasLoader = AliasLoader::getInstance();
 		AliasLoader::setInstance(new AliasLoader);
 
 		$this->base = sys_get_temp_dir().'/fork-builder-'.uniqid();
-		mkdir($this->base.'/app/config', 0777, true);
+		mkdir($this->base.'/config', 0777, true);
 		mkdir($this->base.'/app/start', 0777, true);
 		mkdir($this->base.'/storage/meta', 0777, true);
 
-		file_put_contents($this->base.'/app/config/app.php', '<?php return '.var_export(array(
+		$this->writeConfig('app', array(
 			'debug' => false,
 			'url' => 'http://builder.test',
 			'timezone' => date_default_timezone_get(),
 			'aliases' => array(),
 			'providers' => array(),
 			'manifest' => $this->base.'/storage/meta',
-		), true).';');
+		));
 		file_put_contents($this->base.'/storage/meta/services.json', json_encode(array('providers' => array(), 'eager' => array(), 'deferred' => array())));
 		file_put_contents($this->base.'/app/routes.php', '<?php $app["router"]->get("/probe", fn () => "probed in ".$app["env"]);');
 		file_put_contents($this->base.'/app/start/artisan.php', '<?php throw new RuntimeException("start/artisan.php is no longer loaded");');
 
 		BuilderTestCommand::$requestRoot = null;
 		BuilderTestCommand::$greeting = null;
+		BuilderTestProvider::$registeredWith = null;
 	}
 
 	protected function tearDown(): void
@@ -62,6 +67,7 @@ class FoundationApplicationBuilderTest extends TestCase
 
 		error_reporting($this->errorReporting);
 		ini_set('display_errors', $this->displayErrors);
+		date_default_timezone_set($this->timezone);
 		Facade::clearResolvedInstances();
 		Facade::setFacadeApplication(null);
 
@@ -80,9 +86,73 @@ class FoundationApplicationBuilderTest extends TestCase
 		$this->assertSame($this->base.'/public', $app['path.public']);
 		$this->assertSame($this->base.'/storage', $app['path.storage']);
 		$this->assertSame($this->base.'/app/lang', $app['path.lang']);
+		$this->assertSame($this->base.'/config', $app['path.config']);
+		$this->assertSame($this->base.'/config/app.php', $app->configPath('app.php'));
 
 		$this->assertSame($app, $app->useStoragePath('/elsewhere/storage'));
 		$this->assertSame('/elsewhere/storage', $app['path.storage']);
+
+		$this->assertSame($app, $app->useConfigPath('/elsewhere/config'));
+		$this->assertSame('/elsewhere/config', $app['path.config']);
+		$this->assertSame('/elsewhere/config', $app->configPath());
+	}
+
+	#[Test]
+	public function everyConfigurationFileLoadsWithoutAnEnvironmentCascade()
+	{
+		$this->writeConfig('services', array('probe' => array('a' => 1, 'b' => 2)));
+		$this->writeConfig('testing/services', array('probe' => array('b' => 3)));
+		$this->writeConfig('nested/deep/thing', array('x' => 1));
+
+		$config = $this->bootstrapped('testing')['config'];
+
+		$this->assertSame(array('a' => 1, 'b' => 2), $config['services.probe']);
+		$this->assertSame(3, $config['testing.services.probe.b']);
+		$this->assertSame(1, $config['nested.deep.thing.x']);
+		$this->assertSame('http://builder.test', $config['app.url']);
+	}
+
+	#[Test]
+	public function theConfigurationLoadsFromTheConfiguredPath()
+	{
+		mkdir($this->base.'/app/config', 0777, true);
+		file_put_contents($this->base.'/app/config/app.php', file_get_contents($this->base.'/config/app.php'));
+		file_put_contents($this->base.'/app/config/services.php', '<?php return array("from" => "app/config");');
+
+		$app = $this->configure('testing');
+		$app->useConfigPath($this->base.'/app/config');
+		$app->make(Kernel::class)->bootstrap();
+
+		$this->assertSame('app/config', $app['config']['services.from']);
+	}
+
+	#[Test]
+	public function theConfiguredTimezoneIsSet()
+	{
+		$timezone = date_default_timezone_get() === 'Asia/Tokyo' ? 'Europe/Paris' : 'Asia/Tokyo';
+		$this->writeConfig('app', array_merge(require $this->base.'/config/app.php', array('timezone' => $timezone)));
+
+		$this->bootstrapped('testing');
+
+		$this->assertSame($timezone, date_default_timezone_get());
+	}
+
+	#[Test]
+	public function callbacksAfterLoadingTheConfigurationRunBeforeTheProvidersRegister()
+	{
+		$received = null;
+		file_put_contents($this->base.'/storage/meta/services.json', json_encode(array('providers' => array(BuilderTestProvider::class), 'eager' => array(BuilderTestProvider::class), 'deferred' => array())));
+		$app = $this->configure('testing');
+		$app->afterBootstrapping(LoadConfiguration::class, function ($app) use (&$received) {
+			$received = $app;
+			$app['config']->set('app.providers', array(BuilderTestProvider::class));
+			$app['config']->set('services.word', 'from the callback');
+		});
+
+		$app->make(Kernel::class)->bootstrap();
+
+		$this->assertSame($app, $received);
+		$this->assertSame('from the callback', BuilderTestProvider::$registeredWith);
 	}
 
 	#[Test]
@@ -187,6 +257,21 @@ class FoundationApplicationBuilderTest extends TestCase
 		$this->assertFalse(method_exists(Application::class, 'bindInstallPaths'));
 	}
 
+	private function writeConfig(string $name, array $items): void
+	{
+		if ( ! is_dir($directory = dirname($this->base.'/config/'.$name))) mkdir($directory, 0777, true);
+
+		file_put_contents($this->base.'/config/'.$name.'.php', '<?php return '.var_export($items, true).';');
+	}
+
+	private function bootstrapped(string $env): Application
+	{
+		$app = $this->configure($env);
+		$app->make(Kernel::class)->bootstrap();
+
+		return $app;
+	}
+
 	private function configure(string $env, ?callable $middleware = null, array $commands = array()): Application
 	{
 		$app = Application::configure($this->base)->withMiddleware($middleware)->withCommands($commands)->create();
@@ -205,6 +290,16 @@ class BuilderTestMiddleware
 		$response->setContent('['.$response->getContent().']');
 
 		return $response;
+	}
+}
+
+class BuilderTestProvider extends ServiceProvider
+{
+	public static ?string $registeredWith = null;
+
+	public function register()
+	{
+		static::$registeredWith = $this->app['config']['services.word'];
 	}
 }
 
