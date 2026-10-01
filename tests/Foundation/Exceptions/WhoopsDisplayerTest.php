@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Exception\WhoopsDisplayer;
+use Illuminate\Foundation\Exceptions\Displayers\WhoopsDisplayer;
 use L4\Tests\BackwardCompatibleTestCase;
 use Mockery as m;
 use Symfony\Component\HttpKernel\Exception\HttpException;

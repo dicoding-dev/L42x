@@ -3,7 +3,6 @@
 use Illuminate\Mail\Mailer;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Queue\Job;
-use Illuminate\Exception\ExceptionHandlerAdapter;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Queue\Console\WorkCommand;
 use Illuminate\Queue\Console\RetryCommand;
@@ -83,8 +82,9 @@ class FailConsoleServiceProvider extends ServiceProvider {
 
 	/**
 	 * ponytail: v13's Worker (built by QueueServiceProvider as 'queue.worker') reports
-	 * failed jobs through Contracts\Debug\ExceptionHandler. Bind the fork adapter only
-	 * when the worker command is built: bound globally, v13's routing Pipeline would
+	 * failed jobs through Contracts\Debug\ExceptionHandler, which the fork Handler
+	 * implements. Bind it only when the worker command is built: bound globally, v13's
+	 * routing Pipeline would
 	 * start reporting+rendering HTTP exceptions itself instead of letting them reach the
 	 * fork Handler (and stop rethrowing them in tests). Remove at task 4.5.
 	 *
@@ -97,7 +97,7 @@ class FailConsoleServiceProvider extends ServiceProvider {
 
 		$app->singleton(ExceptionHandler::class, function($app)
 		{
-			return new ExceptionHandlerAdapter($app['exception']);
+			return $app['exception'];
 		});
 	}
 

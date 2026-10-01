@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Facade;
 use Illuminate\Bus\BusServiceProvider;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Routing\RoutingServiceProvider;
-use Illuminate\Exception\ExceptionServiceProvider;
+use Illuminate\Foundation\Providers\ExceptionServiceProvider;
 use Illuminate\Foundation\Configuration\ApplicationBuilder;
 use Illuminate\Config\FileEnvironmentVariablesLoader;
 use Symfony\Component\Console\Input\InputInterface;
@@ -361,8 +361,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function startExceptionHandling()
 	{
 		$this['exception']->register($this->environment());
-
-		$this['exception']->setDebug($this['config']['app.debug']);
 	}
 
 	/**
