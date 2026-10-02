@@ -40,7 +40,7 @@ class ExceptionHandlerAdapter implements ExceptionHandler {
 	 */
 	public function report(Throwable $e)
 	{
-		$this->handler->handleConsole($e);
+		$this->handler->report($e);
 	}
 
 	/**
@@ -51,7 +51,7 @@ class ExceptionHandlerAdapter implements ExceptionHandler {
 	 */
 	public function shouldReport(Throwable $e)
 	{
-		return true;
+		return $this->handler->shouldReport($e);
 	}
 
 	/**
@@ -63,7 +63,7 @@ class ExceptionHandlerAdapter implements ExceptionHandler {
 	 */
 	public function render($request, Throwable $e)
 	{
-		return $this->handler->handleException($e);
+		return $this->handler->render($request, $e);
 	}
 
 	/**
