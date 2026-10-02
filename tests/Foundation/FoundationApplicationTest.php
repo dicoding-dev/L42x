@@ -170,6 +170,34 @@ class FoundationApplicationTest extends BackwardCompatibleTestCase
         $this->assertFalse($app->environment('qux', 'bar'));
         $this->assertFalse($app->environment(['qux', 'bar']));
     }
+
+
+	public function testDetectEnvironmentTakesTheConsolesEnvOptionOverTheCallback()
+	{
+		$argv = $_SERVER['argv'];
+		$_SERVER['argv'] = array('artisan', 'migrate', '--env', 'staging');
+
+		try
+		{
+			$app = new Application;
+
+			$this->assertSame('staging', $app->detectEnvironment(fn () => 'local'));
+			$this->assertSame('staging', $app['env']);
+		}
+		finally
+		{
+			$_SERVER['argv'] = $argv;
+		}
+	}
+
+
+	public function testDetectEnvironmentAsksTheCallbackWithoutAnEnvOption()
+	{
+		$app = new Application;
+
+		$this->assertSame('local', $app->detectEnvironment(fn () => 'local'));
+		$this->assertSame('local', $app['env']);
+	}
 }
 
 class ApplicationCustomExceptionHandlerStub extends Illuminate\Foundation\Application {
