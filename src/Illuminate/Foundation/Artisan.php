@@ -19,6 +19,13 @@ class Artisan {
 	protected $artisan;
 
 	/**
+	 * The commands registered through the application builder.
+	 *
+	 * @var array
+	 */
+	protected $commands = array();
+
+	/**
 	 * Create a new Artisan command runner instance.
 	 *
 	 * @param  \Illuminate\Foundation\Application  $app
@@ -37,6 +44,17 @@ class Artisan {
 	public function bootstrap()
 	{
 		$this->app->bootstrapWithStartScript();
+	}
+
+	/**
+	 * Add the given commands to the ones the console will resolve, as v13's console Kernel does.
+	 *
+	 * @param  array  $commands
+	 * @return void
+	 */
+	public function addCommands(array $commands)
+	{
+		$this->commands = array_values(array_unique(array_merge($this->commands, $commands)));
 	}
 
 	/**
@@ -73,27 +91,24 @@ class Artisan {
 
 		// v13's Console\Application self-bootstraps in its constructor (dispatches ArtisanStarting
 		// and runs the starting() callbacks registered by ServiceProvider::commands()). It has no
-		// make()/start()/boot(). ponytail: the L4.2 static bootstrap — rebinding 'artisan' to the
-		// console so the Artisan facade in start/artisan.php resolves it, then loading that file —
-		// is inlined here until the Foundation Kernel lands (task 4.5).
+		// make()/start()/boot(). ponytail: rebinding 'artisan' to the console, so the Artisan facade
+		// resolves it, stands in for the Foundation Kernel until the flip (task 4.5).
 		$console = new ConsoleApplication($this->app, $this->app['events'], $this->app::VERSION);
 
 		$this->app->instance('artisan', $console);
 
-		// Memoize before requiring start/artisan.php: that file calls Artisan::add() ~149x, and the
-		// Artisan facade has already cached THIS wrapper, so each add() re-enters __call()->getArtisan().
-		// Without the early memo it re-boots + re-requires artisan.php recursively (OOM). With it, the
-		// re-entrant getArtisan() short-circuits and add() forwards to the console instance.
+		// Memoize before resolving the commands: a command built through the container may use the
+		// Artisan facade, which has cached THIS wrapper and would re-enter getArtisan().
 		$this->artisan = $console;
 
-		$path = $this->app['path'].'/start/artisan.php';
-
-		if (file_exists($path)) require $path;
+		// As v13's Kernel does, the commands registered with withCommands() resolve through the
+		// container; #[AsCommand] ones join the lazy command map instead.
+		$console->resolveCommands($this->commands);
 
 		// v13 registers attribute-named commands (#[AsCommand]) lazily into a commandMap; they
 		// only become resolvable once the container command loader is attached (the v13 Kernel
 		// does the same after resolving). Without this, e.g. illuminate/database's migrate stays
-		// invisible. Called last, so the map is complete (ctor bootstrappers + start/artisan.php).
+		// invisible. Called last, so the map is complete.
 		$console->setContainerCommandLoader();
 
 		return $this->artisan = $console;
