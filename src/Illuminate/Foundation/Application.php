@@ -239,7 +239,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 */
 	public static function configure(string $basePath)
 	{
-		return new ApplicationBuilder((new static)->setBasePath($basePath));
+		return (new ApplicationBuilder((new static)->setBasePath($basePath)))->withProviders();
 	}
 
 	/**
@@ -258,6 +258,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		$this->instance('path.base', $basePath);
 		$this->instance('path', $basePath.'/app');
+		$this->instance('path.bootstrap', $basePath.'/bootstrap');
 		$this->instance('path.config', $basePath.'/config');
 		$this->instance('path.public', $basePath.'/public');
 		$this->instance('path.storage', $basePath.'/storage');
@@ -1168,6 +1169,46 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public function getEnvironmentVariablesLoader()
 	{
 		return new FileEnvironmentVariablesLoader(new Filesystem, $this['path.base']);
+	}
+
+	/**
+	 * Get the path to the bootstrap directory.
+	 *
+	 * @param  string  $path
+	 * @return string
+	 */
+	public function bootstrapPath($path = '')
+	{
+		return $this['path.bootstrap'].($path != '' ? DIRECTORY_SEPARATOR.$path : '');
+	}
+
+	/**
+	 * Get the path to the service provider list in the bootstrap directory.
+	 *
+	 * @return string
+	 */
+	public function getBootstrapProvidersPath()
+	{
+		return $this->bootstrapPath('providers.php');
+	}
+
+	/**
+	 * Register all of the configured providers.
+	 *
+	 * As in v13, the framework's own providers register before the others, each group in
+	 * its configured order.
+	 *
+	 * @return void
+	 */
+	public function registerConfiguredProviders()
+	{
+		$providers = $this['config']->get('app.providers', array());
+
+		$framework = array_filter($providers, fn ($provider) => str_starts_with($provider, 'Illuminate\\'));
+
+		$this->getProviderRepository()->load($this, array_merge(
+			array_values($framework), array_values(array_diff_key($providers, $framework))
+		));
 	}
 
 	/**
