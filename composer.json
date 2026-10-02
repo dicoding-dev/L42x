@@ -13,6 +13,7 @@
         "php": ">=8.4.23",
         "d11wtq/boris": "~1.0",
         "filp/whoops": "~2.11",
+        "illuminate/auth": "^13",
         "illuminate/bus": "^13",
         "illuminate/cache": "^13",
         "illuminate/collections": "^13",
@@ -67,7 +68,6 @@
         "voku/portable-ascii": "2.0.3"
     },
     "replace": {
-        "illuminate/auth": "self.version",
         "illuminate/exception": "self.version",
         "illuminate/foundation": "self.version",
         "illuminate/html": "self.version"
