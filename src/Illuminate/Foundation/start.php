@@ -43,12 +43,12 @@ error_reporting(-1);
 */
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Env;
-use Illuminate\Foundation\AliasLoader;
 use Illuminate\Config\EnvironmentVariables;
 use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
+use Illuminate\Foundation\Bootstrap\RegisterFacades;
+use Illuminate\Foundation\Bootstrap\RegisterProviders;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,21 +62,6 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 */
 
 $app->instance('app', $app);
-
-/*
-|--------------------------------------------------------------------------
-| Load The Illuminate Facades
-|--------------------------------------------------------------------------
-|
-| The facades provide a terser static interface over the various parts
-| of the application, allowing their methods to be accessed through
-| a mixtures of magic methods and facade derivatives. It's slick.
-|
-*/
-
-Facade::clearResolvedInstances();
-
-Facade::setFacadeApplication($app);
 
 /*
 |--------------------------------------------------------------------------
@@ -142,22 +127,17 @@ $app->startExceptionHandling();
 
 if ($env != 'testing') ini_set('display_errors', 'Off');
 
-$config = $app['config']['app'];
-
 /*
 |--------------------------------------------------------------------------
-| Register The Alias Loader
+| Register The Facades
 |--------------------------------------------------------------------------
 |
-| The alias loader is responsible for lazy loading the class aliases setup
-| for the application. We will only register it if the "config" service
-| is bound in the application since it contains the alias definitions.
+| v13's RegisterFacades points the facades at this application and
+| registers the class aliases from the app.aliases configuration.
 |
 */
 
-$aliases = $config['aliases'];
-
-AliasLoader::getInstance($aliases)->register();
+$app->make(RegisterFacades::class)->bootstrap($app);
 
 /*
 |--------------------------------------------------------------------------
@@ -174,76 +154,29 @@ Request::enableHttpMethodParameterOverride();
 
 /*
 |--------------------------------------------------------------------------
-| Register The Core Service Providers
+| Register The Service Providers
 |--------------------------------------------------------------------------
 |
-| The Illuminate core service providers register all of the core pieces
-| of the Illuminate framework including session, caching, encryption
-| and more. It's simply a convenient wrapper for the registration.
+| v13's RegisterProviders registers the app.providers configuration, then
+| the providers given to withProviders() and those in bootstrap/providers.php.
 |
 */
 
-$providers = $config['providers'];
-
-$app->getProviderRepository()->load($app, $providers);
+$app->make(RegisterProviders::class)->bootstrap($app);
 
 /*
 |--------------------------------------------------------------------------
-| Register Booted Start Files
+| Load The Application Routes
 |--------------------------------------------------------------------------
 |
-| Once the application has been booted there are several "start" files
-| we will want to include. We'll register our "booted" handler here
-| so the files are included after the application gets booted up.
+| Once the application has booted, the routes load from app/routes.php.
+| v13 has no app/start files, so the start script no longer loads them.
 |
 */
 
-$app->booted(function() use ($app, $env)
+$app->booted(function() use ($app)
 {
-
-	/*
-	|--------------------------------------------------------------------------
-	| Load The Application Start Script
-	|--------------------------------------------------------------------------
-	|
-	| The start scripts gives this application the opportunity to override
-	| any of the existing IoC bindings, as well as register its own new
-	| bindings for things like repositories, etc. We'll load it here.
-	|
-	*/
-
-	$path = $app['path'].'/start/global.php';
-
-	if (file_exists($path)) require $path;
-
-	/*
-	|--------------------------------------------------------------------------
-	| Load The Environment Start Script
-	|--------------------------------------------------------------------------
-	|
-	| The environment start script is only loaded if it exists for the app
-	| environment currently active, which allows some actions to happen
-	| in one environment while not in the other, keeping things clean.
-	|
-	*/
-
-	$path = $app['path']."/start/{$env}.php";
-
-	if (file_exists($path)) require $path;
-
-	/*
-	|--------------------------------------------------------------------------
-	| Load The Application Routes
-	|--------------------------------------------------------------------------
-	|
-	| The Application routes are kept separate from the application starting
-	| just to keep the file a little cleaner. We'll go ahead and load in
-	| all of the routes now and return the application to the callers.
-	|
-	*/
-
 	$routes = $app['path'].'/routes.php';
 
 	if (file_exists($routes)) require $routes;
-
 });
