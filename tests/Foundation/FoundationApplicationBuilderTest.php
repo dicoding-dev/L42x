@@ -352,6 +352,17 @@ class FoundationApplicationBuilderTest extends TestCase
 	}
 
 	#[Test]
+	public function configurationFilesCanUsePathHelpersBeforeTheFacadesAreSet()
+	{
+		file_put_contents($this->base.'/config/paths.php', '<?php return array("storage" => storage_path(), "app" => app()->environment());');
+
+		$config = $this->bootstrapped('testing')['config'];
+
+		$this->assertSame($this->base.'/storage', $config['paths.storage']);
+		$this->assertSame('testing', $config['paths.app']);
+	}
+
+	#[Test]
 	public function theConfiguredAliasesResolveThroughTheFacadesApplication()
 	{
 		$this->writeConfig('app', $this->appConfig(array(), array('BuilderTestGreetingAlias' => BuilderTestGreeting::class)));
