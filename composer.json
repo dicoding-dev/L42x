@@ -69,8 +69,7 @@
     },
     "replace": {
         "illuminate/exception": "self.version",
-        "illuminate/foundation": "self.version",
-        "illuminate/html": "self.version"
+        "illuminate/foundation": "self.version"
     },
     "require-dev": {
         "aws/aws-sdk-php": "^3.322.9",
