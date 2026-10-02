@@ -88,7 +88,7 @@ class PublisherServiceProvider extends ServiceProvider {
 
 		$this->app->singleton('config.publisher', function($app)
 		{
-			$path = $app['path'].'/config';
+			$path = $app->configPath();
 
 			// Once we have created the configuration publisher, we will set the default
 			// package path on the object so that it knows where to find the packages
