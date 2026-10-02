@@ -214,7 +214,7 @@ class ProviderRepository {
 	{
 		list($eager, $deferred) = array(array(), array());
 
-		return compact('providers', 'eager', 'deferred');
+		return compact('providers', 'eager', 'deferred') + $this->default;
 	}
 
 	/**

@@ -1,6 +1,7 @@
 <?php namespace Illuminate\Foundation\Configuration;
 
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Bootstrap\RegisterProviders;
 
 /**
  * ponytail: the part of v13's ApplicationBuilder that the app's bootstrap/app.php uses,
@@ -35,6 +36,26 @@ class ApplicationBuilder {
 		if ( ! is_null($callback)) $callback($middleware);
 
 		$this->app->setGlobalMiddleware($middleware->getGlobalMiddleware());
+
+		return $this;
+	}
+
+	/**
+	 * Register additional service providers.
+	 *
+	 * As in v13, they register after the configured providers, followed by those listed in
+	 * bootstrap/providers.php.
+	 *
+	 * @param  array  $providers
+	 * @param  bool  $withBootstrapProviders
+	 * @return $this
+	 */
+	public function withProviders(array $providers = [], bool $withBootstrapProviders = true)
+	{
+		RegisterProviders::merge(
+			$providers,
+			$withBootstrapProviders ? $this->app->getBootstrapProvidersPath() : null
+		);
 
 		return $this;
 	}

@@ -6,6 +6,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Artisan;
 use Illuminate\Foundation\Bootstrap\LoadConfiguration;
+use Illuminate\Foundation\Bootstrap\RegisterProviders;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
@@ -48,6 +49,8 @@ class FoundationApplicationBuilderTest extends TestCase
 		file_put_contents($this->base.'/storage/meta/services.json', json_encode(array('providers' => array(), 'eager' => array(), 'deferred' => array())));
 		file_put_contents($this->base.'/app/routes.php', '<?php $app["router"]->get("/probe", fn () => "probed in ".$app["env"]);');
 		file_put_contents($this->base.'/app/start/artisan.php', '<?php throw new RuntimeException("start/artisan.php is no longer loaded");');
+		file_put_contents($this->base.'/app/start/global.php', '<?php throw new RuntimeException("start/global.php is no longer loaded");');
+		file_put_contents($this->base.'/app/start/testing.php', '<?php throw new RuntimeException("start/testing.php is no longer loaded");');
 
 		BuilderTestCommand::$requestRoot = null;
 		BuilderTestCommand::$greeting = null;
@@ -56,6 +59,8 @@ class FoundationApplicationBuilderTest extends TestCase
 
 	protected function tearDown(): void
 	{
+		RegisterProviders::flushState();
+
 		for (; $this->bootstraps > 0; $this->bootstraps--)
 		{
 			restore_error_handler();
@@ -93,6 +98,8 @@ class FoundationApplicationBuilderTest extends TestCase
 		$this->assertSame($this->base.'/app/lang', $app['path.lang']);
 		$this->assertSame($this->base.'/config', $app['path.config']);
 		$this->assertSame($this->base.'/config/app.php', $app->configPath('app.php'));
+		$this->assertSame($this->base.'/bootstrap', $app->bootstrapPath());
+		$this->assertSame($this->base.'/bootstrap/providers.php', $app->getBootstrapProvidersPath());
 
 		$this->assertSame($app, $app->useStoragePath('/elsewhere/storage'));
 		$this->assertSame('/elsewhere/storage', $app['path.storage']);
@@ -297,10 +304,81 @@ class FoundationApplicationBuilderTest extends TestCase
 	}
 
 	#[Test]
+	public function theRoutesLoadOnceBootedWithoutTheStartFiles()
+	{
+		$app = $this->bootstrapped('testing');
+
+		$app->boot();
+
+		$this->assertSame(array('probe'), array_map(fn ($route) => $route->uri(), $app['router']->getRoutes()->getRoutes()));
+	}
+
+	#[Test]
+	public function theFrameworksProvidersRegisterBeforeTheOthers()
+	{
+		$this->writeConfig('app', $this->appConfig(array(BuilderTestFirstProvider::class, Illuminate\Cookie\CookieServiceProvider::class)));
+
+		$loaded = array_keys($this->bootstrapped('testing')->getLoadedProviders());
+
+		$this->assertSame(array(Illuminate\Cookie\CookieServiceProvider::class, BuilderTestFirstProvider::class), array_values(array_intersect($loaded, array(BuilderTestFirstProvider::class, Illuminate\Cookie\CookieServiceProvider::class))));
+	}
+
+	#[Test]
+	public function withProvidersAndBootstrapProvidersRegisterAfterTheConfiguredOnes()
+	{
+		$this->writeConfig('app', $this->appConfig(array(BuilderTestFirstProvider::class)));
+		mkdir($this->base.'/bootstrap');
+		file_put_contents($this->base.'/bootstrap/providers.php', '<?php return array(BuilderTestThirdProvider::class, "BuilderTestMissingProvider");');
+
+		$app = Application::configure($this->base)->withProviders(array(BuilderTestSecondProvider::class))->create();
+		$app['env'] = 'testing';
+		$this->bootstraps++;
+		$app->make(Kernel::class)->bootstrap();
+
+		$this->assertSame(
+			array(BuilderTestFirstProvider::class, BuilderTestSecondProvider::class, BuilderTestThirdProvider::class),
+			array_values(array_filter(array_keys($app->getLoadedProviders()), fn ($provider) => str_starts_with($provider, 'BuilderTest')))
+		);
+		$this->assertSame(array(BuilderTestFirstProvider::class, BuilderTestSecondProvider::class, BuilderTestThirdProvider::class), $app['config']['app.providers']);
+	}
+
+	#[Test]
+	public function configureReadsTheBootstrapProvidersFileByDefault()
+	{
+		mkdir($this->base.'/bootstrap');
+		file_put_contents($this->base.'/bootstrap/providers.php', '<?php return array(BuilderTestThirdProvider::class);');
+
+		$this->assertArrayHasKey(BuilderTestThirdProvider::class, $this->bootstrapped('testing')->getLoadedProviders());
+	}
+
+	#[Test]
+	public function theConfiguredAliasesResolveThroughTheFacadesApplication()
+	{
+		$this->writeConfig('app', $this->appConfig(array(), array('BuilderTestGreetingAlias' => BuilderTestGreeting::class)));
+
+		$app = $this->bootstrapped('testing');
+
+		$this->assertSame($app, Facade::getFacadeApplication());
+		$this->assertInstanceOf(BuilderTestGreeting::class, new BuilderTestGreetingAlias);
+	}
+
+	#[Test]
 	public function theLaravel42EntryPointsAreGone()
 	{
 		$this->assertFalse(method_exists(Application::class, 'run'));
 		$this->assertFalse(method_exists(Application::class, 'bindInstallPaths'));
+	}
+
+	private function appConfig(array $providers, array $aliases = array()): array
+	{
+		return array(
+			'debug' => false,
+			'url' => 'http://builder.test',
+			'timezone' => date_default_timezone_get(),
+			'aliases' => $aliases,
+			'providers' => $providers,
+			'manifest' => $this->base.'/storage/meta',
+		);
 	}
 
 	private function writeConfig(string $name, array $items): void
@@ -347,6 +425,21 @@ class BuilderTestProvider extends ServiceProvider
 	{
 		static::$registeredWith = $this->app['config']['services.word'];
 	}
+}
+
+class BuilderTestFirstProvider extends ServiceProvider
+{
+	public function register()
+	{
+	}
+}
+
+class BuilderTestSecondProvider extends BuilderTestFirstProvider
+{
+}
+
+class BuilderTestThirdProvider extends BuilderTestFirstProvider
+{
 }
 
 class BuilderTestGreeting
