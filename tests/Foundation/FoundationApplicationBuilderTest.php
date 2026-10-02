@@ -68,6 +68,11 @@ class FoundationApplicationBuilderTest extends TestCase
 		error_reporting($this->errorReporting);
 		ini_set('display_errors', $this->displayErrors);
 		date_default_timezone_set($this->timezone);
+		foreach (array('FORK_START_SHARED', 'FORK_START_DOTENV') as $key)
+		{
+			putenv($key);
+			unset($_ENV[$key], $_SERVER[$key]);
+		}
 		Facade::clearResolvedInstances();
 		Facade::setFacadeApplication(null);
 
@@ -110,6 +115,18 @@ class FoundationApplicationBuilderTest extends TestCase
 		$this->assertSame(3, $config['testing.services.probe.b']);
 		$this->assertSame(1, $config['nested.deep.thing.x']);
 		$this->assertSame('http://builder.test', $config['app.url']);
+	}
+
+	#[Test]
+	public function theEnvFileLoadsFirstAndTheEnvironmentsPhpFileWins()
+	{
+		file_put_contents($this->base.'/.env', "FORK_START_SHARED=dotenv\nFORK_START_DOTENV=dotenv-only\n");
+		file_put_contents($this->base.'/.env.testing.php', '<?php return array("FORK_START_SHARED" => "php");');
+
+		$this->bootstrapped('testing');
+
+		$this->assertSame('php', getenv('FORK_START_SHARED'));
+		$this->assertSame('dotenv-only', getenv('FORK_START_DOTENV'));
 	}
 
 	#[Test]
