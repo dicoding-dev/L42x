@@ -68,7 +68,7 @@ class FoundationApplicationBuilderTest extends TestCase
 		error_reporting($this->errorReporting);
 		ini_set('display_errors', $this->displayErrors);
 		date_default_timezone_set($this->timezone);
-		foreach (array('FORK_START_SHARED', 'FORK_START_DOTENV') as $key)
+		foreach (array('FORK_START_SHARED', 'FORK_START_DOTENV', 'APP_ENV') as $key)
 		{
 			putenv($key);
 			unset($_ENV[$key], $_SERVER[$key]);
@@ -225,6 +225,35 @@ class FoundationApplicationBuilderTest extends TestCase
 		$this->bootstraps++;
 
 		$this->assertSame('production', $app['env']);
+	}
+
+	#[Test]
+	public function appEnvFromTheEnvFileNamesTheEnvironmentAndItsPhpFile()
+	{
+		file_put_contents($this->base.'/.env', "APP_ENV=staging\n");
+		file_put_contents($this->base.'/.env.staging.php', '<?php return array("FORK_START_SHARED" => "staging");');
+		$app = Application::configure($this->base)->create();
+
+		$app->bootstrapWithStartScript();
+		$this->bootstraps++;
+
+		$this->assertSame('staging', $app['env']);
+		$this->assertSame('staging', getenv('FORK_START_SHARED'));
+	}
+
+	#[Test]
+	public function anEnvironmentTheApplicationDetectedWinsOverAppEnv()
+	{
+		file_put_contents($this->base.'/.env', "APP_ENV=staging\n");
+		file_put_contents($this->base.'/.env.local.php', '<?php return array("FORK_START_SHARED" => "local");');
+		$app = Application::configure($this->base)->create();
+		$app->detectEnvironment(fn () => 'local');
+
+		$app->bootstrapWithStartScript();
+		$this->bootstraps++;
+
+		$this->assertSame('local', $app['env']);
+		$this->assertSame('local', getenv('FORK_START_SHARED'));
 	}
 
 	#[Test]
