@@ -44,6 +44,7 @@ error_reporting(-1);
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Env;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Config\EnvironmentVariables;
 use Illuminate\Foundation\Bootstrap\LoadConfiguration;
@@ -95,13 +96,18 @@ $app->registerCoreContainerAliases();
 | Register The Environment Variables
 |--------------------------------------------------------------------------
 |
-| v13's LoadEnvironmentVariables loads the .env file first. The L4.2
-| .env.{env}.php file loads after it, so its values win on the keys both
-| files define.
+| v13's LoadEnvironmentVariables loads the .env file first. Unless the
+| application has set its environment, APP_ENV then names it, defaulting to
+| production as v13's config does. The L4.2 .env.{env}.php file loads after
+| that, so its values win on the keys both files define.
 |
 */
 
 $app->make(LoadEnvironmentVariables::class)->bootstrap($app);
+
+if ( ! $app->bound('env')) $app->detectEnvironment(fn() => Env::get('APP_ENV', 'production'));
+
+$env = $app['env'];
 
 with($envVariables = new EnvironmentVariables(
 	$app->getEnvironmentVariablesLoader()))->load($env);
