@@ -15,7 +15,10 @@ use Illuminate\Bus\BusServiceProvider;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Routing\RoutingServiceProvider;
 use Illuminate\Exception\ExceptionServiceProvider;
+use Illuminate\Foundation\Configuration\ApplicationBuilder;
 use Illuminate\Config\FileEnvironmentVariablesLoader;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -39,6 +42,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * @var bool
 	 */
 	protected $booted = false;
+
+	/**
+	 * Indicates if the application's start script has run.
+	 *
+	 * @var bool
+	 */
+	protected $hasBeenBootstrapped = false;
 
 	/**
 	 * The array of booting callbacks.
@@ -134,6 +144,14 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		$this->instance('Illuminate\Container\Container', $this);
 
+		// ponytail: v13 resolves its console Kernel before bootstrapping (tests call
+		// $app->make(Kernel::class)->bootstrap(); handleCommand() calls handle()). The fork has
+		// no console Kernel (task 4.2), so the Artisan wrapper stands in for it from the start,
+		// and the contract aliases it so the Artisan facade resolves it too. Remove at the flip.
+		$this->singleton('artisan', fn ($app) => new Artisan($app));
+
+		$this->alias('artisan', 'Illuminate\Contracts\Console\Kernel');
+
 		// v13 code resolves the container via the static Container::getInstance()
 		// (e.g. BladeCompiler::anonymousComponentPath); register the app as the
 		// global instance so those calls hit the real bindings/aliases (task 4.3).
@@ -198,26 +216,53 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
-	 * Bind the installation paths to the application.
+	 * Begin configuring a new application instance.
 	 *
-	 * @param  array  $paths
-	 * @return void
+	 * ponytail: v13's entry point for bootstrap/app.php. The returned builder carries only
+	 * what the app's bootstrap uses; see Configuration\ApplicationBuilder. Remove at the flip.
+	 *
+	 * @param  string  $basePath
+	 * @return \Illuminate\Foundation\Configuration\ApplicationBuilder
 	 */
-	public function bindInstallPaths(array $paths)
+	public static function configure(string $basePath)
 	{
-		$this->instance('path', realpath($paths['app']));
+		return new ApplicationBuilder((new static)->setBasePath($basePath));
+	}
 
-		// Here we will bind the install paths into the container as strings that can be
-		// accessed from any point in the system. Each path key is prefixed with path
-		// so that they have the consistent naming convention inside the container.
-		foreach (array_except($paths, array('app')) as $key => $value)
-		{
-			$this->instance("path.{$key}", realpath($value));
-		}
+	/**
+	 * Set the base path for the application and bind the paths derived from it.
+	 *
+	 * ponytail: v13's layout for app/public/storage under the base path. path.lang stays at
+	 * app/lang, where the L4.2 layout keeps translations (v13's TranslationServiceProvider
+	 * reads it). Remove once Foundation swaps to v13.
+	 *
+	 * @param  string  $basePath
+	 * @return $this
+	 */
+	public function setBasePath($basePath)
+	{
+		$basePath = rtrim($basePath, '\/');
 
-		// ponytail: v13 TranslationServiceProvider reads path.lang (absent from L4.2 install
-		// paths). Bind it here; remove once Foundation swaps to v13 (bootstrap sets langPath).
-		$this->instance('path.lang', $this['path'].'/lang');
+		$this->instance('path.base', $basePath);
+		$this->instance('path', $basePath.'/app');
+		$this->instance('path.public', $basePath.'/public');
+		$this->instance('path.storage', $basePath.'/storage');
+		$this->instance('path.lang', $basePath.'/app/lang');
+
+		return $this;
+	}
+
+	/**
+	 * Set the storage directory.
+	 *
+	 * @param  string  $path
+	 * @return $this
+	 */
+	public function useStoragePath($path)
+	{
+		$this->instance('path.storage', $path);
+
+		return $this;
 	}
 
 	/**
@@ -271,6 +316,41 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	public static function getBootstrapFile()
 	{
 		return __DIR__.'/start.php';
+	}
+
+	/**
+	 * Determine if the application has been bootstrapped before.
+	 *
+	 * @return bool
+	 */
+	public function hasBeenBootstrapped()
+	{
+		return $this->hasBeenBootstrapped;
+	}
+
+	/**
+	 * Bootstrap the application with the L4.2 start script, once.
+	 *
+	 * ponytail: v13 bootstraps through its kernels (environment, configuration, exception
+	 * handling, facades, providers). The fork runs start.php in their place, the first time
+	 * handleRequest(), handleCommand() or the console Kernel's bootstrap() asks for it.
+	 * The environment defaults to production, as in v13. Remove at the flip.
+	 *
+	 * @return void
+	 */
+	public function bootstrapWithStartScript()
+	{
+		if ($this->hasBeenBootstrapped) return;
+
+		$this->hasBeenBootstrapped = true;
+
+		if ( ! $this->bound('env')) $this->detectEnvironment(array());
+
+		$app = $this;
+
+		$env = $this['env'];
+
+		require static::getBootstrapFile();
 	}
 
 	/**
@@ -749,20 +829,31 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	}
 
 	/**
-	 * Run the application and send the response.
+	 * Handle the incoming HTTP request and send the response to the browser.
 	 *
-	 * @param  \Symfony\Component\HttpFoundation\Request  $request
+	 * @param  \Illuminate\Http\Request  $request
 	 * @return void
 	 */
-	public function run(?SymfonyRequest $request = null)
+	public function handleRequest(Request $request)
 	{
-		$request = $request ?: $this['request'];
+		$this->bootstrapWithStartScript();
 
 		$response = $this->handle($request);
 
 		$response->send();
 
 		$this->terminate($request, $response);
+	}
+
+	/**
+	 * Handle the incoming Artisan command.
+	 *
+	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
+	 * @return int
+	 */
+	public function handleCommand(InputInterface $input)
+	{
+		return $this->make('Illuminate\Contracts\Console\Kernel')->handle($input, new ConsoleOutput);
 	}
 
 	/**
@@ -1193,12 +1284,6 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 		$this->alias('app', 'Illuminate\Contracts\Foundation\Application');
 		$this->alias('app', 'Illuminate\Contracts\Container\Container');
 		$this->alias('app', 'Psr\Container\ContainerInterface');
-
-		// ponytail: v13's Support\Facades\Artisan resolves Illuminate\Contracts\Console\Kernel.
-		// The fork has no console Kernel (task 4.2); 'artisan' is a lazy singleton
-		// (ArtisanServiceProvider), so alias the contract to it globally — works for the
-		// Artisan facade in web/console/tests (make()-only aliasing missed Artisan::call()).
-		$this->alias('artisan', 'Illuminate\Contracts\Console\Kernel');
 	}
 
 }
