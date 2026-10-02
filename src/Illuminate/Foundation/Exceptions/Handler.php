@@ -1,4 +1,4 @@
-<?php namespace Illuminate\Exception;
+<?php namespace Illuminate\Foundation\Exceptions;
 
 use Closure;
 use ErrorException;
@@ -6,12 +6,13 @@ use Throwable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\RecordNotFoundException;
 use Illuminate\Database\RecordsNotFoundException;
-use Illuminate\Foundation\Exceptions\ReportableHandler;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Response as ViewResponse;
 use Illuminate\Http\Exceptions\OriginMismatchException;
 use Illuminate\Routing\Exceptions\BackedEnumCaseNotFoundException;
 use Illuminate\Routing\Router;
@@ -21,12 +22,14 @@ use Illuminate\Support\Contracts\ResponsePreparerInterface;
 use Illuminate\Support\Reflector;
 use Illuminate\Support\Traits\ReflectsClosures;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\Console\Application as ConsoleApplication;
 use Symfony\Component\ErrorHandler\Error\FatalError;
 use Symfony\Component\HttpFoundation\Exception\RequestExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -34,40 +37,24 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * (task 4.5): report callbacks, dontReport/stopIgnoring and the internal
  * don't-report list, then render callbacks in registration order after
  * prepareException(). Apps register through Foundation\Configuration\Exceptions,
- * the object v13's withExceptions() hands them. When no callback answers, the
- * fork's displayers render the exception, as before.
+ * the object v13's withExceptions() hands them.
+ *
+ * ponytail: when no callback answers, the fork still displays the exception
+ * itself: the debug displayer (Whoops) in debug mode or the console, otherwise
+ * the app's errors.{status} or errors.{N}xx view, as v13 renders, and the plain
+ * page when there is none. It also keeps the L4.2 PHP error/shutdown handlers.
+ * Remove at the flip.
  */
-class Handler {
+class Handler implements ExceptionHandlerContract {
 
 	use ReflectsClosures;
 
 	/**
-	 * The application instance.
+	 * The container implementation.
 	 *
 	 * @var \Illuminate\Container\Container&\Illuminate\Support\Contracts\ResponsePreparerInterface
 	 */
-	protected $app;
-
-	/**
-	 * The plain exception displayer.
-	 *
-	 * @var \Illuminate\Exception\ExceptionDisplayerInterface
-	 */
-	protected $plainDisplayer;
-
-	/**
-	 * The debug exception displayer.
-	 *
-	 * @var \Illuminate\Exception\ExceptionDisplayerInterface
-	 */
-	protected $debugDisplayer;
-
-	/**
-	 * Indicates if the application is in debug mode.
-	 *
-	 * @var bool
-	 */
-	protected $debug;
+	protected $container;
 
 	/**
 	 * The callbacks that should be used during reporting.
@@ -111,23 +98,14 @@ class Handler {
 	);
 
 	/**
-	 * Create a new error handler instance.
+	 * Create a new exception handler instance.
 	 *
-	 * @param  \Illuminate\Container\Container&\Illuminate\Support\Contracts\ResponsePreparerInterface  $app
-	 * @param  \Illuminate\Exception\ExceptionDisplayerInterface  $plainDisplayer
-	 * @param  \Illuminate\Exception\ExceptionDisplayerInterface  $debugDisplayer
-	 * @param  bool  $debug
+	 * @param  \Illuminate\Container\Container&\Illuminate\Support\Contracts\ResponsePreparerInterface  $container
 	 * @return void
 	 */
-	public function __construct(Container&ResponsePreparerInterface $app,
-                                ExceptionDisplayerInterface $plainDisplayer,
-                                ExceptionDisplayerInterface $debugDisplayer,
-                                $debug = false)
+	public function __construct(Container&ResponsePreparerInterface $container)
 	{
-		$this->app = $app;
-		$this->debug = $debug;
-		$this->plainDisplayer = $plainDisplayer;
-		$this->debugDisplayer = $debugDisplayer;
+		$this->container = $container;
 	}
 
 	/**
@@ -205,8 +183,13 @@ class Handler {
 		try {
 			$this->report($exception);
 
-			return $this->render($this->app['request'], $exception);
+			return $this->render($this->container['request'], $exception);
 		} catch (Throwable $throwable) {
+			try {
+				$this->report($throwable);
+			} catch (Throwable) {
+			}
+
 			return $this->displayException($throwable);
 		}
 	}
@@ -327,7 +310,7 @@ class Handler {
 	{
 		if ($this->shouldntReport($e)) return;
 
-		if (Reflector::isCallable($reportCallable = array($e, 'report')) && $this->app->call($reportCallable) !== false)
+		if (Reflector::isCallable($reportCallable = array($e, 'report')) && $this->container->call($reportCallable) !== false)
 		{
 			return;
 		}
@@ -337,7 +320,7 @@ class Handler {
 			if ($reportCallback->handles($e) && $reportCallback($e) === false) return;
 		}
 
-		$this->app->make('log')->error($e->getMessage(), array_merge($this->exceptionContext($e), $this->context(), array('exception' => $e)));
+		$this->container->make('log')->error($e->getMessage(), array_merge($this->exceptionContext($e), $this->context(), array('exception' => $e)));
 	}
 
 	/**
@@ -386,7 +369,7 @@ class Handler {
 	protected function context()
 	{
 		try {
-			return array_filter(array('userId' => $this->app['auth']->id()));
+			return array_filter(array('userId' => $this->container['auth']->id()));
 		} catch (Throwable) {
 			return array();
 		}
@@ -421,7 +404,7 @@ class Handler {
 				{
 					$response = $renderCallback($e, $request);
 
-					if ( ! is_null($response)) return $this->app->prepareResponse($response);
+					if ( ! is_null($response)) return $this->container->prepareResponse($response);
 				}
 			}
 		}
@@ -466,8 +449,6 @@ class Handler {
 	 */
 	protected function displayException($exception)
 	{
-		$displayer = $this->debug ? $this->debugDisplayer : $this->plainDisplayer;
-
 		if (! $exception instanceof \Exception) {
             if ($exception instanceof \ParseError) {
                 $severity = \E_PARSE;
@@ -486,28 +467,60 @@ class Handler {
             );
 		}
 
-		return $displayer->display($exception);
+		if ($this->container->runningInConsole() || $this->inDebugMode())
+		{
+			return $this->container['exception.debug']->display($exception);
+		}
+
+		return $this->renderErrorView($exception);
 	}
 
 	/**
-	 * Determine if we are running in the console.
+	 * Render the app's error view for the exception's status, or the plain page.
+	 *
+	 * @param  \Exception  $exception
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	protected function renderErrorView($exception)
+	{
+		$status = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : 500;
+
+		$headers = $exception instanceof HttpExceptionInterface ? $exception->getHeaders() : array();
+
+		try {
+			foreach (array("errors.{$status}", 'errors.'.intdiv($status, 100).'xx') as $view)
+			{
+				if ($this->container['view']->exists($view))
+				{
+					return new ViewResponse($this->container['view']->make($view, array('exception' => $exception)), $status, $headers);
+				}
+			}
+		} catch (Throwable) {
+		}
+
+		return $this->container['exception.plain']->display($exception);
+	}
+
+	/**
+	 * Determine if the application is in debug mode.
 	 *
 	 * @return bool
 	 */
-	public function runningInConsole()
+	protected function inDebugMode()
 	{
-		return php_sapi_name() == 'cli';
+		return $this->container->bound('config') && (bool) $this->container['config']->get('app.debug');
 	}
 
 	/**
-	 * Set the debug level for the handler.
+	 * Render an exception to the console.
 	 *
-	 * @param  bool  $debug
+	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+	 * @param  \Throwable  $e
 	 * @return void
 	 */
-	public function setDebug($debug)
+	public function renderForConsole($output, Throwable $e)
 	{
-		$this->debug = $debug;
+		(new ConsoleApplication)->renderThrowable($e, $output);
 	}
 
 }

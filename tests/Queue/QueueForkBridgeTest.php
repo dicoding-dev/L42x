@@ -9,8 +9,7 @@ use Illuminate\Contracts\Queue\Factory as QueueFactory;
 use Illuminate\Contracts\Queue\Monitor as QueueMonitor;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Encryption\Encrypter;
-use Illuminate\Exception\ExceptionHandlerAdapter;
-use Illuminate\Exception\Handler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Queue\Console\ListenCommand;
@@ -79,10 +78,10 @@ class QueueForkBridgeTest extends TestCase
 		$this->assertInstanceOf(WorkCommand::class, $app->make(WorkCommand::class));
 		$this->assertInstanceOf(Worker::class, $app->make('queue.worker'));
 
-		$adapter = $app->make(ExceptionHandler::class);
-		$adapter->report($exception);
+		$bound = $app->make(ExceptionHandler::class);
+		$bound->report($exception);
 
-		$this->assertInstanceOf(ExceptionHandlerAdapter::class, $adapter);
+		$this->assertSame($handler->reveal(), $bound);
 	}
 
 	public function testStringJobRunsItsFireMethod()
