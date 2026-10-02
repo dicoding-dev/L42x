@@ -1,56 +1,36 @@
 <?php
 
 use Illuminate\Foundation\EnvironmentDetector;
-use L4\Tests\BackwardCompatibleTestCase;
-use Mockery as m;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
-class FoundationEnvironmentDetectorTest extends BackwardCompatibleTestCase
+class FoundationEnvironmentDetectorTest extends TestCase
 {
-
-    protected function tearDown(): void
-    {
-        m::close();
-    }
-
-
-    public function testEnvironmentDetection(): void
-    {
-        $env = m::mock(EnvironmentDetector::class)->makePartial();
-        $env->shouldReceive('isMachine')->once()->with('localhost')->andReturn(false);
-        $result = $env->detect(
-            [
-			'local'   => ['localhost']
-            ]
-        );
-		$this->assertEquals('production', $result);
-
-
-		$env = m::mock(EnvironmentDetector::class)->makePartial();
-		$env->shouldReceive('isMachine')->once()->with('localhost')->andReturn(true);
-		$result = $env->detect([
-			'local'   => ['localhost']
-        ]);
-		$this->assertEquals('local', $result);
+	#[Test]
+	public function theCallbackNamesTheEnvironment()
+	{
+		$this->assertSame('foobar', (new EnvironmentDetector)->detect(fn () => 'foobar'));
 	}
 
-
-	public function testClosureCanBeUsedForCustomEnvironmentDetection(): void
-    {
-		$env = new Illuminate\Foundation\EnvironmentDetector;
-
-		$result = $env->detect(function() { return 'foobar'; });
-		$this->assertEquals('foobar', $result);
+	#[Test]
+	public function anEnvOptionWithAnEqualsSignOverridesTheCallback()
+	{
+		$this->assertSame('local', (new EnvironmentDetector)->detect(fn () => 'foobar', array('artisan', '--env=local')));
 	}
 
-
-	public function testConsoleEnvironmentDetection(): void
-    {
-		$env = new Illuminate\Foundation\EnvironmentDetector;
-
-		$result = $env->detect([
-			'local'   => ['foobar']
-        ], ['--env=local']);
-		$this->assertEquals('local', $result);
+	#[Test]
+	public function anEnvOptionFollowedByItsValueOverridesTheCallback()
+	{
+		$this->assertSame('local', (new EnvironmentDetector)->detect(fn () => 'foobar', array('artisan', 'migrate', '--env', 'local')));
 	}
 
+	#[Test]
+	public function consoleArgumentsWithoutAnEnvOptionLeaveItToTheCallback()
+	{
+		$detector = new EnvironmentDetector;
+
+		$this->assertSame('foobar', $detector->detect(fn () => 'foobar', array('artisan', 'migrate', '--force')));
+		$this->assertSame('foobar', $detector->detect(fn () => 'foobar', array('artisan', '--env')));
+		$this->assertSame('foobar', $detector->detect(fn () => 'foobar', array('artisan', '--environment=local')));
+	}
 }
