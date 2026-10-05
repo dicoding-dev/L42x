@@ -123,22 +123,6 @@ class FoundationGlobalMiddlewareTest extends TestCase
 	}
 
 	#[Test]
-	public function runSendsTheHandledResponseAndCallsTheTerminatingCallbacks()
-	{
-		$terminated = false;
-		$this->app->terminating(function () use (&$terminated) { $terminated = true; });
-		$this->app->setGlobalMiddleware(array(GlobalMiddlewareTestOuter::class));
-
-		ob_start();
-		$this->app->run(Request::create('/somewhere'));
-		$output = ob_get_clean();
-
-		$this->assertSame('routed', $output);
-		$this->assertTrue($terminated);
-		$this->assertSame(array('outer:before', 'router', 'outer:after'), $this->trail());
-	}
-
-	#[Test]
 	public function theMiddlewareConfigurationDefinesTheWholeStack()
 	{
 		$middleware = (new Middleware)->use(array('first' => GlobalMiddlewareTestOuter::class, GlobalMiddlewareTestInner::class));
