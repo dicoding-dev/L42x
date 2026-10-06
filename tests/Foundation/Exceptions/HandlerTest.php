@@ -1,11 +1,13 @@
 <?php
 
+use Illuminate\Config\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Exception\ExceptionDisplayerInterface;
-use Illuminate\Exception\ExceptionHandlerAdapter;
-use Illuminate\Exception\Handler;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Exceptions\Displayers\ExceptionDisplayerInterface;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -264,35 +267,137 @@ class HandlerTest extends TestCase
     }
 
     #[Test]
-    public function theWorkerAdapterReportsAndRendersThroughTheHandler(): void
+    public function itIsTheV13ExceptionHandlerTheQueueWorkerReportsThrough(): void
     {
         $handler = $this->getHandler();
         $handler->renderable(fn (Throwable $e) => new Response('rendered', 500));
-        $adapter = new ExceptionHandlerAdapter($handler);
 
-        $adapter->report(new DomainException('boom'));
-
-        self::assertSame(array(array('boom', DomainException::class)), $this->log->logged());
-        self::assertFalse($adapter->shouldReport(new NotFoundHttpException('missing')));
-        self::assertSame('rendered', $adapter->render($this->app['request'], new DomainException('boom'))->getContent());
+        self::assertInstanceOf(ExceptionHandler::class, $handler);
+        self::assertFalse($handler->shouldReport(new NotFoundHttpException('missing')));
+        self::assertSame('rendered', $handler->render($this->app['request'], new DomainException('boom'))->getContent());
     }
 
-    protected function getHandler(bool $debug = self::DEBUG_ENABLED): Handler
+    #[Test]
+    public function inProductionTheErrorViewForTheStatusRenders(): void
     {
-        $this->app = new Application;
+        $handler = $this->getHandler(self::DEBUG_DISABLED, views: array('errors.500' => '500 page', 'errors.5xx' => '5xx page', 'errors.4xx' => '4xx page'));
+
+        $server = $handler->handleException(new BindingResolutionException('not found'));
+        $unavailable = $handler->handleException(new HttpException(503, 'down', null, array('Retry-After' => '60')));
+        $missing = $handler->handleException(new NotFoundHttpException('missing'));
+
+        self::assertSame(array(500, '500 page'), array($server->getStatusCode(), $server->getContent()));
+        self::assertSame(array(503, '5xx page', '60'), array($unavailable->getStatusCode(), $unavailable->getContent(), $unavailable->headers->get('Retry-After')));
+        self::assertSame(array(404, '4xx page'), array($missing->getStatusCode(), $missing->getContent()));
+        $this->plainDisplayer->display(Argument::cetera())->shouldNotBeCalled();
+    }
+
+    #[Test]
+    public function withoutAnErrorViewOrWhenItFailsThePlainDisplayerRenders(): void
+    {
+        $handler = $this->getHandler(self::DEBUG_DISABLED, views: array('errors.500' => new RuntimeException('view broken')));
+
+        $handler->handleException(new BindingResolutionException('not found'));
+        $handler->handleException(new NotFoundHttpException('missing'));
+
+        $this->plainDisplayer->display(Argument::type(BindingResolutionException::class))->shouldBeCalledOnce();
+        $this->plainDisplayer->display(Argument::type(NotFoundHttpException::class))->shouldBeCalledOnce();
+    }
+
+    #[Test]
+    public function anErrorWhileHandlingAnErrorIsReportedToo(): void
+    {
+        $handler = $this->getHandler(self::DEBUG_DISABLED);
+        $handler->renderable(function (BindingResolutionException $e) {
+            throw new DomainException('render failed');
+        });
+
+        $handler->handleException(new BindingResolutionException('not found'));
+
+        self::assertSame(array(array('not found', BindingResolutionException::class), array('render failed', DomainException::class)), $this->log->logged());
+    }
+
+    #[Test]
+    public function inTheConsoleTheDebugDisplayerRendersEvenInProduction(): void
+    {
+        $handler = $this->getHandler(self::DEBUG_DISABLED, console: true, views: array('errors.500' => '500 page'));
+
+        self::assertSame('debug', $handler->handleException(new BindingResolutionException('not found'))->getContent());
+    }
+
+    #[Test]
+    public function debugModeIsReadFromTheConfigurationWhenDisplaying(): void
+    {
+        $handler = $this->getHandler(self::DEBUG_DISABLED);
+        $this->app['config']->set('app.debug', true);
+
+        self::assertSame('debug', $handler->handleException(new BindingResolutionException('not found'))->getContent());
+    }
+
+    #[Test]
+    public function renderForConsoleWritesTheExceptionToTheOutput(): void
+    {
+        $output = new BufferedOutput;
+
+        $this->getHandler()->renderForConsole($output, new DomainException('console boom'));
+
+        self::assertStringContainsString('console boom', $output->fetch());
+    }
+
+    protected function getHandler(bool $debug = self::DEBUG_ENABLED, bool $console = false, array $views = array()): Handler
+    {
+        $this->app = new class($console) extends Application {
+            public function __construct(private bool $console)
+            {
+                parent::__construct();
+            }
+
+            public function runningInConsole()
+            {
+                return $this->console;
+            }
+        };
         $this->app->instance('request', Request::create('/hello'));
         $this->app->instance('log', $this->log = new HandlerTestLogger);
+        $this->app->instance('config', new Repository(array('app' => array('debug' => $debug))));
         $this->plainDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
         $this->debugDisplayer = $this->prophesize(ExceptionDisplayerInterface::class);
         $this->plainDisplayer->display(Argument::cetera())->willReturn(new Response('plain', 500));
         $this->debugDisplayer->display(Argument::cetera())->willReturn(new Response('debug', 500));
+        $this->app->instance('exception.plain', $this->plainDisplayer->reveal());
+        $this->app->instance('exception.debug', $this->debugDisplayer->reveal());
 
-        return new Handler(
-            $this->app,
-            $this->plainDisplayer->reveal(),
-            $this->debugDisplayer->reveal(),
-            $debug
-        );
+        if ($views) $this->app->instance('view', new HandlerTestViews($views));
+
+        return new Handler($this->app);
+    }
+}
+
+class HandlerTestViews
+{
+    public function __construct(private array $views)
+    {
+    }
+
+    public function exists($view)
+    {
+        return array_key_exists($view, $this->views);
+    }
+
+    public function make($view, array $data = array())
+    {
+        if ($this->views[$view] instanceof Throwable) throw $this->views[$view];
+
+        return new class($this->views[$view]) implements Renderable {
+            public function __construct(private string $content)
+            {
+            }
+
+            public function render()
+            {
+                return $this->content;
+            }
+        };
     }
 }
 

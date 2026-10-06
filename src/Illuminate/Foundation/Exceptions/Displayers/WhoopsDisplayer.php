@@ -1,4 +1,4 @@
-<?php namespace Illuminate\Exception;
+<?php namespace Illuminate\Foundation\Exceptions\Displayers;
 
 use Exception;
 use Whoops\Run;
