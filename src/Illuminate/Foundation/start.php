@@ -47,6 +47,7 @@ use Illuminate\Support\Facades\Facade;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Config\EnvironmentVariables;
 use Illuminate\Foundation\Bootstrap\LoadConfiguration;
+use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,11 +95,13 @@ $app->registerCoreContainerAliases();
 | Register The Environment Variables
 |--------------------------------------------------------------------------
 |
-| Here we will register all of the $_ENV and $_SERVER variables into the
-| process so that they're globally available configuration options so
-| sensitive configuration information can be swept out of the code.
+| v13's LoadEnvironmentVariables loads the .env file first. The L4.2
+| .env.{env}.php file loads after it, so its values win on the keys both
+| files define.
 |
 */
+
+$app->make(LoadEnvironmentVariables::class)->bootstrap($app);
 
 with($envVariables = new EnvironmentVariables(
 	$app->getEnvironmentVariablesLoader()))->load($env);
