@@ -22,19 +22,20 @@ if ( ! function_exists('action'))
 if ( ! function_exists('app'))
 {
 	/**
-	 * Get the root Facade application instance.
+	 * Get the available container instance.
 	 *
-	 * @param  string  $make
+	 * @param  string|null  $abstract
+	 * @param  array  $parameters
 	 * @return mixed
 	 */
-	function app($make = null)
+	function app($abstract = null, array $parameters = array())
 	{
-		if ( ! is_null($make))
+		if (is_null($abstract))
 		{
-			return app()->make($make);
+			return Illuminate\Container\Container::getInstance();
 		}
 
-		return Illuminate\Support\Facades\Facade::getFacadeApplication();
+		return Illuminate\Container\Container::getInstance()->make($abstract, $parameters);
 	}
 }
 
