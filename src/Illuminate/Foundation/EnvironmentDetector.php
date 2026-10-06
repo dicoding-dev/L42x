@@ -1,6 +1,5 @@
 <?php namespace Illuminate\Foundation;
 
-use Illuminate\Support\Arr;
 use Closure;
 
 class EnvironmentDetector {
@@ -8,68 +7,46 @@ class EnvironmentDetector {
 	/**
 	 * Detect the application's current environment.
 	 *
-	 * @param  array|string  $environments
+	 * @param  \Closure  $callback
 	 * @param  array|null  $consoleArgs
 	 * @return string
 	 */
-	public function detect($environments, $consoleArgs = null): string
-    {
+	public function detect(Closure $callback, $consoleArgs = null)
+	{
 		if ($consoleArgs)
 		{
-			return $this->detectConsoleEnvironment($environments, $consoleArgs);
+			return $this->detectConsoleEnvironment($callback, $consoleArgs);
 		}
 
-		return $this->detectWebEnvironment($environments);
+		return $this->detectWebEnvironment($callback);
 	}
 
 	/**
 	 * Set the application environment for a web request.
 	 *
-	 * @param  array|string  $environments
+	 * @param  \Closure  $callback
 	 * @return string
 	 */
-	protected function detectWebEnvironment($environments): string
-    {
-		// If the given environment is just a Closure, we will defer the environment check
-		// to the Closure the developer has provided, which allows them to totally swap
-		// the webs environment detection logic with their own custom Closure's code.
-		if ($environments instanceof Closure)
-		{
-			return call_user_func($environments);
-		}
-
-		foreach ($environments as $environment => $hosts)
-		{
-			// To determine the current environment, we'll simply iterate through the possible
-			// environments and look for the host that matches the host for this request we
-			// are currently processing here, then return back these environment's names.
-			foreach ((array) $hosts as $host)
-			{
-				if ($this->isMachine($host)) return $environment;
-			}
-		}
-
-		return 'production';
+	protected function detectWebEnvironment(Closure $callback)
+	{
+		return $callback();
 	}
 
 	/**
 	 * Set the application environment from command-line arguments.
 	 *
-	 * @param  mixed   $environments
+	 * @param  \Closure  $callback
 	 * @param  array  $args
 	 * @return string
 	 */
-	protected function detectConsoleEnvironment($environments, array $args): string
-    {
-		// First we will check if an environment argument was passed via console arguments
-		// and if it was that automatically overrides as the environment. Otherwise, we
-		// will check the environment as a "web" request like a typical HTTP request.
+	protected function detectConsoleEnvironment(Closure $callback, array $args)
+	{
 		if ( ! is_null($value = $this->getEnvironmentArgument($args)))
 		{
-			return head(array_slice(explode('=', $value), 1));
+			return $value;
 		}
 
-		return $this->detectWebEnvironment($environments);
+		return $this->detectWebEnvironment($callback);
 	}
 
 	/**
@@ -78,23 +55,20 @@ class EnvironmentDetector {
 	 * @param  array  $args
 	 * @return string|null
 	 */
-	protected function getEnvironmentArgument(array $args): ?string
-    {
-		return Arr::first($args, function($value, $key)
+	protected function getEnvironmentArgument(array $args)
+	{
+		foreach ($args as $i => $value)
 		{
-			return starts_with($value, '--env');
-		});
-	}
+			if ($value === '--env')
+			{
+				return $args[$i + 1] ?? null;
+			}
 
-	/**
-	 * Determine if the name matches the machine name.
-	 *
-	 * @param  string  $name
-	 * @return bool
-	 */
-	public function isMachine($name): bool
-    {
-		return str_is($name, gethostname());
+			if (str_starts_with($value, '--env='))
+			{
+				return head(array_slice(explode('=', $value), 1));
+			}
+		}
 	}
 
 }

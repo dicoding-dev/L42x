@@ -428,7 +428,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	 * ponytail: v13 bootstraps through its kernels (environment, configuration, exception
 	 * handling, facades, providers). The fork runs start.php in their place, the first time
 	 * handleRequest(), handleCommand() or the console Kernel's bootstrap() asks for it.
-	 * The environment defaults to production, as in v13. Remove at the flip.
+	 * Remove at the flip.
 	 *
 	 * @return void
 	 */
@@ -438,11 +438,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
 		$this->hasBeenBootstrapped = true;
 
-		if ( ! $this->bound('env')) $this->detectEnvironment(array());
-
 		$app = $this;
-
-		$env = $this['env'];
 
 		require static::getBootstrapFile();
 	}
@@ -488,14 +484,16 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 	/**
 	 * Detect the application's current environment.
 	 *
-	 * @param  array|string  $envs
+	 * @param  \Closure  $callback
 	 * @return string
 	 */
-	public function detectEnvironment($envs)
+	public function detectEnvironment(Closure $callback)
 	{
-		$args = isset($_SERVER['argv']) ? $_SERVER['argv'] : null;
+		$args = $this->runningInConsole() && isset($_SERVER['argv'])
+			? $_SERVER['argv']
+			: null;
 
-		return $this['env'] = (new EnvironmentDetector())->detect($envs, $args);
+		return $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
 	}
 
 	/**
