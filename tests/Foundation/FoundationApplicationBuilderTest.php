@@ -43,9 +43,10 @@ class FoundationApplicationBuilderTest extends TestCase
 		), true).';');
 		file_put_contents($this->base.'/storage/meta/services.json', json_encode(array('providers' => array(), 'eager' => array(), 'deferred' => array())));
 		file_put_contents($this->base.'/app/routes.php', '<?php $app["router"]->get("/probe", fn () => "probed in ".$app["env"]);');
-		file_put_contents($this->base.'/app/start/artisan.php', '<?php Illuminate\Support\Facades\Artisan::add(new BuilderTestCommand);');
+		file_put_contents($this->base.'/app/start/artisan.php', '<?php throw new RuntimeException("start/artisan.php is no longer loaded");');
 
 		BuilderTestCommand::$requestRoot = null;
+		BuilderTestCommand::$greeting = null;
 	}
 
 	protected function tearDown(): void
@@ -157,12 +158,26 @@ class FoundationApplicationBuilderTest extends TestCase
 	#[Test]
 	public function handleCommandRunsTheCommandWithTheConsoleRequestAndReturnsItsStatus()
 	{
-		$app = $this->configure('testing');
+		$app = $this->configure('testing', commands: array(BuilderTestCommand::class));
 
 		$status = $app->handleCommand(new ArrayInput(array('command' => 'builder:probe')));
 
 		$this->assertSame(3, $status);
 		$this->assertSame('http://builder.test', BuilderTestCommand::$requestRoot);
+	}
+
+	#[Test]
+	public function withCommandsBuildsEveryRegisteredCommandThroughTheContainer()
+	{
+		$app = $this->configure('testing', commands: array(BuilderTestCommand::class));
+		$app->instance(BuilderTestGreeting::class, new BuilderTestGreeting('bound'));
+
+		$kernel = $app->make(Kernel::class);
+		$kernel->addCommands(array(BuilderTestOtherCommand::class));
+
+		$this->assertSame(4, $app->handleCommand(new ArrayInput(array('command' => 'builder:other'))));
+		$this->assertSame(3, $kernel->call('builder:probe'));
+		$this->assertSame('bound', BuilderTestCommand::$greeting);
 	}
 
 	#[Test]
@@ -172,9 +187,9 @@ class FoundationApplicationBuilderTest extends TestCase
 		$this->assertFalse(method_exists(Application::class, 'bindInstallPaths'));
 	}
 
-	private function configure(string $env, ?callable $middleware = null): Application
+	private function configure(string $env, ?callable $middleware = null, array $commands = array()): Application
 	{
-		$app = Application::configure($this->base)->withMiddleware($middleware)->create();
+		$app = Application::configure($this->base)->withMiddleware($middleware)->withCommands($commands)->create();
 		$app['env'] = $env;
 		$this->bootstraps++;
 
@@ -193,16 +208,40 @@ class BuilderTestMiddleware
 	}
 }
 
+class BuilderTestGreeting
+{
+	public function __construct(public string $word = 'autowired')
+	{
+	}
+}
+
 class BuilderTestCommand extends Command
 {
 	public static ?string $requestRoot = null;
+	public static ?string $greeting = null;
 
 	protected $signature = 'builder:probe';
+
+	public function __construct(private BuilderTestGreeting $builderGreeting)
+	{
+		parent::__construct();
+	}
 
 	public function handle()
 	{
 		static::$requestRoot = $this->laravel['request']->root();
+		static::$greeting = $this->builderGreeting->word;
 
 		return 3;
+	}
+}
+
+class BuilderTestOtherCommand extends Command
+{
+	protected $signature = 'builder:other';
+
+	public function handle()
+	{
+		return 4;
 	}
 }

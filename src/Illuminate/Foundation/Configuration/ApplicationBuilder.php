@@ -40,6 +40,22 @@ class ApplicationBuilder {
 	}
 
 	/**
+	 * Register additional Artisan commands with the application.
+	 *
+	 * As in v13, the commands go to the console Kernel once it resolves, and are built through
+	 * the container when the console starts. Only command classes are supported.
+	 *
+	 * @param  array  $commands
+	 * @return $this
+	 */
+	public function withCommands(array $commands = [])
+	{
+		$this->app->afterResolving('artisan', fn ($kernel) => $kernel->addCommands($commands));
+
+		return $this;
+	}
+
+	/**
 	 * Configure the application's exception handler.
 	 *
 	 * As in v13, the callback runs once the handler is first resolved.
